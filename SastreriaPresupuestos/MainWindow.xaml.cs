@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using System.Windows.Media;
 using SastreriaPresupuestos.ViewModels;
 
 namespace SastreriaPresupuestos
@@ -2408,6 +2409,24 @@ namespace SastreriaPresupuestos
                 string.IsNullOrWhiteSpace(ClientNotesTextBox.Text)
                     ? Visibility.Visible
                     : Visibility.Collapsed;
+        }
+
+        private void CalendarDelivery_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var element = e.OriginalSource as DependencyObject;
+
+            while (element != null)
+            {
+                if (element is FrameworkElement frameworkElement &&
+                    frameworkElement.DataContext is WeeklyDeliveryItem delivery)
+                {
+                    OpenWeeklyDelivery(delivery);
+                    e.Handled = true;
+                    return;
+                }
+
+                element = VisualTreeHelper.GetParent(element);
+            }
         }
 
     }
