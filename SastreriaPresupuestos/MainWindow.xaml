@@ -42,6 +42,14 @@
             <sys:String>Artesanal</sys:String>
         </x:Array>
 
+        <!-- COLORES BASE -->
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6F2"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#2F332D"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#A8B2A1"/>
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#6D7468"/>
+        <SolidColorBrush x:Key="BorderSoftBrush" Color="#D7DDD2"/>
+
         <Style x:Key="RightAlignedCellStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="TextAlignment" Value="Right"/>
@@ -64,13 +72,20 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
-        <!-- COLORES BASE -->
-        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6F2"/>
-        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#2F332D"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#A8B2A1"/>
-        <SolidColorBrush x:Key="MutedTextBrush" Color="#6D7468"/>
-        <SolidColorBrush x:Key="BorderSoftBrush" Color="#D7DDD2"/>
+        <!-- TABCONTROL -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="18,9"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="#EEF2EA"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+        </Style>
 
         <!-- TEXTOS -->
         <Style TargetType="TextBlock">
@@ -1256,7 +1271,7 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="Exportar">
+                <TabItem Header="Documentos">
                     <Grid Margin="0,16,0,0">
 
                         <Border
@@ -1436,7 +1451,7 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="Configuración">
+                <TabItem Header="Ajustes">
                     <Grid Margin="0,16,0,0">
 
                         <Border

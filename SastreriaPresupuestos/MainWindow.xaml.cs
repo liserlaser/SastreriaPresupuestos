@@ -50,8 +50,8 @@ namespace SastreriaPresupuestos
         private const int TabClientes = 1;
         private const int TabPresupuesto = 2;
         private const int TabProductos = 3;
-        private const int TabExportar = 4;
-        private const int TabConfiguracion = 5;
+        private const int TabDocumentos = 4;
+        private const int TabAjustes = 5;
 
         public MainWindow()
         {
