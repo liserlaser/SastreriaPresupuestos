@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using SastreriaPresupuestos.ViewModels;
 
 namespace SastreriaPresupuestos
 {
@@ -23,6 +24,9 @@ namespace SastreriaPresupuestos
     {
         private ObservableCollection<ProductLine> Products =
             new ObservableCollection<ProductLine>();
+
+        private ObservableCollection<WeeklyDeliveryItem> WeeklyDeliveries =
+            new ObservableCollection<WeeklyDeliveryItem>();
 
         private List<Models.Client> AllClients = new();
 
@@ -52,7 +56,10 @@ namespace SastreriaPresupuestos
 
             QuestPDF.Settings.License = LicenseType.Community;
 
+            WeeklyDeliveriesListBox.ItemsSource = WeeklyDeliveries;
+
             PriceService.LoadPrices();
+            LoadWeeklyDeliveries();
 
             //var culture = new CultureInfo("es-ES");
             //Thread.CurrentThread.CurrentCulture = culture;
@@ -307,6 +314,8 @@ namespace SastreriaPresupuestos
             SuppressSelectionConfirm = true;
 
             LoadClients();
+
+            LoadWeeklyDeliveries();
 
             var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
                 .FirstOrDefault(c => c.Id == savedClientId);
@@ -656,6 +665,7 @@ namespace SastreriaPresupuestos
             var selectedClient = ClientsListBox.SelectedItem as Models.Client;
 
             LoadClients();
+            LoadWeeklyDeliveries();
 
             if (selectedClient != null)
             {
@@ -1426,6 +1436,7 @@ namespace SastreriaPresupuestos
             db.SaveChanges();
 
             LoadClients();
+            LoadWeeklyDeliveries();
 
             ClearScreenForNewClient();
 
@@ -1732,10 +1743,10 @@ namespace SastreriaPresupuestos
         }
 
         private Models.Client? FindPossibleDuplicateClient(
-    AppDbContext db,
-    string clientName,
-    string clientPhone,
-    int? currentClientId = null)
+            AppDbContext db,
+            string clientName,
+            string clientPhone,
+            int? currentClientId = null)
         {
             var normalizedName = NormalizeText(clientName);
             var normalizedPhone = NormalizeText(clientPhone);
@@ -1764,6 +1775,48 @@ namespace SastreriaPresupuestos
             }
 
             return null;
+        }
+
+        private void LoadWeeklyDeliveries()
+        {
+            WeeklyDeliveries.Clear();
+
+            using var db = new AppDbContext();
+
+            var today = DateTime.Today;
+
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var monday = today.AddDays(-diff).Date;
+            var sunday = monday.AddDays(6).Date;
+
+            WeekTitleTextBlock.Text = $"Semana del {monday:dd/MM/yyyy} al {sunday:dd/MM/yyyy}";
+
+            var deliveries = db.Quotes
+                .Include(q => q.Client)
+                .Where(q => q.DeliveryDate.Date >= monday && q.DeliveryDate.Date <= sunday)
+                .OrderBy(q => q.DeliveryDate)
+                //.ThenBy(q => q.Client.Name)
+                .ThenBy(q => q.Client != null ? q.Client.Name : "")
+                .ToList();
+
+            foreach (var quote in deliveries)
+            {
+                WeeklyDeliveries.Add(new WeeklyDeliveryItem
+                {
+                    QuoteId = quote.Id,
+                    ClientId = quote.ClientId,
+                    DeliveryDate = quote.DeliveryDate,
+                    ClientName = quote.Client?.Name ?? "",
+                    ClientPhone = quote.Client?.Phone ?? "",
+                    QuoteTitle = quote.Title,
+                    Status = string.IsNullOrWhiteSpace(quote.Status) ? "Pendiente" : quote.Status,
+                    Total = quote.Total
+                });
+            }
+
+            EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
     }
 }
