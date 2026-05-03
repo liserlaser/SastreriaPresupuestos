@@ -46,6 +46,13 @@ namespace SastreriaPresupuestos
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
 
+        private const int TabSemana = 0;
+        private const int TabClientes = 1;
+        private const int TabPresupuesto = 2;
+        private const int TabProductos = 3;
+        private const int TabExportar = 4;
+        private const int TabConfiguracion = 5;
+
         public MainWindow()
         {
             ConfigureCulture();
@@ -94,6 +101,8 @@ namespace SastreriaPresupuestos
             Products.Add(line);
 
             UpdateGrandTotal();
+
+            GoToTab(TabProductos);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -446,6 +455,8 @@ namespace SastreriaPresupuestos
 
             UpdateSaveButtonText();
             UpdateActiveContext();
+
+            GoToTab(TabPresupuesto);
         }
 
         private void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -525,6 +536,8 @@ namespace SastreriaPresupuestos
 
             UpdateSaveButtonText();
             UpdateActiveContext();
+
+            GoToTab(TabPresupuesto);
         }
 
         private void ProductsDataGrid_CellEditEnding(object? sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
@@ -1881,7 +1894,17 @@ namespace SastreriaPresupuestos
         {
             MarkAsChanged();
         }
+        
+        private void GoToTab(int tabIndex)
+        {
+            if (MainTabs == null)
+                return;
 
+            if (tabIndex < 0 || tabIndex >= MainTabs.Items.Count)
+                return;
+
+            MainTabs.SelectedIndex = tabIndex;
+        }
 
     }
 }
