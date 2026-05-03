@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SastreriaPresupuestos.Models
 {
@@ -62,6 +63,23 @@ namespace SastreriaPresupuestos.Models
                     return $"Presupuesto #{Id}";
 
                 return Title;
+            }
+        }
+
+        public string ProductSummary
+        {
+            get
+            {
+                if (Items == null || Items.Count == 0)
+                    return "Sin productos";
+
+                return string.Join(", ", Items.Select(item =>
+                {
+                    if (string.IsNullOrWhiteSpace(item.TailoringType))
+                        return item.ProductName;
+
+                    return $"{item.ProductName} {item.TailoringType}";
+                }));
             }
         }
     }

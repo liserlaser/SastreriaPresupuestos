@@ -672,6 +672,7 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/>
                                                         <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
 
                                                     <TextBlock
@@ -681,6 +682,13 @@
 
                                                     <TextBlock
                                                         Grid.Row="1"
+                                                        Text="{Binding DisplayPhone}"
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource MutedTextBrush}"
+                                                        Margin="0,3,0,0"/>
+
+                                                    <TextBlock
+                                                        Grid.Row="2"
                                                         Text="{Binding DeliveryDateText}"
                                                         FontSize="13"
                                                         Foreground="{StaticResource MutedTextBrush}"
@@ -730,42 +738,65 @@
                                                         <RowDefinition Height="Auto"/>
                                                         <RowDefinition Height="Auto"/>
                                                         <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
 
+                                                    <!-- Nombre del pedido -->
                                                     <TextBlock
                                                         Text="{Binding DisplayTitle}"
-                                                        FontSize="14"
+                                                        FontSize="15"
                                                         FontWeight="SemiBold"/>
 
+                                                    <!-- Entrega -->
                                                     <TextBlock
                                                         Grid.Row="1"
-                                                        Text="{Binding DeliveryDate, StringFormat={}{0:dd/MM/yyyy}}"
+                                                        Text="{Binding DeliveryDate, StringFormat=Entrega: {0:dd/MM/yyyy}}"
                                                         FontSize="12"
                                                         Foreground="{StaticResource MutedTextBrush}"
-                                                        Margin="0,2,0,0"/>
+                                                        Margin="0,3,0,0"/>
 
+                                                    <!-- Estado -->
                                                     <StackPanel
                                                         Grid.Row="2"
                                                         Orientation="Horizontal"
                                                         Margin="0,4,0,0">
 
                                                         <TextBlock
-                                                            Text="{Binding Status}"
-                                                            FontSize="12"
-                                                            FontWeight="SemiBold"
-                                                            Foreground="{StaticResource AccentBrush}"
-                                                            Margin="0,0,10,0"/>
-
-                                                        <TextBlock
-                                                            Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                                            Text="Estado: "
                                                             FontSize="12"
                                                             Foreground="{StaticResource MutedTextBrush}"/>
 
+                                                        <TextBlock
+                                                            Text="{Binding Status}"
+                                                            FontSize="12"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{StaticResource AccentBrush}"/>
+
                                                     </StackPanel>
 
+                                                    <!-- Total -->
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Text="{Binding Total, StringFormat=Total: {0:N2} €, ConverterCulture=es-ES}"
+                                                        FontSize="13"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{StaticResource PrimaryBrush}"
+                                                        Margin="0,4,0,0"/>
+
+                                                    <!-- Productos -->
+                                                    <TextBlock
+                                                        Grid.Row="4"
+                                                        Text="{Binding ProductSummary}"
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource MutedTextBrush}"
+                                                        TextWrapping="Wrap"
+                                                        Margin="0,5,8,0"/>
+
+                                                    <!-- Eliminar presupuesto -->
                                                     <Button
                                                         Grid.Column="1"
-                                                        Grid.RowSpan="3"
+                                                        Grid.RowSpan="5"
                                                         Content="✕"
                                                         FontSize="8"
                                                         Width="28"
@@ -799,10 +830,30 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
+                            <Border
+                                x:Name="PresupuestoEmptyHintBorder"
+                                Grid.Row="0"
+                                Background="#F8FAF6"
+                                BorderBrush="{StaticResource BorderSoftBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="14"
+                                Margin="0,0,0,14"
+                                Visibility="Collapsed">
+
+                                <TextBlock
+                                    Text="Selecciona un cliente en la pestaña Clientes o crea uno nuevo para empezar un presupuesto."
+                                    FontSize="14"
+                                    Foreground="{StaticResource MutedTextBrush}"
+                                    TextWrapping="Wrap"/>
+
+                            </Border>
+
                             <!-- DATOS CLIENTE -->
-                            <Border Grid.Row="0"
+                            <Border Grid.Row="1"
 				                Background="{StaticResource CardBackgroundBrush}"
 				                CornerRadius="14"
 				                Padding="22"
@@ -1004,7 +1055,7 @@
                             </Border>
 
                             <StackPanel
-				                Grid.Row="1"
+				                Grid.Row="2"
 				                Orientation="Horizontal"
 				                HorizontalAlignment="Right"
 				                Margin="0,20,0,0">
@@ -1082,15 +1133,49 @@
 							                FontSize="13"
 							                Foreground="{StaticResource MutedTextBrush}"
 							                Margin="0,2,0,0"/>
+
+                                        <Border
+                                            x:Name="ProductsEmptyHintBorder"
+                                            Background="#F8FAF6"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="12"
+                                            Margin="0,12,0,0"
+                                            Visibility="Collapsed">
+
+                                            <TextBlock
+                                                x:Name="ProductsEmptyHintTextBlock"
+                                                Text="Selecciona o crea un cliente antes de añadir productos."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"/>
+
+                                        </Border>
                                     </StackPanel>
 
-                                    <Button
-						                Content="+ Añadir Producto"
-						                Width="160"
-						                Height="30"
-						                HorizontalAlignment="Right"
-						                x:Name="AddProductButton"
-						                Style="{StaticResource PrimaryActionButtonStyle}"/>
+                                    <StackPanel
+                                        DockPanel.Dock="Right"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
+
+                                        <Button
+                                            Content="+ Añadir Producto"
+                                            Width="180"
+                                            Height="40"
+                                            Margin="0,0,10,0"
+                                            x:Name="AddProductButton"
+                                            Style="{StaticResource PrimaryActionButtonStyle}"/>
+
+                                        <Button
+                                            x:Name="SaveProductsButton"
+                                            Content="Guardar Presupuesto"
+                                            Width="170"
+                                            Height="40"
+                                            FontSize="15"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+
+                                    </StackPanel>
 
                                 </DockPanel>
 
@@ -1304,12 +1389,31 @@
                                         Foreground="{StaticResource MutedTextBrush}"
                                         Margin="0,4,0,0"/>
 
+                                    <Border
+                                        x:Name="DocumentsEmptyHintBorder"
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="12"
+                                        Margin="0,12,0,0"
+                                        Visibility="Collapsed">
+
+                                        <TextBlock
+                                            x:Name="DocumentsEmptyHintTextBlock"
+                                            Text="Selecciona o crea un presupuesto con productos antes de exportar documentos."
+                                            FontSize="13"
+                                            Foreground="{StaticResource MutedTextBrush}"
+                                            TextWrapping="Wrap"/>
+
+                                    </Border>
+
                                 </StackPanel>
 
                                 <WrapPanel
                                     Grid.Row="1"
                                     ItemWidth="260"
-                                    ItemHeight="130">
+                                    ItemHeight="180">
 
                                     <Border
                                         Background="#F8FAF6"
@@ -1332,7 +1436,6 @@
                                                 Foreground="{StaticResource MutedTextBrush}"
                                                 TextWrapping="Wrap"
                                                 Margin="0,6,0,14"/>
-
                                             <Button
                                                 x:Name="ExportPdfButton"
                                                 Content="Exportar PDF"

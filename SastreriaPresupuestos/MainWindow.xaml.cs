@@ -348,7 +348,10 @@ namespace SastreriaPresupuestos
             using var db = new AppDbContext();
 
             var quotes = db.Quotes
+                .Include(q => q.Items)
                 .Where(q => q.ClientId == client.Id)
+                .OrderBy(q => q.DeliveryDate)
+                .ThenBy(q => q.Id)
                 .ToList();
 
             QuotesListBox.ItemsSource = quotes;
@@ -1025,14 +1028,12 @@ namespace SastreriaPresupuestos
 
         private void UpdateSaveButtonText()
         {
-            if (CurrentQuote == null)
-            {
-                SaveButton.Content = "Guardar";
-            }
-            else
-            {
-                SaveButton.Content = "Actualizar";
-            }
+            var text = CurrentQuote == null
+                ? "Guardar"
+                : "Actualizar";
+
+            SaveButton.Content = text;
+            SaveProductsButton.Content = text;
         }
 
         private void UpdateUnsavedChangesIndicator()
@@ -1779,6 +1780,8 @@ namespace SastreriaPresupuestos
             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
             ActiveQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
+
+            UpdateEmptyStateMessages();
         }
 
         private void ConfigureCulture()
@@ -1809,6 +1812,7 @@ namespace SastreriaPresupuestos
 
             AddProductButton.Click += AddProductButton_Click;
             SaveButton.Click += SaveButton_Click;
+            SaveProductsButton.Click += SaveButton_Click;
             NewQuoteButton.Click += NewQuoteButton_Click;
             NewClientButton.Click += NewClientButton_Click;
             SaveClientButton.Click += SaveClientButton_Click;
@@ -1850,6 +1854,7 @@ namespace SastreriaPresupuestos
             UpdateStatusFilterButtons();
             UpdateDeliveryFilterButtons();
             UpdateActiveContext();
+            UpdateEmptyStateMessages();
         }
 
         private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -1953,6 +1958,49 @@ namespace SastreriaPresupuestos
                 return;
 
             OpenWeeklyDelivery(delivery);
+        }
+
+        private void UpdateEmptyStateMessages()
+        {
+            var hasClient =
+                !string.IsNullOrWhiteSpace(ClientNameTextBox.Text) ||
+                !string.IsNullOrWhiteSpace(PhoneTextBox.Text);
+
+            var hasProducts = Products.Count > 0;
+
+            PresupuestoEmptyHintBorder.Visibility = hasClient
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            if (!hasClient)
+            {
+                ProductsEmptyHintBorder.Visibility = Visibility.Visible;
+                ProductsEmptyHintTextBlock.Text = "Selecciona o crea un cliente antes de añadir productos.";
+            }
+            else if (!hasProducts)
+            {
+                ProductsEmptyHintBorder.Visibility = Visibility.Visible;
+                ProductsEmptyHintTextBlock.Text = "Añade productos para construir el presupuesto.";
+            }
+            else
+            {
+                ProductsEmptyHintBorder.Visibility = Visibility.Collapsed;
+            }
+
+            if (!hasClient)
+            {
+                DocumentsEmptyHintBorder.Visibility = Visibility.Visible;
+                DocumentsEmptyHintTextBlock.Text = "Selecciona o crea un cliente antes de exportar documentos.";
+            }
+            else if (!hasProducts)
+            {
+                DocumentsEmptyHintBorder.Visibility = Visibility.Visible;
+                DocumentsEmptyHintTextBlock.Text = "Añade al menos un producto antes de exportar documentos.";
+            }
+            else
+            {
+                DocumentsEmptyHintBorder.Visibility = Visibility.Collapsed;
+            }
         }
 
     }

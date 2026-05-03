@@ -40,5 +40,29 @@ namespace SastreriaPresupuestos.Models
             }
         }
 
+        public string DisplayPhone
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Phone))
+                    return "";
+
+                var digits = new string(Phone.Where(char.IsDigit).ToArray());
+
+                // Si viene como +34 600 12 34 56, quitamos el prefijo español
+                if (digits.Length == 11 && digits.StartsWith("34"))
+                {
+                    digits = digits.Substring(2);
+                }
+
+                if (digits.Length == 9)
+                {
+                    return $"{digits.Substring(0, 3)} {digits.Substring(3, 2)} {digits.Substring(5, 2)} {digits.Substring(7, 2)}";
+                }
+
+                return Phone;
+            }
+        }
+
     }
 }
