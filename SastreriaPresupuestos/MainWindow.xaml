@@ -9,6 +9,7 @@
         MinHeight="720"
         WindowStartupLocation="CenterScreen"
         Background="#F4F6F2"
+        FontFamily="Segoe UI"
         Language="es-ES"
         Closing="Window_Closing">
 
@@ -413,6 +414,7 @@
                 x:Name="MainTabs"
                 Grid.Row="1"
                 FontSize="14"
+                FontWeight="SemiBold"
                 SelectedIndex="0">
 
                 <TabItem Header="Semana">
