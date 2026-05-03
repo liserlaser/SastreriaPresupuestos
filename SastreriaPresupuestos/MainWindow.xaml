@@ -197,17 +197,15 @@
 
     </Window.Resources>
 
+    <!-- GRID PRINCIPAL -->
     <Grid Margin="20">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- PANEL IZQUIERDO -->
-        
 
-
-        <!-- DERECHA -->
+        <!-- PESTAÑAS -->
         <Grid>
 
             <Grid.RowDefinitions>
@@ -219,22 +217,21 @@
             <Grid Margin="0,0,0,16">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="130"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
                 <Image
                     Grid.Column="0"
                     Source="/Resources/logovectordefA.png"
-                    Width="110"
-                    Height="110"
+                    Height="148"
                     Stretch="Uniform"
                     VerticalAlignment="Center"/>
 
                 <StackPanel
                     Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Margin="16,0,0,0">
+                    VerticalAlignment="tOP"
+                    Margin="16,20,0,0" Height="70">
 
                     <TextBlock
                         Text="Martínez Mor Presupuestos"
@@ -255,7 +252,8 @@
             <TabControl
                 x:Name="MainTabs"
                 Grid.Row="1"
-                FontSize="14">
+                FontSize="14"
+                SelectedIndex="0">
 
                 <TabItem Header="Semana">
                     <Grid Margin="0,16,0,0">
@@ -387,149 +385,6 @@
                         </Border>
 
                     </Grid>
-                </TabItem>
-
-                <TabItem Header="Trabajo actual">
-
-                    <ScrollViewer
-                VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Disabled">
-
-                        <Grid Margin="0,16,0,0">
-
-                            <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- TÍTULO -->
-                <Grid Margin="0,0,0,25">
-
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="130"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Image
-                        Grid.Column="0"
-                        Source="/Resources/logovectordefA.png" 
-                        Width="110"
-                        Height="110"
-                        Stretch="Uniform"
-                        VerticalAlignment="Center"/>
-
-                    <StackPanel
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Margin="16,0,0,0">
-
-                        <TextBlock
-                            Text="Martínez Mor Presupuestos"
-                            FontSize="34"
-                            FontWeight="Bold"/>
-
-                        <TextBlock
-                            Text="Gestión de clientes y presupuestos a medida... y con todo el A-Mor 💖"
-                            FontSize="15"
-                            Foreground="{StaticResource MutedTextBrush}"
-                            Margin="0,4,0,0"/>
-
-                    </StackPanel>
-
-                </Grid>
-
-                
-
-                
-
-                <!-- BOTONES -->
-                <StackPanel
-                    Grid.Row="3"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,20,0,0">
-
-                    <!-- BOTONES ELIMINADOS
-                    <TextBlock
-                        x:Name="UnsavedChangesTextBlock"
-                        Text="Cambios sin guardar"
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource AccentBrush}"
-                        Margin="0,0,18,0"
-                        Visibility="Collapsed"/>
-                    
-                    <Button
-                        x:Name="NewQuoteButton"
-                        Content="Nuevo Presupuesto"
-                        Width="180"
-                        Height="45"
-                        Margin="0,0,10,0"
-                        FontSize="16"
-                        Style="{StaticResource SecondaryButtonStyle}"/>
-
-                    <Button
-                        x:Name="DuplicateQuoteButton"
-                        Content="Duplicar Presupuesto"
-                        Width="180"
-                        Height="45"
-                        Margin="0,0,10,0"
-                        FontSize="16"
-                        Style="{StaticResource SecondaryButtonStyle}"/>
-
-                    <Button
-                        x:Name="SaveButton"
-                        Content="Guardar"
-                        Width="140"
-                        Height="45"
-                        Margin="0,0,10,0"
-                        FontSize="16"
-                        Style="{StaticResource PrimaryActionButtonStyle}"/>
-
-                    <Button
-                        x:Name="PricesConfigButton"
-                        Content="Configurar Precios"
-                        Width="180"
-                        Height="45"
-                        Margin="0,0,10,0"
-                        FontSize="16"
-                        Style="{StaticResource SecondaryButtonStyle}"/>
-
-                    <Button
-                        x:Name="BackupButton"
-                        Content="Copia Seguridad"
-                        Width="170"
-                        Height="45"
-                        Margin="0,0,10,0"
-                        FontSize="16"
-                        Style="{StaticResource SecondaryButtonStyle}"/>
-
-                    <Button
-                        x:Name="ExportPdfButton"
-                        Content="Exportar PDF"                        
-                        Width="180"
-                        Height="45"
-                        FontSize="16"
-                        Style="{StaticResource DarkButtonStyle}"/>
-
-                    <Button
-                        x:Name="ExportAllQuotesPdfButton"
-                        Content="Exportar Opciones"
-                        Width="180"
-                        Height="45"
-                        Margin="10,0,0,0"
-                        FontSize="16"
-                        Style="{StaticResource DarkButtonStyle}"/>
-
-                    -->
-                    
-                </StackPanel>
-
-                        </Grid>
-                    </ScrollViewer>
-
                 </TabItem>
 
                 <TabItem Header="Clientes">
