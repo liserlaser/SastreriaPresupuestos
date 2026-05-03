@@ -28,6 +28,9 @@ namespace SastreriaPresupuestos
         private ObservableCollection<WeeklyDeliveryItem> WeeklyDeliveries =
             new ObservableCollection<WeeklyDeliveryItem>();
 
+        private ObservableCollection<CalendarDayGroup> CalendarDayGroups =
+            new ObservableCollection<CalendarDayGroup>();
+
         private List<Models.Client> AllClients = new();
 
         private Models.Quote? CurrentQuote = null;
@@ -1796,6 +1799,7 @@ namespace SastreriaPresupuestos
         private void LoadCalendarDeliveries()
         {
             WeeklyDeliveries.Clear();
+            CalendarDayGroups.Clear();
 
             using var db = new AppDbContext();
 
@@ -1840,6 +1844,41 @@ namespace SastreriaPresupuestos
                 });
             }
 
+            var currentDate = startDate;
+
+            while (currentDate <= endDate)
+            {
+                var group = new CalendarDayGroup
+                {
+                    Date = currentDate
+                };
+
+                var dayDeliveries = WeeklyDeliveries
+                    .Where(d => d.DeliveryDate.Date == currentDate.Date)
+                    .OrderBy(d => d.ClientName)
+                    .ToList();
+
+                foreach (var delivery in dayDeliveries)
+                {
+                    group.Deliveries.Add(delivery);
+                }
+
+                var shouldShowDay =
+                    CalendarViewMode == "Semana" ||
+                    group.HasDeliveries;
+
+                if (shouldShowDay)
+                {
+                    CalendarDayGroups.Add(group);
+                }
+
+                currentDate = currentDate.AddDays(1);
+            }
+
+            EmptyWeekTextBlock.Text = CalendarViewMode == "Mes"
+                ? "No hay entregas programadas para este mes."
+                : "No hay entregas programadas para esta semana.";
+
             EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
@@ -1875,7 +1914,7 @@ namespace SastreriaPresupuestos
 
         private void InitializeDataSources()
         {
-            WeeklyDeliveriesListBox.ItemsSource = WeeklyDeliveries;
+            WeeklyDeliveriesListBox.ItemsSource = CalendarDayGroups;
             ProductsDataGrid.ItemsSource = Products;
         }
 
@@ -2043,10 +2082,19 @@ namespace SastreriaPresupuestos
 
         private void WeeklyDeliveriesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (WeeklyDeliveriesListBox.SelectedItem is not WeeklyDeliveryItem delivery)
-                return;
+            var element = e.OriginalSource as DependencyObject;
 
-            OpenWeeklyDelivery(delivery);
+            while (element != null)
+            {
+                if (element is FrameworkElement frameworkElement &&
+                    frameworkElement.DataContext is WeeklyDeliveryItem delivery)
+                {
+                    OpenWeeklyDelivery(delivery);
+                    return;
+                }
+
+                element = System.Windows.Media.VisualTreeHelper.GetParent(element);
+            }
         }
 
         private void UpdateEmptyStateMessages()
