@@ -1,0 +1,1077 @@
+﻿<Window x:Class="SastreriaPresupuestos.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="Sastrería Presupuestos"
+        Height="750"
+        Width="1280"
+        MinWidth="1150"
+        MinHeight="720"
+        WindowStartupLocation="CenterScreen"
+        Background="#F4F6F2"
+        Language="es-ES"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+
+        <x:Array Type="{x:Type sys:String}" x:Key="ProductList">
+            <sys:String>Traje</sys:String>
+            <sys:String>Chaqué</sys:String>
+            <sys:String>Chaleco</sys:String>
+            <sys:String>Chaqueta</sys:String>
+            <sys:String>Pantalón</sys:String>
+            <sys:String>Camisa</sys:String>
+            <sys:String>Corbata</sys:String>
+            <sys:String>Pañuelo</sys:String>
+            <sys:String>Gemelos</sys:String>
+            <sys:String>Tirantes</sys:String>
+            <sys:String>Zapatos</sys:String>
+            <sys:String>Concepto Libre</sys:String>
+        </x:Array>
+
+        <x:Array Type="{x:Type sys:String}" x:Key="QuoteStatusList">
+            <sys:String>Pendiente</sys:String>
+            <sys:String>Aceptado</sys:String>
+            <sys:String>Rechazado</sys:String>
+            <sys:String>Entregado</sys:String>
+        </x:Array>
+
+        <x:Array Type="{x:Type sys:String}" x:Key="TailoringList">
+            <sys:String>Confeccion</sys:String>
+            <sys:String>Medida</sys:String>
+            <sys:String>Artesanal</sys:String>
+        </x:Array>
+
+        <Style x:Key="RightAlignedCellStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+            <Setter Property="Padding" Value="0,0,8,0"/>
+        </Style>
+
+        <Style x:Key="CenterAlignedCellStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="MoneyEditingTextBoxStyle" TargetType="TextBox">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Padding" Value="0,0,8,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="QuantityEditingTextBoxStyle" TargetType="TextBox">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- COLORES BASE -->
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6F2"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#2F332D"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#A8B2A1"/>
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#6D7468"/>
+        <SolidColorBrush x:Key="BorderSoftBrush" Color="#D7DDD2"/>
+
+        <!-- TEXTOS -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <!-- CAJAS DE TEXTO -->
+        <Style TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <!-- COMBOBOX -->
+        <Style TargetType="ComboBox">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <!-- DATEPICKER -->
+        <Style TargetType="DatePicker">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <!-- BOTONES -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="ActiveFilterButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+        </Style>
+
+        <!-- BOTÓN PRINCIPAL DORADO -->
+        <Style x:Key="PrimaryActionButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+        </Style>
+
+        <!-- BOTÓN SECUNDARIO CLARO -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#EEF2EA"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="#C8D1C2"/>
+        </Style>
+
+        <!-- BOTÓN OSCURO -->
+        <Style x:Key="DarkButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <!-- BOTÓN PELIGRO SUAVE -->
+        <Style x:Key="DangerSmallButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#F3E5E2"/>
+            <Setter Property="Foreground" Value="#7A2E2E"/>
+            <Setter Property="BorderBrush" Value="#E0C2BC"/>
+        </Style>
+
+        <!-- BOTÓN PEQUEÑO CLARO -->
+        <Style x:Key="SmallLightButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#EEF2EA"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="#C8D1C2"/>
+        </Style>
+
+        <!-- LISTBOX -->
+        <Style TargetType="ListBox">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <!-- DATAGRID -->
+        <Style TargetType="DataGrid">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#E7EDE2"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8FAF6"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#EEF2EA"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- ELEMENTOS DE LISTAS LATERALES -->
+        <Style x:Key="SidebarListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid Margin="20">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- PANEL IZQUIERDO -->
+        <Border
+            Background="{StaticResource CardBackgroundBrush}"
+            CornerRadius="14"
+            Padding="22"
+            BorderBrush="{StaticResource BorderSoftBrush}"
+            BorderThickness="1">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- CLIENTES -->
+                <DockPanel Margin="0,0,0,10">
+
+                    <TextBlock
+                        Text="CLIENTES"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Foreground="{StaticResource PrimaryBrush}"
+                        VerticalAlignment="Center"
+                        DockPanel.Dock="Left"/>
+
+                    <StackPanel
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        DockPanel.Dock="Right">
+
+                        <Button
+                            x:Name="NewClientButton"
+                            Content="+"
+                            Width="30"
+                            Height="28"
+                            FontSize="12"
+                            Margin="0,0,6,0"
+                            ToolTip="Nuevo cliente"
+                            Style="{StaticResource SmallLightButtonStyle}"/>
+
+                        <Button
+                            x:Name="DeleteClientButton"
+                            Content="✕"
+                            Width="30"
+                            Height="28"
+                            FontSize="10"
+                            ToolTip="Eliminar cliente"
+                            Style="{StaticResource DangerSmallButtonStyle}"/>
+
+                    </StackPanel>
+
+                </DockPanel>
+
+                <Grid
+                    Grid.Row="1"
+                    Margin="0,0,0,12">
+
+                    <TextBox
+                        x:Name="ClientSearchTextBox"
+                        Height="24"
+                        FontSize="14"
+                        VerticalContentAlignment="Center"
+                        ToolTip="Buscar por nombre, teléfono, fecha, estado o título"
+                        TextChanged="ClientSearchTextBox_TextChanged"/>
+
+                    <TextBlock
+                        x:Name="ClientSearchPlaceholderTextBlock"
+                        Text="Buscar cliente, teléfono, fecha..."
+                        Foreground="{StaticResource MutedTextBrush}"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False"/>
+
+                </Grid>
+
+                <WrapPanel
+                    x:Name="StatusFiltersPanel"
+                    Grid.Row="2"
+                    Margin="0,0,0,12">
+
+                    <Button
+                        Content="Todos"
+                        Tag="Todos"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="StatusFilterButton_Click"/>
+
+                    <Button
+                        Content="Pendiente"
+                        Tag="Pendiente"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="StatusFilterButton_Click"/>
+
+                    <Button
+                        Content="Aceptado"
+                        Tag="Aceptado"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="StatusFilterButton_Click"/>
+
+                    <Button
+                        Content="Rechazado"
+                        Tag="Rechazado"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="StatusFilterButton_Click"/>
+
+                    <Button
+                        Content="Entregado"
+                        Tag="Entregado"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="StatusFilterButton_Click"/>
+
+                </WrapPanel>
+
+                <WrapPanel
+                    x:Name="DeliveryFiltersPanel"
+                    Grid.Row="3"
+                    Margin="0,0,0,12">  
+
+                    <Button
+                        Content="Todas"
+                        Tag="Todas"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="DeliveryFilterButton_Click"/>
+
+                    <Button
+                        Content="Próximas"
+                        Tag="Próximas"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="DeliveryFilterButton_Click"/>
+
+                    <Button
+                        Content="Semana"
+                        Tag="Semana"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="DeliveryFilterButton_Click"/>
+
+                    <Button
+                        Content="Mes"
+                        Tag="Mes"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="DeliveryFilterButton_Click"/>
+
+                    <Button
+                        Content="Sin presupuesto"
+                        Tag="Sin presupuesto"
+                        Height="24"
+                        Margin="0,0,6,6"
+                        Padding="10,4"
+                        FontSize="12"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Click="DeliveryFilterButton_Click"/>
+
+                </WrapPanel>
+
+                <ListBox
+                    x:Name="ClientsListBox"
+                    Grid.Row="4"
+                    Margin="0,0,0,20"
+                    ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Text="{Binding Name}"
+                                    FontSize="15"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Text="{Binding DeliveryDateText}"
+                                    FontSize="13"
+                                    Foreground="{StaticResource MutedTextBrush}"
+                                    Margin="0,3,0,0"/>
+
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+                <!-- PRESUPUESTOS -->
+                <TextBlock
+                    Grid.Row="5"
+                    Text="PRESUPUESTOS"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Foreground="{StaticResource PrimaryBrush}"
+                    Margin="0,10,0,10"/>
+
+                <ListBox
+                    x:Name="QuotesListBox"
+                    Grid.Row="6"
+                    HorizontalContentAlignment="Stretch"
+                    ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="34"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Text="{Binding DisplayTitle}"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Text="{Binding DeliveryDate, StringFormat={}{0:dd/MM/yyyy}}"
+                                    FontSize="12"
+                                    Foreground="{StaticResource MutedTextBrush}"
+                                    Margin="0,2,0,0"/>
+
+                                <StackPanel
+                                    Grid.Row="2"
+                                    Orientation="Horizontal"
+                                    Margin="0,4,0,0">
+
+                                    <TextBlock
+                                        Text="{Binding Status}"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource AccentBrush}"
+                                        Margin="0,0,10,0"/>
+
+                                    <TextBlock
+                                        Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                        FontSize="12"
+                                        Foreground="{StaticResource MutedTextBrush}"/>
+
+                                </StackPanel>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Grid.RowSpan="3"
+                                    Content="✕"
+                                    FontSize="8"
+                                    Width="28"
+                                    Height="26"
+                                    VerticalAlignment="Top"
+                                    ToolTip="Eliminar presupuesto"
+                                    Click="DeleteQuote_Click"
+                                    Style="{StaticResource DangerSmallButtonStyle}"/>
+
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </Grid>
+
+        </Border>
+        
+        
+        <!-- DERECHA -->
+        <ScrollViewer
+            Grid.Column="2"
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- TÍTULO -->
+                <!-- TÍTULO -->
+                <Grid Margin="0,0,0,25">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Image
+                        Grid.Column="0"
+                        Source="/Resources/logovectordefA.png" 
+                        Width="110"
+                        Height="110"
+                        Stretch="Uniform"
+                        VerticalAlignment="Center"/>
+
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Margin="16,0,0,0">
+
+                        <TextBlock
+                            Text="Martínez Mor Presupuestos"
+                            FontSize="34"
+                            FontWeight="Bold"/>
+
+                        <TextBlock
+                            Text="Gestión de clientes y presupuestos a medida... y con todo el A-Mor 💖"
+                            FontSize="15"
+                            Foreground="{StaticResource MutedTextBrush}"
+                            Margin="0,4,0,0"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                <!-- DATOS CLIENTE -->
+                <Border Grid.Row="1"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="14"
+                    Padding="22"
+                    BorderBrush="{StaticResource BorderSoftBrush}"
+                    BorderThickness="1"
+                    Margin="0,0,0,20">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Nombre -->
+                        <TextBlock
+                            Text="Cliente:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Margin="20,0,0,0"/>
+
+                        <TextBox
+                            Grid.Column="1"
+                            Margin="10,10,10,10"
+                            Height="35"
+                            FontSize="16"
+                            x:Name="ClientNameTextBox"/>
+
+                        <!-- Teléfono -->
+                        <TextBlock
+                            Grid.Column="2"
+                            Text="Teléfono:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Margin="20,0,0,0"/>
+
+                        <Grid
+                            Grid.Column="3"
+                            Margin="10,10,10,10">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox
+                                Height="35"
+                                FontSize="16"
+                                x:Name="PhoneTextBox"/>
+
+                            <Button
+                                x:Name="SaveClientButton"
+                                Grid.Column="1"
+                                Content="Guardar"
+                                Height="35"
+                                Margin="8,0,0,0"
+                                FontSize="13"
+                                ToolTip="Guardar datos del cliente"
+                                Style="{StaticResource SecondaryButtonStyle}"/>
+
+                        </Grid>
+
+                        <!-- Fecha -->
+                        <TextBlock
+                            Grid.Row="1"
+                            Text="Entrega:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Margin="20,0,0,0"/>
+
+                        <DatePicker
+                            x:Name="DeliveryDatePicker"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="10,10,10,10"
+                            Height="35"
+                            SelectedDate="{x:Static sys:DateTime.Now}"/>
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Text="Presupuesto:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Margin="20,0,0,0"/>
+
+                        <TextBox
+                            x:Name="QuoteTitleTextBox"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="10,10,10,10"
+                            Height="35"
+                            FontSize="16"/>
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Text="Estado:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Margin="20,0,0,0"/>
+
+                        <ComboBox
+                            x:Name="QuoteStatusComboBox"
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Margin="10,10,10,10"
+                            Height="35"
+                            FontSize="14"
+                            ItemsSource="{StaticResource QuoteStatusList}"
+                            SelectedItem="Pendiente"/>
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Text="Señal:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Grid.RowSpan="2" Margin="20,0,0,0"/>
+
+                        <TextBox
+                            x:Name="DepositTextBox"
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Margin="10,10,10,10"
+                            Height="35"
+                            FontSize="14"
+                            Text="0" Grid.RowSpan="2"/>
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Text="Pendiente:"
+                            FontSize="14"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" Grid.RowSpan="2" Margin="20,0,0,0"/>
+
+                        <TextBlock
+                            x:Name="PendingAmountTextBlock"
+                            Grid.Row="3"
+                            Grid.Column="3"
+                            Margin="10,0,10,0"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="Bold"
+                            Text="0,00 €" Grid.RowSpan="2"/>
+
+                        <TextBlock
+                            Grid.Row="5"
+                            Text="Notas Internas:"
+                            FontSize="14"
+                            VerticalAlignment="Top"
+                            FontWeight="SemiBold"
+                            Margin="20,20,0,0"/>
+
+                        <TextBox
+                            x:Name="QuoteNotesTextBox"
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            Margin="10"
+                            Height="70"
+                            FontSize="14"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            VerticalScrollBarVisibility="Auto"/>
+
+                        <TextBlock
+                            Grid.Row="6"
+                            Text="Notas cliente:"
+                            FontSize="14"
+                            VerticalAlignment="Top"
+                            FontWeight="SemiBold"
+                            Margin="20,20,0,0"/>
+
+                        <TextBox
+                            x:Name="ClientNotesTextBox"
+                            Grid.Row="6"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            Margin="10"
+                            Height="60"
+                            FontSize="14"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            VerticalScrollBarVisibility="Auto"/>
+
+                    </Grid>
+                </Border>
+
+                <!-- PRODUCTOS -->
+                <Border Grid.Row="2"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="14"
+                    Padding="22"
+                    BorderBrush="{StaticResource BorderSoftBrush}"
+                    BorderThickness="1">
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Margin="0,0,0,20">
+
+                            <StackPanel DockPanel.Dock="Left">
+                                <TextBlock
+                                    Text="PRODUCTOS"
+                                    FontSize="22"
+                                    FontWeight="Bold"/>
+
+                                <TextBlock
+                                    Text="Añade prendas, complementos y conceptos personalizados"
+                                    FontSize="13"
+                                    Foreground="{StaticResource MutedTextBrush}"
+                                    Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <Button
+                                Content="+ Añadir Producto"
+                                Width="160"
+                                Height="30"
+                                HorizontalAlignment="Right"
+                                x:Name="AddProductButton"
+                                Style="{StaticResource PrimaryActionButtonStyle}"/>
+
+                        </DockPanel>
+
+                        <!-- TABLA -->
+                        <DataGrid
+                            Grid.Row="1"
+                            x:Name="ProductsDataGrid"
+                            PreparingCellForEdit="ProductsDataGrid_PreparingCellForEdit"
+                            AutoGenerateColumns="False"
+                            CanUserAddRows="False"
+                            HeadersVisibility="Column"
+                            RowHeight="42"
+                            FontSize="14"
+                            IsReadOnly="False"
+                            IsSynchronizedWithCurrentItem="True"
+                            AlternationCount="2"
+                            SelectionMode="Single"
+                            SelectionUnit="FullRow">
+
+                            <DataGrid.Columns>
+
+                                <!-- CANTIDAD -->
+                                <DataGridTextColumn
+                                    Header="Cant."
+                                    Binding="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    ElementStyle="{StaticResource CenterAlignedCellStyle}"
+                                    EditingElementStyle="{StaticResource QuantityEditingTextBoxStyle}"
+                                    Width="70" />
+
+                                <!-- PRODUCTO -->
+                                <DataGridTemplateColumn Header="Producto" Width="170">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox
+                                                ItemsSource="{StaticResource ProductList}"
+                                                SelectedItem="{Binding ProductName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- TIPO -->
+                                <DataGridTemplateColumn Header="Tipo" Width="140">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ComboBox
+                                                ItemsSource="{Binding AvailableTailoringTypes}"
+                                                SelectedItem="{Binding TailoringType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- TEJIDO -->
+                                <DataGridTextColumn
+                                    Header="Tejido / Ref."
+                                    Binding="{Binding Fabric, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    ElementStyle="{StaticResource RightAlignedCellStyle}"
+                                    Width="115" />
+
+                                <!-- PRECIO BASE -->
+                                <DataGridTextColumn
+                                    Header="Base"
+                                    Binding="{Binding BasePrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                    ElementStyle="{StaticResource RightAlignedCellStyle}"
+                                    EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
+                                    Width="115" />
+
+                                <!-- PRECIO TEJIDO -->
+                                <DataGridTextColumn
+                                    Header="Tejido"
+                                    Binding="{Binding FabricPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                    ElementStyle="{StaticResource RightAlignedCellStyle}"
+                                    EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
+                                    Width="115" />
+
+                                <!-- INCREMENTO / DESCUENTO -->
+                                <DataGridTextColumn
+                                    Header="Ajuste"
+                                    Binding="{Binding ManualPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                    ElementStyle="{StaticResource RightAlignedCellStyle}"
+                                    EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
+                                    Width="115" />
+
+                                <!-- TOTAL -->
+                                <DataGridTextColumn
+                                    Header="Total"
+                                    Binding="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                    ElementStyle="{StaticResource RightAlignedCellStyle}"
+                                    IsReadOnly="True"
+                                    Width="125" />
+
+                                <!-- ACCIONES -->
+                                <DataGridTemplateColumn Header="" Width="145">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                                <Button
+                                                    Content="↑"
+                                                    FontSize="10"
+                                                    Width="28"
+                                                    Height="28"
+                                                    Margin="0,0,4,0"
+                                                    ToolTip="Mover arriba"
+                                                    Click="MoveProductUp_Click"
+                                                    Style="{StaticResource SmallLightButtonStyle}"/>
+
+                                                <Button
+                                                    Content="↓"
+                                                    FontSize="10"
+                                                    Width="28"
+                                                    Height="28"
+                                                    Margin="0,0,6,0"
+                                                    ToolTip="Mover abajo"
+                                                    Click="MoveProductDown_Click"
+                                                    Style="{StaticResource SmallLightButtonStyle}"/>
+
+                                                <Button
+                                                    Content="⧉"
+                                                    FontSize="10"
+                                                    Width="30"
+                                                    Height="28"
+                                                    Margin="0,0,6,0"
+                                                    ToolTip="Duplicar línea"
+                                                    Click="DuplicateProduct_Click"
+                                                    Style="{StaticResource SmallLightButtonStyle}"/>
+
+                                                <Button
+                                                    Content="✕"
+                                                    FontSize="11"
+                                                    Width="30"
+                                                    Height="28"
+                                                    ToolTip="Eliminar línea"
+                                                    Click="DeleteProduct_Click"
+                                                    Style="{StaticResource DangerSmallButtonStyle}"/>
+
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+
+                        <!-- TOTAL -->
+                        <Border
+                            Grid.Row="2"
+                            HorizontalAlignment="Right"
+                            Margin="0,20,0,0"
+                            Background="#EEF2EA"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="18,10">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock
+                                    Text="TOTAL:"
+                                    FontSize="22"
+                                    FontWeight="Bold"
+                                    Foreground="{StaticResource AccentBrush}"
+                                    Margin="0,0,18,0"/>
+
+                                <TextBlock
+                                    Text="0,00 €"
+                                    FontSize="22"
+                                    FontWeight="Bold"
+                                    Foreground="{StaticResource PrimaryBrush}"
+                                    x:Name="TotalTextBlock"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </Grid>
+
+                </Border>
+
+                <!-- BOTONES -->
+                <StackPanel
+                    Grid.Row="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0">
+
+                    <TextBlock
+                        x:Name="UnsavedChangesTextBlock"
+                        Text="Cambios sin guardar"
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource AccentBrush}"
+                        Margin="0,0,18,0"
+                        Visibility="Collapsed"/>
+                    
+                    <Button
+                        x:Name="NewQuoteButton"
+                        Content="Nuevo Presupuesto"
+                        Width="180"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        FontSize="16"
+                        Style="{StaticResource SecondaryButtonStyle}"/>
+
+                    <Button
+                        x:Name="DuplicateQuoteButton"
+                        Content="Duplicar Presupuesto"
+                        Width="180"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        FontSize="16"
+                        Style="{StaticResource SecondaryButtonStyle}"/>
+
+                    <Button
+                        x:Name="SaveButton"
+                        Content="Guardar"
+                        Width="140"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        FontSize="16"
+                        Style="{StaticResource PrimaryActionButtonStyle}"/>
+
+                    <Button
+                        x:Name="PricesConfigButton"
+                        Content="Configurar Precios"
+                        Width="180"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        FontSize="16"
+                        Style="{StaticResource SecondaryButtonStyle}"/>
+
+                    <Button
+                        x:Name="BackupButton"
+                        Content="Copia Seguridad"
+                        Width="170"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        FontSize="16"
+                        Style="{StaticResource SecondaryButtonStyle}"/>
+
+                    <Button
+                        x:Name="ExportPdfButton"
+                        Content="Exportar PDF"                        
+                        Width="180"
+                        Height="45"
+                        FontSize="16"
+                        Style="{StaticResource DarkButtonStyle}"/>
+
+                    <Button
+                        x:Name="ExportAllQuotesPdfButton"
+                        Content="Exportar Opciones"
+                        Width="180"
+                        Height="45"
+                        Margin="10,0,0,0"
+                        FontSize="16"
+                        Style="{StaticResource DarkButtonStyle}"/>
+
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+
+    </Grid>
+</Window>
