@@ -106,15 +106,18 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="MinHeight" Value="32"/>
         </Style>
 
         <!-- COMBOBOX -->
         <Style TargetType="ComboBox">
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- DATEPICKER -->
@@ -123,6 +126,8 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- BOTONES -->
@@ -226,6 +231,22 @@
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </Trigger>
             </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FabricCellStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,0,12,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="FabricEditingTextBoxStyle" TargetType="TextBox">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,0,12,0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F8FAF6"/>
         </Style>
 
         <!-- ELEMENTOS DE LISTAS LATERALES -->
@@ -1426,12 +1447,14 @@
                                         <DataGridTextColumn
                                             Header="Tejido / Ref."
                                             Binding="{Binding Fabric, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            ElementStyle="{StaticResource FabricCellStyle}"
+                                            EditingElementStyle="{StaticResource FabricEditingTextBoxStyle}"
                                             Width="*" />
 
                                         <!-- PRECIO BASE -->
                                         <DataGridTextColumn
 							                Header="Base"
-							                Binding="{Binding BasePrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+							                Binding="{Binding BasePrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 							                ElementStyle="{StaticResource RightAlignedCellStyle}"
 							                EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
 							                Width="115" />
@@ -1439,7 +1462,7 @@
                                         <!-- PRECIO TEJIDO -->
                                         <DataGridTextColumn
 							                Header="Precio Tejido"
-							                Binding="{Binding FabricPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+							                Binding="{Binding FabricPrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 							                ElementStyle="{StaticResource RightAlignedCellStyle}"
 							                EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
 							                Width="115" />
@@ -1447,7 +1470,7 @@
                                         <!-- INCREMENTO / DESCUENTO -->
                                         <DataGridTextColumn
 							                Header="Ajuste"
-							                Binding="{Binding ManualPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+							                Binding="{Binding ManualPrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 							                ElementStyle="{StaticResource RightAlignedCellStyle}"
 							                EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
 							                Width="115" />

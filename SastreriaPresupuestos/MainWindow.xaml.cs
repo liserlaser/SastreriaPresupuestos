@@ -1619,8 +1619,8 @@ namespace SastreriaPresupuestos
         }
 
         private void ProductsDataGrid_PreparingCellForEdit(
-    object? sender,
-    System.Windows.Controls.DataGridPreparingCellForEditEventArgs e)
+            object? sender,
+            System.Windows.Controls.DataGridPreparingCellForEditEventArgs e)
         {
             if (e.EditingElement is not System.Windows.Controls.TextBox textBox)
                 return;
@@ -1628,6 +1628,25 @@ namespace SastreriaPresupuestos
             var header = e.Column.Header?.ToString() ?? "";
 
             textBox.Tag = header;
+
+            if (header == "Base" ||
+                header == "Precio tejido" ||
+                header == "Tejido" ||
+                header == "Ajuste")
+            {
+                textBox.Text = textBox.Text
+                    .Replace("€", "")
+                    .Trim();
+
+                if (e.EditingEventArgs is not TextCompositionEventArgs)
+                {
+                    textBox.SelectAll();
+                }
+                else
+                {
+                    textBox.CaretIndex = textBox.Text.Length;
+                }
+            }
 
             if (header == "Cant." ||
                 header == "Base" ||
