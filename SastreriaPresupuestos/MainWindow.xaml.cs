@@ -790,7 +790,19 @@ namespace SastreriaPresupuestos
 
         private decimal GetDepositValue()
         {
-            if (decimal.TryParse(DepositTextBox.Text, out var deposit))
+            var text = DepositTextBox.Text
+                .Replace("€", "")
+                .Trim();
+
+            if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var deposit))
+            {
+                if (deposit < 0)
+                    deposit = 0;
+
+                return deposit;
+            }
+
+            if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out deposit))
             {
                 if (deposit < 0)
                     deposit = 0;
@@ -1979,6 +1991,11 @@ namespace SastreriaPresupuestos
             QuoteNotesTextBox.TextChanged += AnyEditableField_Changed;
             ClientNotesTextBox.TextChanged += AnyEditableField_Changed;
             DepositTextBox.TextChanged += DepositTextBox_TextChanged;
+            DepositTextBox.PreviewTextInput += DepositTextBox_PreviewTextInput;
+            DepositTextBox.GotKeyboardFocus += DepositTextBox_GotKeyboardFocus;
+            DepositTextBox.LostKeyboardFocus += DepositTextBox_LostKeyboardFocus;
+
+            DataObject.AddPastingHandler(DepositTextBox, DepositTextBox_Pasting);
 
             DeliveryDatePicker.SelectedDateChanged += AnyEditableField_Changed;
             QuoteStatusComboBox.SelectionChanged += AnyEditableField_Changed;
@@ -2291,6 +2308,54 @@ namespace SastreriaPresupuestos
                 CalendarViewMode == "Mes"
                     ? "ActiveFilterButtonStyle"
                     : "SecondaryButtonStyle");
+        }
+
+        private void DepositTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (sender is not TextBox textBox)
+                return;
+
+            var proposedText = GetProposedText(textBox, e.Text);
+
+            e.Handled = !IsValidNumericInput(proposedText, allowNegative: false);
+        }
+
+        private void DepositTextBox_Pasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (sender is not TextBox textBox)
+                return;
+
+            if (!e.DataObject.GetDataPresent(typeof(string)))
+            {
+                e.CancelCommand();
+                return;
+            }
+
+            var pasteText = e.DataObject.GetData(typeof(string)) as string ?? "";
+            var proposedText = GetProposedText(textBox, pasteText);
+
+            if (!IsValidNumericInput(proposedText, allowNegative: false))
+            {
+                e.CancelCommand();
+            }
+        }
+
+        private void DepositTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            DepositTextBox.Text = DepositTextBox.Text
+                .Replace("€", "")
+                .Trim();
+
+            DepositTextBox.SelectAll();
+        }
+
+        private void DepositTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            var deposit = GetDepositValue();
+
+            DepositTextBox.Text = $"{deposit:N2}";
+
+            UpdatePendingAmount();
         }
 
     }

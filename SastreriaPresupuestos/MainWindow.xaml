@@ -86,12 +86,51 @@
         </Style>
 
         <Style TargetType="TabItem">
-            <Setter Property="Padding" Value="18,9"/>
-            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="Padding" Value="22,11"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
             <Setter Property="Background" Value="#EEF2EA"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border
+                    x:Name="TabBorder"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="20,0,0,0"
+                    Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter
+                        ContentSource="Header"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#F8FAF6"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#C8D1C2"/>
+                            </Trigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- TEXTOS -->
@@ -148,7 +187,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
         </Style>
 
-        <!-- BOTÓN PRINCIPAL DORADO -->
+        <!-- BOTÓN PRINCIPAL -->
         <Style x:Key="PrimaryActionButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
@@ -1192,13 +1231,15 @@
 						                FontWeight="SemiBold" Grid.RowSpan="2" Margin="20,0,0,0"/>
 
                                     <TextBox
-						                x:Name="DepositTextBox"
-						                Grid.Row="3"
-						                Grid.Column="1"
-						                Margin="10,10,10,10"
-						                Height="35"
-						                FontSize="14"
-						                Text="0" Grid.RowSpan="2"/>
+                                        x:Name="DepositTextBox"
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        Margin="10,10,10,10"
+                                        Height="35"
+                                        FontSize="14"
+                                        Text="0"
+                                        HorizontalContentAlignment="Right"
+                                        Grid.RowSpan="2"/>
 
                                     <TextBlock
 						                Grid.Row="3"
