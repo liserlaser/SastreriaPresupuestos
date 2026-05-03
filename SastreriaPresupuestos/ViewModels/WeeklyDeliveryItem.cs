@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace SastreriaPresupuestos.ViewModels
 {
@@ -10,7 +11,9 @@ namespace SastreriaPresupuestos.ViewModels
 
         public DateTime DeliveryDate { get; set; }
 
-        public string DayText => DeliveryDate.ToString("dddd dd/MM");
+        public string DayText =>
+            CultureInfo.CurrentCulture.TextInfo.ToTitleCase(
+                DeliveryDate.ToString("dddd dd/MM"));
 
         public string ClientName { get; set; } = "";
 

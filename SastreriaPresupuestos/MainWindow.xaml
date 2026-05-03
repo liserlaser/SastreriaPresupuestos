@@ -203,11 +203,51 @@
         <!-- ELEMENTOS DE LISTAS LATERALES -->
         <Style x:Key="SidebarListBoxItemStyle" TargetType="ListBoxItem">
             <Setter Property="Margin" Value="0,0,0,6"/>
-            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="MinHeight" Value="54"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border
+                            x:Name="ItemBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F8FAF6"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#C8D1C2"/>
+                            </Trigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EEF2EA"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
     </Window.Resources>
@@ -335,21 +375,84 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <StackPanel Margin="0,0,0,18">
+                                <Grid Margin="0,0,0,18">
 
-                                    <TextBlock
-                                        Text="ENTREGAS DE LA SEMANA"
-                                        FontSize="24"
-                                        FontWeight="Bold"/>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                    <TextBlock
-                                        x:Name="WeekTitleTextBlock"
-                                        Text="Semana actual"
-                                        FontSize="14"
-                                        Foreground="{StaticResource MutedTextBrush}"
-                                        Margin="0,4,0,0"/>
+                                    <StackPanel>
 
-                                </StackPanel>
+                                        <TextBlock
+                                            Text="ENTREGAS"
+                                            FontSize="24"
+                                            FontWeight="Bold"/>
+
+                                        <TextBlock
+                                            x:Name="WeekTitleTextBlock"
+                                            Text="Semana actual"
+                                            FontSize="14"
+                                            Foreground="{StaticResource MutedTextBrush}"
+                                            Margin="0,4,0,0"/>
+
+                                    </StackPanel>
+
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+
+                                        <Button
+                                            x:Name="PreviousCalendarButton"
+                                            Content="‹"
+                                            Width="38"
+                                            Height="34"
+                                            FontSize="18"
+                                            Margin="0,0,6,0"
+                                            ToolTip="Anterior"
+                                            Style="{StaticResource SmallLightButtonStyle}"/>
+
+                                        <Button
+                                            x:Name="TodayCalendarButton"
+                                            Content="Hoy"
+                                            Width="70"
+                                            Height="34"
+                                            FontSize="13"
+                                            Margin="0,0,6,0"
+                                            ToolTip="Volver a hoy"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+
+                                        <Button
+                                            x:Name="NextCalendarButton"
+                                            Content="›"
+                                            Width="38"
+                                            Height="34"
+                                            FontSize="18"
+                                            Margin="0,0,14,0"
+                                            ToolTip="Siguiente"
+                                            Style="{StaticResource SmallLightButtonStyle}"/>
+
+                                        <Button
+                                            x:Name="WeekViewButton"
+                                            Content="Semana"
+                                            Width="90"
+                                            Height="34"
+                                            FontSize="13"
+                                            Margin="0,0,6,0"
+                                            Style="{StaticResource ActiveFilterButtonStyle}"/>
+
+                                        <Button
+                                            x:Name="MonthViewButton"
+                                            Content="Mes"
+                                            Width="70"
+                                            Height="34"
+                                            FontSize="13"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+
+                                    </StackPanel>
+
+                                </Grid>
 
                                 <TextBlock
                                     x:Name="EmptyWeekTextBlock"
@@ -908,7 +1011,7 @@
 
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="130"/>
                                         </Grid.ColumnDefinitions>
 
                                         <TextBox
@@ -919,7 +1022,7 @@
                                         <Button
 							                x:Name="SaveClientButton"
 							                Grid.Column="1"
-							                Content="Guardar"
+							                Content="Guardar Cliente"
 							                Height="35"
 							                Margin="8,0,0,0"
 							                FontSize="13"
@@ -1159,6 +1262,15 @@
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right">
 
+                                        <TextBlock
+                                            x:Name="ProductsUnsavedChangesTextBlock"
+                                            Text="Cambios sin guardar"
+                                            VerticalAlignment="Center"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource AccentBrush}"
+                                            Margin="0,0,14,0"
+                                            Visibility="Collapsed"/>
+                                        
                                         <Button
                                             Content="+ Añadir Producto"
                                             Width="180"

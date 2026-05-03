@@ -265,10 +265,39 @@ namespace SastreriaPresupuestos.Services
 
                 foreach (var item in quote.Items)
                 {
-                    table.Cell().Element(BodyCell).Text(item.Product);
-                    table.Cell().Element(BodyCell).Text(item.Description);
-                    table.Cell().Element(BodyCell).AlignRight().Text(item.Quantity.ToString());
-                    table.Cell().Element(BodyCell).AlignRight().Text($"{item.Price:N2} €");
+                    if (item.IsFabricLine)
+                    {
+                        table.Cell()
+                            .Element(FabricCell)
+                            .Text($"  {item.Product}")
+                            .FontSize(9)
+                            .FontColor(MutedColor);
+
+                        table.Cell()
+                            .Element(FabricCell)
+                            .Text(item.Description)
+                            .FontSize(9)
+                            .FontColor(MutedColor);
+
+                        table.Cell()
+                            .Element(FabricCell)
+                            .AlignRight()
+                            .Text("");
+
+                        table.Cell()
+                            .Element(FabricCell)
+                            .AlignRight()
+                            .Text($"{item.Price:N2} €")
+                            .FontSize(9)
+                            .FontColor(MutedColor);
+                    }
+                    else
+                    {
+                        table.Cell().Element(BodyCell).Text(item.Product);
+                        table.Cell().Element(BodyCell).Text(item.Description);
+                        table.Cell().Element(BodyCell).AlignRight().Text(item.Quantity.ToString());
+                        table.Cell().Element(BodyCell).AlignRight().Text($"{item.Price:N2} €");
+                    }
                 }
             });
         }
@@ -292,6 +321,16 @@ namespace SastreriaPresupuestos.Services
                 .BorderColor(BorderColor)
                 .PaddingVertical(8)
                 .PaddingHorizontal(8);
+        }
+
+        private static IContainer FabricCell(IContainer container)
+        {
+            return container
+                .BorderBottom(1)
+                .BorderColor(BorderColor)
+                .PaddingVertical(5)
+                .PaddingHorizontal(8)
+                .Background(SoftBackground);
         }
 
         private static void ComposeTotals(IContainer container, ExportQuote quote)

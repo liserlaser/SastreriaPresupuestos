@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using SastreriaPresupuestos.Export;
@@ -31,13 +32,34 @@ namespace SastreriaPresupuestos.Services
 
             foreach (var product in products)
             {
+                var productPrice = product.Total;
+
+                if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
+                {
+                    productPrice -= product.FabricPrice * product.Quantity;
+                }
+
                 exportQuote.Items.Add(new ExportQuoteItem
                 {
                     Product = BuildProductName(product),
                     Description = BuildDescription(product),
                     Quantity = product.Quantity,
-                    Price = product.Total
+                    Price = productPrice
                 });
+
+                if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
+                {
+                    exportQuote.Items.Add(new ExportQuoteItem
+                    {
+                        Product = $"Tejido {product.ProductName}",
+                        Description = string.IsNullOrWhiteSpace(product.Fabric)
+                            ? ""
+                            : product.Fabric,
+                        Quantity = product.Quantity,
+                        Price = product.FabricPrice * product.Quantity,
+                        IsFabricLine = true
+                    });
+                }
             }
 
             return exportQuote;
@@ -56,7 +78,20 @@ namespace SastreriaPresupuestos.Services
             if (string.IsNullOrWhiteSpace(product.Fabric))
                 return "";
 
+            if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
+                return "";
+
             return $"Tejido / referencia: {product.Fabric}";
+        }
+
+        private static bool ShouldShowFabricPrice(ProductLine product)
+        {
+            return product.ProductName == "Traje" ||
+                   product.ProductName == "Chaqué" ||
+                   product.ProductName == "Chaqueta" ||
+                   product.ProductName == "Chaleco" ||
+                   product.ProductName == "Pantalón" ||
+                   product.ProductName == "Camisa";
         }
     }
 }

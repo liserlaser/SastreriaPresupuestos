@@ -35,6 +35,9 @@ namespace SastreriaPresupuestos
         private string ActiveStatusFilter = "Todos";
         private string ActiveDeliveryFilter = "Todas";
 
+        private DateTime CalendarReferenceDate = DateTime.Today;
+        private string CalendarViewMode = "Semana";
+
         //private bool MarkAsSaved();
         private bool HasUnsavedChanges = false;
         private bool IsLoadingData = false;
@@ -42,6 +45,7 @@ namespace SastreriaPresupuestos
 
         private int? LastSelectedClientId = null;
         private int? LastSelectedQuoteId = null;
+        private int? CurrentClientId = null;
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
@@ -87,6 +91,20 @@ namespace SastreriaPresupuestos
 
         private void AddProductButton_Click(object sender, RoutedEventArgs e)
         {
+            if (CurrentClientId == null)
+            {
+                MessageBox.Show(
+                    "Primero debes guardar o seleccionar un cliente antes de añadir productos.",
+                    "Añadir producto",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                GoToTab(TabPresupuesto);
+                ClientNameTextBox.Focus();
+
+                return;
+            }
+
             var line = new ProductLine()
             {
                 ProductName = "Concepto Libre",
@@ -107,6 +125,20 @@ namespace SastreriaPresupuestos
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            if (CurrentClientId == null)
+            {
+                MessageBox.Show(
+                    "Primero debes guardar el cliente antes de guardar un presupuesto.",
+                    "Guardar presupuesto",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                GoToTab(TabPresupuesto);
+                ClientNameTextBox.Focus();
+
+                return;
+            }
+
             if (!ValidateBeforeSave())
                 return;
 
@@ -251,7 +283,7 @@ namespace SastreriaPresupuestos
 
             LoadClients();
 
-            LoadWeeklyDeliveries();
+            LoadCalendarDeliveries();
 
             var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
                 .FirstOrDefault(c => c.Id == savedClientId);
@@ -308,6 +340,7 @@ namespace SastreriaPresupuestos
 
             UpdatePendingAmount();
             UpdateActiveContext();
+            UpdateWorkflowState();
         }
 
         private void LoadClients()
@@ -375,6 +408,8 @@ namespace SastreriaPresupuestos
 
             LastSelectedClientId = client.Id;
             LastSelectedQuoteId = null;
+            CurrentClientId = client.Id;
+            UpdateWorkflowState();
 
             IsLoadingData = false;
             MarkAsSaved();
@@ -414,6 +449,9 @@ namespace SastreriaPresupuestos
             }
 
             CurrentQuote = quote;
+
+            CurrentClientId = quote.ClientId;
+            UpdateWorkflowState();
 
             DeliveryDatePicker.SelectedDate = quote.DeliveryDate;
             QuoteTitleTextBox.Text = quote.Title;
@@ -505,6 +543,20 @@ namespace SastreriaPresupuestos
 
         private void NewQuoteButton_Click(object sender, RoutedEventArgs e)
         {
+            if (CurrentClientId == null)
+            {
+                MessageBox.Show(
+                    "Primero debes guardar o seleccionar un cliente.",
+                    "Nuevo presupuesto",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                GoToTab(TabPresupuesto);
+                ClientNameTextBox.Focus();
+
+                return;
+            }
+
             if (!ConfirmDiscardChanges())
                 return;
 
@@ -612,7 +664,7 @@ namespace SastreriaPresupuestos
             var selectedClient = ClientsListBox.SelectedItem as Models.Client;
 
             LoadClients();
-            LoadWeeklyDeliveries();
+            LoadCalendarDeliveries();
 
             if (selectedClient != null)
             {
@@ -997,6 +1049,9 @@ namespace SastreriaPresupuestos
             }
 
             IsRevertingSelection = false;
+
+            GoToTab(TabClientes);
+            FocusSelectedClient();
         }
 
         private void RevertQuoteSelection()
@@ -1016,6 +1071,9 @@ namespace SastreriaPresupuestos
             }
 
             IsRevertingSelection = false;
+
+            GoToTab(TabClientes);
+            FocusSelectedQuote();
         }
 
         private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -1038,9 +1096,12 @@ namespace SastreriaPresupuestos
 
         private void UpdateUnsavedChangesIndicator()
         {
-            UnsavedChangesTextBlock.Visibility = HasUnsavedChanges
+            var visibility = HasUnsavedChanges
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            UnsavedChangesTextBlock.Visibility = visibility;
+            ProductsUnsavedChangesTextBlock.Visibility = visibility;
         }
 
         private void MarkAsSaved()
@@ -1118,11 +1179,14 @@ namespace SastreriaPresupuestos
                 ClientNotesTextBox.Text,
                 Products);
 
+            var safeClientName = MakeSafeFileName(exportQuote.ClientName);
+            var exportDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
+
             var dialog = new SaveFileDialog
             {
                 Title = "Guardar PDF",
                 Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{exportQuote.DisplayTitle}_{DateTime.Now:yyyy-MM-dd}.pdf"
+                FileName = $"{safeClientName}_{exportDateTime}.pdf"
             };
 
             if (dialog.ShowDialog() != true)
@@ -1222,7 +1286,7 @@ namespace SastreriaPresupuestos
             {
                 Title = "Guardar PDF con opciones",
                 Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{client.Name}_opciones_{DateTime.Now:yyyy-MM-dd}.pdf"
+                FileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf"
             };
 
             if (dialog.ShowDialog() != true)
@@ -1303,6 +1367,7 @@ namespace SastreriaPresupuestos
             Products.Clear();
 
             CurrentQuote = null;
+            CurrentClientId = null;
             LastSelectedClientId = null;
             LastSelectedQuoteId = null;
 
@@ -1321,6 +1386,7 @@ namespace SastreriaPresupuestos
             MarkAsSaved();
             UpdateSaveButtonText();
             UpdateActiveContext();
+            UpdateWorkflowState();
         }
 
         private void NewClientButton_Click(object sender, RoutedEventArgs e)
@@ -1329,6 +1395,8 @@ namespace SastreriaPresupuestos
                 return;
 
             ClearScreenForNewClient();
+            
+            GoToTab(TabPresupuesto);
 
             ClientNameTextBox.Focus();
         }
@@ -1382,7 +1450,7 @@ namespace SastreriaPresupuestos
             db.SaveChanges();
 
             LoadClients();
-            LoadWeeklyDeliveries();
+            LoadCalendarDeliveries();
 
             ClearScreenForNewClient();
 
@@ -1492,6 +1560,8 @@ namespace SastreriaPresupuestos
             {
                 ClientsListBox.SelectedItem = reloadedClient;
                 LastSelectedClientId = savedClientId;
+                CurrentClientId = savedClientId;
+                UpdateWorkflowState();
             }
 
             SuppressSelectionConfirm = false;
@@ -1723,25 +1793,35 @@ namespace SastreriaPresupuestos
             return null;
         }
 
-        private void LoadWeeklyDeliveries()
+        private void LoadCalendarDeliveries()
         {
             WeeklyDeliveries.Clear();
 
             using var db = new AppDbContext();
 
-            var today = DateTime.Today;
+            DateTime startDate;
+            DateTime endDate;
 
-            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
-            var monday = today.AddDays(-diff).Date;
-            var sunday = monday.AddDays(6).Date;
+            if (CalendarViewMode == "Mes")
+            {
+                startDate = new DateTime(CalendarReferenceDate.Year, CalendarReferenceDate.Month, 1);
+                endDate = startDate.AddMonths(1).AddDays(-1);
 
-            WeekTitleTextBlock.Text = $"Semana del {monday:dd/MM/yyyy} al {sunday:dd/MM/yyyy}";
+                WeekTitleTextBlock.Text = $"Mes de {CalendarReferenceDate:MMMM yyyy}";
+            }
+            else
+            {
+                int diff = (7 + (CalendarReferenceDate.DayOfWeek - DayOfWeek.Monday)) % 7;
+                startDate = CalendarReferenceDate.AddDays(-diff).Date;
+                endDate = startDate.AddDays(6).Date;
+
+                WeekTitleTextBlock.Text = $"Semana del {startDate:dd/MM/yyyy} al {endDate:dd/MM/yyyy}";
+            }
 
             var deliveries = db.Quotes
                 .Include(q => q.Client)
-                .Where(q => q.DeliveryDate.Date >= monday && q.DeliveryDate.Date <= sunday)
+                .Where(q => q.DeliveryDate.Date >= startDate && q.DeliveryDate.Date <= endDate)
                 .OrderBy(q => q.DeliveryDate)
-                //.ThenBy(q => q.Client.Name)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
                 .ToList();
 
@@ -1782,6 +1862,7 @@ namespace SastreriaPresupuestos
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
 
             UpdateEmptyStateMessages();
+            UpdateWorkflowState();
         }
 
         private void ConfigureCulture()
@@ -1803,7 +1884,7 @@ namespace SastreriaPresupuestos
             PriceService.LoadPrices();
 
             LoadClients();
-            LoadWeeklyDeliveries();
+            LoadCalendarDeliveries();
         }
 
         private void WireEvents()
@@ -1822,6 +1903,11 @@ namespace SastreriaPresupuestos
             BackupButton.Click += BackupButton_Click;
             ExportPdfButton.Click += ExportPdfButton_Click;
             ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
+            PreviousCalendarButton.Click += PreviousCalendarButton_Click;
+            TodayCalendarButton.Click += TodayCalendarButton_Click;
+            NextCalendarButton.Click += NextCalendarButton_Click;
+            WeekViewButton.Click += WeekViewButton_Click;
+            MonthViewButton.Click += MonthViewButton_Click;
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
@@ -1855,6 +1941,8 @@ namespace SastreriaPresupuestos
             UpdateDeliveryFilterButtons();
             UpdateActiveContext();
             UpdateEmptyStateMessages();
+            UpdateWorkflowState();
+            UpdateCalendarViewButtons();
         }
 
         private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -1868,6 +1956,7 @@ namespace SastreriaPresupuestos
             }
 
             UpdateGrandTotal();
+            UpdateWorkflowState();
             MarkAsChanged();
         }
 
@@ -2001,6 +2090,140 @@ namespace SastreriaPresupuestos
             {
                 DocumentsEmptyHintBorder.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void UpdateWorkflowState()
+        {
+            var hasSavedClient = CurrentClientId != null;
+            var hasProducts = Products.Count > 0;
+
+            QuoteTitleTextBox.IsEnabled = hasSavedClient;
+            QuoteStatusComboBox.IsEnabled = hasSavedClient;
+            DeliveryDatePicker.IsEnabled = hasSavedClient;
+            DepositTextBox.IsEnabled = hasSavedClient;
+            QuoteNotesTextBox.IsEnabled = hasSavedClient;
+            ClientNotesTextBox.IsEnabled = hasSavedClient;
+
+            NewQuoteButton.IsEnabled = hasSavedClient;
+            DuplicateQuoteButton.IsEnabled = hasSavedClient;
+
+            ProductsDataGrid.IsEnabled = hasSavedClient;
+            AddProductButton.IsEnabled = hasSavedClient;
+            SaveProductsButton.IsEnabled = hasSavedClient;
+
+            ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+            ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
+
+            SaveButton.IsEnabled = hasSavedClient;
+        }
+
+        private void FocusSelectedClient()
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (ClientsListBox.SelectedItem != null)
+                {
+                    ClientsListBox.ScrollIntoView(ClientsListBox.SelectedItem);
+
+                    var item = ClientsListBox.ItemContainerGenerator
+                        .ContainerFromItem(ClientsListBox.SelectedItem) as ListBoxItem;
+
+                    item?.Focus();
+                }
+                else
+                {
+                    ClientsListBox.Focus();
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void FocusSelectedQuote()
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (QuotesListBox.SelectedItem != null)
+                {
+                    QuotesListBox.ScrollIntoView(QuotesListBox.SelectedItem);
+
+                    var item = QuotesListBox.ItemContainerGenerator
+                        .ContainerFromItem(QuotesListBox.SelectedItem) as ListBoxItem;
+
+                    item?.Focus();
+                }
+                else
+                {
+                    QuotesListBox.Focus();
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private string MakeSafeFileName(string text)
+        {
+            foreach (var invalidChar in Path.GetInvalidFileNameChars())
+            {
+                text = text.Replace(invalidChar, '_');
+            }
+
+            return text.Trim();
+        }
+
+        private void PreviousCalendarButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CalendarViewMode == "Mes")
+                CalendarReferenceDate = CalendarReferenceDate.AddMonths(-1);
+            else
+                CalendarReferenceDate = CalendarReferenceDate.AddDays(-7);
+
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
+        }
+
+        private void NextCalendarButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CalendarViewMode == "Mes")
+                CalendarReferenceDate = CalendarReferenceDate.AddMonths(1);
+            else
+                CalendarReferenceDate = CalendarReferenceDate.AddDays(7);
+
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
+        }
+
+        private void TodayCalendarButton_Click(object sender, RoutedEventArgs e)
+        {
+            CalendarReferenceDate = DateTime.Today;
+
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
+        }
+
+        private void WeekViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            CalendarViewMode = "Semana";
+
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
+        }
+
+        private void MonthViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            CalendarViewMode = "Mes";
+
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
+        }
+
+        private void UpdateCalendarViewButtons()
+        {
+            WeekViewButton.Style = (Style)FindResource(
+                CalendarViewMode == "Semana"
+                    ? "ActiveFilterButtonStyle"
+                    : "SecondaryButtonStyle");
+
+            MonthViewButton.Style = (Style)FindResource(
+                CalendarViewMode == "Mes"
+                    ? "ActiveFilterButtonStyle"
+                    : "SecondaryButtonStyle");
         }
 
     }
