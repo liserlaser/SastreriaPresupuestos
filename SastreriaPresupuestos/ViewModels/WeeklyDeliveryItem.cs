@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows.Media;
 
 namespace SastreriaPresupuestos.ViewModels
 {
@@ -33,6 +34,34 @@ namespace SastreriaPresupuestos.ViewModels
                     return $"Presupuesto #{QuoteId}";
 
                 return QuoteTitle;
+            }
+        }
+
+        public Brush StatusBackground
+        {
+            get
+            {
+                return Status switch
+                {
+                    "Aceptado" => new SolidColorBrush(Color.FromRgb(232, 242, 232)),
+                    "Entregado" => new SolidColorBrush(Color.FromRgb(235, 235, 235)),
+                    "Rechazado" => new SolidColorBrush(Color.FromRgb(243, 229, 226)),
+                    _ => new SolidColorBrush(Color.FromRgb(238, 242, 234))
+                };
+            }
+        }
+
+        public Brush StatusForeground
+        {
+            get
+            {
+                return Status switch
+                {
+                    "Aceptado" => new SolidColorBrush(Color.FromRgb(45, 92, 50)),
+                    "Entregado" => new SolidColorBrush(Color.FromRgb(80, 80, 80)),
+                    "Rechazado" => new SolidColorBrush(Color.FromRgb(122, 46, 46)),
+                    _ => new SolidColorBrush(Color.FromRgb(47, 51, 45))
+                };
             }
         }
     }

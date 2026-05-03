@@ -536,12 +536,19 @@
                                                                             HorizontalAlignment="Right"
                                                                             VerticalAlignment="Center">
 
-                                                                            <TextBlock
-                                                                                Text="{Binding Status}"
-                                                                                FontSize="13"
-                                                                                FontWeight="SemiBold"
-                                                                                Foreground="{StaticResource AccentBrush}"
-                                                                                HorizontalAlignment="Right"/>
+                                                                            <Border
+                                                                                Background="{Binding StatusBackground}"
+                                                                                CornerRadius="8"
+                                                                                Padding="8,3"
+                                                                                HorizontalAlignment="Right">
+
+                                                                                <TextBlock
+                                                                                    Text="{Binding Status}"
+                                                                                    FontSize="12"
+                                                                                    FontWeight="SemiBold"
+                                                                                    Foreground="{Binding StatusForeground}"/>
+
+                                                                            </Border>
 
                                                                             <TextBlock
                                                                                 Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
