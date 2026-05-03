@@ -1906,5 +1906,54 @@ namespace SastreriaPresupuestos
             MainTabs.SelectedIndex = tabIndex;
         }
 
+        private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
+        {
+            if (!ConfirmDiscardChanges())
+                return;
+
+            SuppressSelectionConfirm = true;
+
+            LoadClients();
+
+            var client = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                .FirstOrDefault(c => c.Id == delivery.ClientId);
+
+            if (client != null)
+            {
+                ClientsListBox.SelectedItem = client;
+                LastSelectedClientId = client.Id;
+            }
+
+            using var db = new AppDbContext();
+
+            var quotes = db.Quotes
+                .Where(q => q.ClientId == delivery.ClientId)
+                .OrderBy(q => q.DeliveryDate)
+                .ThenBy(q => q.Id)
+                .ToList();
+
+            QuotesListBox.ItemsSource = quotes;
+
+            var quote = quotes.FirstOrDefault(q => q.Id == delivery.QuoteId);
+
+            if (quote != null)
+            {
+                QuotesListBox.SelectedItem = quote;
+                LastSelectedQuoteId = quote.Id;
+            }
+
+            SuppressSelectionConfirm = false;
+
+            GoToTab(TabPresupuesto);
+        }
+
+        private void WeeklyDeliveriesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (WeeklyDeliveriesListBox.SelectedItem is not WeeklyDeliveryItem delivery)
+                return;
+
+            OpenWeeklyDelivery(delivery);
+        }
+
     }
 }
