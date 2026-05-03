@@ -218,7 +218,8 @@
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="160"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="360"/>
                 </Grid.ColumnDefinitions>
 
                 <Image
@@ -230,7 +231,7 @@
 
                 <StackPanel
                     Grid.Column="1"
-                    VerticalAlignment="tOP"
+                    VerticalAlignment="Top"
                     Margin="16,20,0,0" Height="70">
 
                     <TextBlock
@@ -245,6 +246,52 @@
                         Margin="0,4,0,0"/>
 
                 </StackPanel>
+
+                <!-- CONTEXTO ACTIVO -->
+                <Border
+                    Grid.Column="2"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderSoftBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="14"
+                    VerticalAlignment="Center">
+
+                    <StackPanel>
+
+                        <TextBlock
+                            Text="CONTEXTO ACTIVO"
+                            FontSize="11"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource AccentBrush}"
+                            Margin="0,0,0,6"/>
+
+                        <TextBlock
+                            x:Name="ActiveClientTextBlock"
+                            Text="Cliente: —"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            TextTrimming="CharacterEllipsis"/>
+
+                        <TextBlock
+                            x:Name="ActiveQuoteTextBlock"
+                            Text="Presupuesto: —"
+                            FontSize="13"
+                            Foreground="{StaticResource MutedTextBrush}"
+                            TextTrimming="CharacterEllipsis"
+                            Margin="0,3,0,0"/>
+
+                        <TextBlock
+                            x:Name="ActiveTotalTextBlock"
+                            Text="Total: 0,00 €"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource PrimaryBrush}"
+                            Margin="0,3,0,0"/>
+
+                    </StackPanel>
+
+                </Border>
 
             </Grid>
 
@@ -404,7 +451,6 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- COLUMNA IZQUIERDA: CLIENTES -->
                                 <Grid Grid.Column="0">
 
                                     <Grid.RowDefinitions>
@@ -481,7 +527,7 @@
                                     <WrapPanel
                                         x:Name="StatusFiltersPanel"
                                         Grid.Row="2"
-                                        Margin="0,0,0,12">
+                                        Margin="0,0,0,8">
 
                                         <Button
                                             Content="Todos"
@@ -1214,11 +1260,11 @@
                     <Grid Margin="0,16,0,0">
 
                         <Border
-            Background="{StaticResource CardBackgroundBrush}"
-            CornerRadius="14"
-            Padding="22"
-            BorderBrush="{StaticResource BorderSoftBrush}"
-            BorderThickness="1">
+                            Background="{StaticResource CardBackgroundBrush}"
+                            CornerRadius="14"
+                            Padding="22"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1">
 
                             <Grid>
 
@@ -1230,152 +1276,152 @@
                                 <StackPanel Margin="0,0,0,24">
 
                                     <TextBlock
-                        Text="EXPORTAR"
-                        FontSize="24"
-                        FontWeight="Bold"/>
+                                        Text="EXPORTAR"
+                                        FontSize="24"
+                                        FontWeight="Bold"/>
 
                                     <TextBlock
-                        Text="Genera documentos para enviar al cliente."
-                        FontSize="14"
-                        Foreground="{StaticResource MutedTextBrush}"
-                        Margin="0,4,0,0"/>
+                                        Text="Genera documentos para enviar al cliente."
+                                        FontSize="14"
+                                        Foreground="{StaticResource MutedTextBrush}"
+                                        Margin="0,4,0,0"/>
 
                                 </StackPanel>
 
                                 <WrapPanel
-                    Grid.Row="1"
-                    ItemWidth="260"
-                    ItemHeight="130">
+                                    Grid.Row="1"
+                                    ItemWidth="260"
+                                    ItemHeight="130">
 
                                     <Border
-                        Background="#F8FAF6"
-                        BorderBrush="{StaticResource BorderSoftBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="16"
-                        Margin="0,0,16,16">
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,16,16">
 
                                         <StackPanel>
 
                                             <TextBlock
-                                Text="PDF actual"
-                                FontSize="18"
-                                FontWeight="Bold"/>
+                                                Text="PDF actual"
+                                                FontSize="18"
+                                                FontWeight="Bold"/>
 
                                             <TextBlock
-                                Text="Exporta el presupuesto abierto."
-                                FontSize="13"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                TextWrapping="Wrap"
-                                Margin="0,6,0,14"/>
+                                                Text="Exporta el presupuesto abierto."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,6,0,14"/>
 
                                             <Button
-                                x:Name="ExportPdfButton"
-                                Content="Exportar PDF"
-                                Height="40"
-                                FontSize="15"
-                                Style="{StaticResource DarkButtonStyle}"/>
+                                                x:Name="ExportPdfButton"
+                                                Content="Exportar PDF"
+                                                Height="40"
+                                                FontSize="15"
+                                                Style="{StaticResource DarkButtonStyle}"/>
 
                                         </StackPanel>
 
                                     </Border>
 
                                     <Border
-                        Background="#F8FAF6"
-                        BorderBrush="{StaticResource BorderSoftBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="16"
-                        Margin="0,0,16,16">
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,16,16">
 
                                         <StackPanel>
 
                                             <TextBlock
-                                Text="PDF opciones"
-                                FontSize="18"
-                                FontWeight="Bold"/>
+                                                Text="PDF opciones"
+                                                FontSize="18"
+                                                FontWeight="Bold"/>
 
                                             <TextBlock
-                                Text="Exporta todos los presupuestos del cliente."
-                                FontSize="13"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                TextWrapping="Wrap"
-                                Margin="0,6,0,14"/>
+                                                Text="Exporta todos los presupuestos del cliente."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,6,0,14"/>
 
                                             <Button
-                                x:Name="ExportAllQuotesPdfButton"
-                                Content="Exportar Opciones"
-                                Height="40"
-                                FontSize="15"
-                                Style="{StaticResource DarkButtonStyle}"/>
+                                                x:Name="ExportAllQuotesPdfButton"
+                                                Content="Exportar Opciones"
+                                                Height="40"
+                                                FontSize="15"
+                                                Style="{StaticResource DarkButtonStyle}"/>
 
                                         </StackPanel>
 
                                     </Border>
 
                                     <Border
-                        Background="#F8FAF6"
-                        BorderBrush="{StaticResource BorderSoftBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="16"
-                        Margin="0,0,16,16"
-                        Opacity="0.65">
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,16,16"
+                                        Opacity="0.65">
 
                                         <StackPanel>
 
                                             <TextBlock
-                                Text="Imagen WhatsApp"
-                                FontSize="18"
-                                FontWeight="Bold"/>
+                                                Text="Imagen WhatsApp"
+                                                FontSize="18"
+                                                FontWeight="Bold"/>
 
                                             <TextBlock
-                                Text="Pendiente: imagen vertical para enviar rápido."
-                                FontSize="13"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                TextWrapping="Wrap"
-                                Margin="0,6,0,14"/>
+                                                Text="Pendiente: imagen vertical para enviar rápido."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,6,0,14"/>
 
                                             <Button
-                                Content="Próximamente"
-                                Height="40"
-                                FontSize="15"
-                                IsEnabled="False"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                                                Content="Próximamente"
+                                                Height="40"
+                                                FontSize="15"
+                                                IsEnabled="False"
+                                                Style="{StaticResource SecondaryButtonStyle}"/>
 
                                         </StackPanel>
 
                                     </Border>
 
                                     <Border
-                        Background="#F8FAF6"
-                        BorderBrush="{StaticResource BorderSoftBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="16"
-                        Margin="0,0,16,16"
-                        Opacity="0.65">
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,16,16"
+                                        Opacity="0.65">
 
                                         <StackPanel>
 
                                             <TextBlock
-                                Text="Editable"
-                                FontSize="18"
-                                FontWeight="Bold"/>
+                                                Text="Editable"
+                                                FontSize="18"
+                                                FontWeight="Bold"/>
 
                                             <TextBlock
-                                Text="Pendiente: DOCX/XLSX compatible."
-                                FontSize="13"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                TextWrapping="Wrap"
-                                Margin="0,6,0,14"/>
+                                                Text="Pendiente: DOCX/XLSX compatible."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,6,0,14"/>
 
                                             <Button
-                                Content="Próximamente"
-                                Height="40"
-                                FontSize="15"
-                                IsEnabled="False"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                                                Content="Próximamente"
+                                                Height="40"
+                                                FontSize="15"
+                                                IsEnabled="False"
+                                                Style="{StaticResource SecondaryButtonStyle}"/>
 
                                         </StackPanel>
 
@@ -1394,11 +1440,11 @@
                     <Grid Margin="0,16,0,0">
 
                         <Border
-            Background="{StaticResource CardBackgroundBrush}"
-            CornerRadius="14"
-            Padding="22"
-            BorderBrush="{StaticResource BorderSoftBrush}"
-            BorderThickness="1">
+                            Background="{StaticResource CardBackgroundBrush}"
+                            CornerRadius="14"
+                            Padding="22"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1">
 
                             <Grid>
 
@@ -1410,84 +1456,84 @@
                                 <StackPanel Margin="0,0,0,24">
 
                                     <TextBlock
-                        Text="CONFIGURACIÓN"
-                        FontSize="24"
-                        FontWeight="Bold"/>
+                                        Text="CONFIGURACIÓN"
+                                        FontSize="24"
+                                        FontWeight="Bold"/>
 
                                     <TextBlock
-                        Text="Opciones de mantenimiento y configuración de la aplicación."
-                        FontSize="14"
-                        Foreground="{StaticResource MutedTextBrush}"
-                        Margin="0,4,0,0"/>
+                                        Text="Opciones de mantenimiento y configuración de la aplicación."
+                                        FontSize="14"
+                                        Foreground="{StaticResource MutedTextBrush}"
+                                        Margin="0,4,0,0"/>
 
                                 </StackPanel>
 
                                 <WrapPanel
-                    Grid.Row="1"
-                    ItemWidth="270"
-                    ItemHeight="130">
+                                    Grid.Row="1"
+                                    ItemWidth="270"
+                                    ItemHeight="130">
 
                                     <Border
-                        Background="#F8FAF6"
-                        BorderBrush="{StaticResource BorderSoftBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="16"
-                        Margin="0,0,16,16">
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,16,16">
 
                                         <StackPanel>
 
                                             <TextBlock
-                                Text="Precios"
-                                FontSize="18"
-                                FontWeight="Bold"/>
+                                                Text="Precios"
+                                                FontSize="18"
+                                                FontWeight="Bold"/>
 
                                             <TextBlock
-                                Text="Modifica las tarifas base de prendas y complementos."
-                                FontSize="13"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                TextWrapping="Wrap"
-                                Margin="0,6,0,14"/>
+                                                Text="Modifica las tarifas base de prendas y complementos."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,6,0,14"/>
 
                                             <Button
-                                x:Name="PricesConfigButton"
-                                Content="Configurar Precios"
-                                Height="40"
-                                FontSize="15"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                                                x:Name="PricesConfigButton"
+                                                Content="Configurar Precios"
+                                                Height="40"
+                                                FontSize="15"
+                                                Style="{StaticResource SecondaryButtonStyle}"/>
 
                                         </StackPanel>
 
                                     </Border>
 
                                     <Border
-                        Background="#F8FAF6"
-                        BorderBrush="{StaticResource BorderSoftBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="16"
-                        Margin="0,0,16,16">
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,16,16">
 
                                         <StackPanel>
 
                                             <TextBlock
-                                Text="Copia de seguridad"
-                                FontSize="18"
-                                FontWeight="Bold"/>
+                                                Text="Copia de seguridad"
+                                                FontSize="18"
+                                                FontWeight="Bold"/>
 
                                             <TextBlock
-                                Text="Crea una copia manual de la base de datos."
-                                FontSize="13"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                TextWrapping="Wrap"
-                                Margin="0,6,0,14"/>
+                                                Text="Crea una copia manual de la base de datos."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                TextWrapping="Wrap"
+                                                Margin="0,6,0,14"/>
 
                                             <Button
-                                x:Name="BackupButton"
-                                Content="Copia Seguridad"
-                                Height="40"
-                                FontSize="15"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                                                x:Name="BackupButton"
+                                                Content="Copia Seguridad"
+                                                Height="40"
+                                                FontSize="15"
+                                                Style="{StaticResource SecondaryButtonStyle}"/>
 
                                         </StackPanel>
 

@@ -48,89 +48,16 @@ namespace SastreriaPresupuestos
 
         public MainWindow()
         {
-            var culture = new CultureInfo("es-ES");
-            Thread.CurrentThread.CurrentCulture = culture;
-            Thread.CurrentThread.CurrentUICulture = culture;
+            ConfigureCulture();
 
             InitializeComponent();
 
             QuestPDF.Settings.License = LicenseType.Community;
 
-            WeeklyDeliveriesListBox.ItemsSource = WeeklyDeliveries;
-
-            PriceService.LoadPrices();
-            LoadWeeklyDeliveries();
-
-            //var culture = new CultureInfo("es-ES");
-            //Thread.CurrentThread.CurrentCulture = culture;
-            //Thread.CurrentThread.CurrentUICulture = culture;
-
-            LoadClients();
-
-            ProductsDataGrid.ItemsSource = Products;
-
-            Products.CollectionChanged += (s, e) =>
-            {
-                if (e.NewItems != null)
-                {
-                    foreach (ProductLine item in e.NewItems)
-                    {
-                        item.PropertyChanged += (a, b) =>
-                        {
-                            UpdateGrandTotal();
-                            MarkAsChanged();
-                        };
-                    }
-                }
-
-                UpdateGrandTotal();
-                MarkAsChanged();
-            };
-
-            AddProductButton.Click += AddProductButton_Click;
-            SaveButton.Click += SaveButton_Click;
-            NewQuoteButton.Click += NewQuoteButton_Click;
-            NewClientButton.Click += NewClientButton_Click;
-            SaveClientButton.Click += SaveClientButton_Click;
-            DeleteClientButton.Click += DeleteClientButton_Click;
-            DuplicateQuoteButton.Click += DuplicateQuoteButton_Click;
-            PricesConfigButton.Click += PricesConfigButton_Click;
-            BackupButton.Click += BackupButton_Click;
-            ExportPdfButton.Click += ExportPdfButton_Click;
-            ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
-
-            DepositTextBox.TextChanged += (s, e) =>
-            {
-                UpdatePendingAmount();
-            };
-
-            ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
-            QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
-            //ClientSearchTextBox.TextChanged += ClientSearchTextBox_TextChanged;
-
-            ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
-
-            ClientNameTextBox.TextChanged += (s, e) => MarkAsChanged();
-            PhoneTextBox.TextChanged += (s, e) => MarkAsChanged();
-            QuoteTitleTextBox.TextChanged += (s, e) => MarkAsChanged();
-            QuoteNotesTextBox.TextChanged += (s, e) => MarkAsChanged();
-            DepositTextBox.TextChanged += (s, e) => MarkAsChanged();
-            DeliveryDatePicker.SelectedDateChanged += (s, e) => MarkAsChanged();
-            QuoteStatusComboBox.SelectionChanged += (s, e) => MarkAsChanged();
-
-            UpdateSaveButtonText();
-            UpdateUnsavedChangesIndicator();
-
-            UpdateWindowTitle();
-
-            ClientSearchPlaceholderTextBlock.Visibility =
-                string.IsNullOrWhiteSpace(ClientSearchTextBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-
-            UpdateStatusFilterButtons();
-            UpdateDeliveryFilterButtons();
-
+            InitializeDataSources();
+            LoadInitialData();
+            WireEvents();
+            InitializeUiState();
         }
 
         private List<string> GetTailoringOptions(string product)
@@ -371,6 +298,7 @@ namespace SastreriaPresupuestos
             TotalTextBlock.Text = $"{total:N2} €";
 
             UpdatePendingAmount();
+            UpdateActiveContext();
         }
 
         private void LoadClients()
@@ -440,6 +368,7 @@ namespace SastreriaPresupuestos
             MarkAsSaved();
 
             UpdateSaveButtonText();
+            UpdateActiveContext();
         }
 
         private void QuotesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -516,6 +445,7 @@ namespace SastreriaPresupuestos
             MarkAsSaved();
 
             UpdateSaveButtonText();
+            UpdateActiveContext();
         }
 
         private void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -594,6 +524,7 @@ namespace SastreriaPresupuestos
             MarkAsSaved();
 
             UpdateSaveButtonText();
+            UpdateActiveContext();
         }
 
         private void ProductsDataGrid_CellEditEnding(object? sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
@@ -1375,6 +1306,7 @@ namespace SastreriaPresupuestos
 
             MarkAsSaved();
             UpdateSaveButtonText();
+            UpdateActiveContext();
         }
 
         private void NewClientButton_Click(object sender, RoutedEventArgs e)
@@ -1818,5 +1750,138 @@ namespace SastreriaPresupuestos
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
+
+        private void UpdateActiveContext()
+        {
+            var clientName = string.IsNullOrWhiteSpace(ClientNameTextBox.Text)
+                ? "—"
+                : ClientNameTextBox.Text.Trim();
+
+            var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
+                ? "—"
+                : QuoteTitleTextBox.Text.Trim();
+
+            decimal total = Products.Sum(p => p.Total);
+
+            ActiveClientTextBlock.Text = $"Cliente: {clientName}";
+            ActiveQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
+            ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
+        }
+
+        private void ConfigureCulture()
+        {
+            var culture = new CultureInfo("es-ES");
+
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
+        }
+
+        private void InitializeDataSources()
+        {
+            WeeklyDeliveriesListBox.ItemsSource = WeeklyDeliveries;
+            ProductsDataGrid.ItemsSource = Products;
+        }
+
+        private void LoadInitialData()
+        {
+            PriceService.LoadPrices();
+
+            LoadClients();
+            LoadWeeklyDeliveries();
+        }
+
+        private void WireEvents()
+        {
+            Products.CollectionChanged += Products_CollectionChanged;
+
+            AddProductButton.Click += AddProductButton_Click;
+            SaveButton.Click += SaveButton_Click;
+            NewQuoteButton.Click += NewQuoteButton_Click;
+            NewClientButton.Click += NewClientButton_Click;
+            SaveClientButton.Click += SaveClientButton_Click;
+            DeleteClientButton.Click += DeleteClientButton_Click;
+            DuplicateQuoteButton.Click += DuplicateQuoteButton_Click;
+            PricesConfigButton.Click += PricesConfigButton_Click;
+            BackupButton.Click += BackupButton_Click;
+            ExportPdfButton.Click += ExportPdfButton_Click;
+            ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
+
+            ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
+            QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
+
+            ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
+
+            ClientNameTextBox.TextChanged += ClientNameTextBox_TextChanged;
+            QuoteTitleTextBox.TextChanged += QuoteTitleTextBox_TextChanged;
+
+            PhoneTextBox.TextChanged += AnyEditableField_Changed;
+            QuoteNotesTextBox.TextChanged += AnyEditableField_Changed;
+            ClientNotesTextBox.TextChanged += AnyEditableField_Changed;
+            DepositTextBox.TextChanged += DepositTextBox_TextChanged;
+
+            DeliveryDatePicker.SelectedDateChanged += AnyEditableField_Changed;
+            QuoteStatusComboBox.SelectionChanged += AnyEditableField_Changed;
+        }
+
+        private void InitializeUiState()
+        {
+            UpdateSaveButtonText();
+            UpdateUnsavedChangesIndicator();
+            UpdateWindowTitle();
+
+            ClientSearchPlaceholderTextBlock.Visibility =
+                string.IsNullOrWhiteSpace(ClientSearchTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
+            UpdateStatusFilterButtons();
+            UpdateDeliveryFilterButtons();
+            UpdateActiveContext();
+        }
+
+        private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (ProductLine item in e.NewItems)
+                {
+                    item.PropertyChanged += ProductLine_PropertyChanged;
+                }
+            }
+
+            UpdateGrandTotal();
+            MarkAsChanged();
+        }
+
+        private void ProductLine_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            UpdateGrandTotal();
+            MarkAsChanged();
+        }
+
+        private void ClientNameTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            MarkAsChanged();
+            UpdateActiveContext();
+        }
+
+        private void QuoteTitleTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            MarkAsChanged();
+            UpdateActiveContext();
+        }
+
+        private void DepositTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            UpdatePendingAmount();
+            MarkAsChanged();
+        }
+
+        private void AnyEditableField_Changed(object? sender, EventArgs e)
+        {
+            MarkAsChanged();
+        }
+
+
     }
 }
