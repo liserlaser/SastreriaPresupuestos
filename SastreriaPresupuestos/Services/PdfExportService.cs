@@ -65,7 +65,28 @@ namespace SastreriaPresupuestos.Services
                         });
 
                     page.Footer()
-                        .Element(ComposeFooter);
+                        .Column(column =>
+                        {
+                            column.Spacing(3);
+
+                            column.Item()
+                                .AlignCenter()
+                                .Text("IVA incluido en todos los precios")
+                                .FontSize(9)
+                                .FontColor(MutedColor);
+
+                            column.Item()
+                                .AlignCenter()
+                                .Text(text =>
+                                {
+                                    text.DefaultTextStyle(x => x.FontSize(8).FontColor(MutedColor));
+
+                                    text.Span("Página ");
+                                    text.CurrentPageNumber();
+                                    text.Span(" de ");
+                                    text.TotalPages();
+                                });
+                        });
                 });
             })
             .GeneratePdf(filePath);
@@ -112,7 +133,28 @@ namespace SastreriaPresupuestos.Services
                             });
 
                         page.Footer()
-                            .Element(ComposeFooter);
+                        .Column(column =>
+                        {
+                            column.Spacing(3);
+
+                            column.Item()
+                                .AlignCenter()
+                                .Text("IVA incluido en todos los precios")
+                                .FontSize(9)
+                                .FontColor(MutedColor);
+
+                            column.Item()
+                                .AlignCenter()
+                                .Text(text =>
+                                {
+                                    text.DefaultTextStyle(x => x.FontSize(8).FontColor(MutedColor));
+
+                                    text.Span("Página ");
+                                    text.CurrentPageNumber();
+                                    text.Span(" de ");
+                                    text.TotalPages();
+                                });
+                        });
                     });
                 }
             })
@@ -128,7 +170,7 @@ namespace SastreriaPresupuestos.Services
                     if (File.Exists(LogoPath))
                     {
                         row.ConstantItem(80)
-                            .Height(120)
+                            .Height(160)
                             .Image(LogoPath)
                             .FitArea();
 
@@ -324,14 +366,14 @@ namespace SastreriaPresupuestos.Services
         }
 
         private static IContainer FabricCell(IContainer container)
-        {
-            return container
-                .BorderBottom(1)
-                .BorderColor(BorderColor)
-                .PaddingVertical(5)
-                .PaddingHorizontal(8)
-                .Background(SoftBackground);
-        }
+{
+    return container
+        .BorderBottom(1)
+        .BorderColor(BorderColor)
+        .PaddingVertical(5)
+        .PaddingHorizontal(8)
+        .Background(SoftBackground);
+}
 
         private static void ComposeTotals(IContainer container, ExportQuote quote)
         {

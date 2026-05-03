@@ -419,6 +419,7 @@ namespace SastreriaPresupuestos
 
             UpdateSaveButtonText();
             UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
         }
 
         private void QuotesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -499,6 +500,7 @@ namespace SastreriaPresupuestos
 
             UpdateSaveButtonText();
             UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
 
             GoToTab(TabPresupuesto);
         }
@@ -594,6 +596,7 @@ namespace SastreriaPresupuestos
 
             UpdateSaveButtonText();
             UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
 
             GoToTab(TabPresupuesto);
         }
@@ -1402,6 +1405,7 @@ namespace SastreriaPresupuestos
             UpdateSaveButtonText();
             UpdateActiveContext();
             UpdateWorkflowState();
+            UpdateSecondaryPlaceholders();
         }
 
         private void NewClientButton_Click(object sender, RoutedEventArgs e)
@@ -1945,7 +1949,8 @@ namespace SastreriaPresupuestos
 
         private void InitializeDataSources()
         {
-            WeeklyDeliveriesListBox.ItemsSource = CalendarDayGroups;
+            WeeklyColumnsItemsControl.ItemsSource = CalendarDayGroups;
+            CalendarGroupsListBox.ItemsSource = CalendarDayGroups;
             ProductsDataGrid.ItemsSource = Products;
         }
 
@@ -2018,6 +2023,7 @@ namespace SastreriaPresupuestos
             UpdateEmptyStateMessages();
             UpdateWorkflowState();
             UpdateCalendarViewButtons();
+            UpdateSecondaryPlaceholders();
         }
 
         private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -2051,6 +2057,7 @@ namespace SastreriaPresupuestos
         {
             MarkAsChanged();
             UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
         }
 
         private void DepositTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -2062,6 +2069,7 @@ namespace SastreriaPresupuestos
         private void AnyEditableField_Changed(object? sender, EventArgs e)
         {
             MarkAsChanged();
+            UpdateSecondaryPlaceholders();
         }
         
         private void GoToTab(int tabIndex)
@@ -2116,21 +2124,37 @@ namespace SastreriaPresupuestos
             GoToTab(TabPresupuesto);
         }
 
-        private void WeeklyDeliveriesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        /*  DESACTIVADO
+         private void WeeklyDeliveriesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+         {
+             var element = e.OriginalSource as DependencyObject;
+
+             while (element != null)
+             {
+                 if (element is FrameworkElement frameworkElement &&
+                     frameworkElement.DataContext is WeeklyDeliveryItem delivery)
+                 {
+                     OpenWeeklyDelivery(delivery);
+                     return;
+                 }
+
+                 element = System.Windows.Media.VisualTreeHelper.GetParent(element);
+             }
+         }
+        */
+
+        private void WeeklyDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var element = e.OriginalSource as DependencyObject;
+            if (e.ClickCount < 2)
+                return;
 
-            while (element != null)
-            {
-                if (element is FrameworkElement frameworkElement &&
-                    frameworkElement.DataContext is WeeklyDeliveryItem delivery)
-                {
-                    OpenWeeklyDelivery(delivery);
-                    return;
-                }
+            if (sender is not FrameworkElement element)
+                return;
 
-                element = System.Windows.Media.VisualTreeHelper.GetParent(element);
-            }
+            if (element.DataContext is not WeeklyDeliveryItem delivery)
+                return;
+
+            OpenWeeklyDelivery(delivery);
         }
 
         private void UpdateEmptyStateMessages()
@@ -2299,8 +2323,10 @@ namespace SastreriaPresupuestos
 
         private void UpdateCalendarViewButtons()
         {
+            var isWeekView = CalendarViewMode == "Semana";
+
             WeekViewButton.Style = (Style)FindResource(
-                CalendarViewMode == "Semana"
+                isWeekView
                     ? "ActiveFilterButtonStyle"
                     : "SecondaryButtonStyle");
 
@@ -2308,6 +2334,14 @@ namespace SastreriaPresupuestos
                 CalendarViewMode == "Mes"
                     ? "ActiveFilterButtonStyle"
                     : "SecondaryButtonStyle");
+
+            WeeklyColumnsItemsControl.Visibility = isWeekView
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            CalendarGroupsListBox.Visibility = isWeekView
+                ? Visibility.Collapsed
+                : Visibility.Visible;
         }
 
         private void DepositTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -2356,6 +2390,24 @@ namespace SastreriaPresupuestos
             DepositTextBox.Text = $"{deposit:N2}";
 
             UpdatePendingAmount();
+        }
+
+        private void UpdateSecondaryPlaceholders()
+        {
+            QuoteTitlePlaceholderTextBlock.Visibility =
+                string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
+            QuoteNotesPlaceholderTextBlock.Visibility =
+                string.IsNullOrWhiteSpace(QuoteNotesTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
+            ClientNotesPlaceholderTextBlock.Visibility =
+                string.IsNullOrWhiteSpace(ClientNotesTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
         }
 
     }
