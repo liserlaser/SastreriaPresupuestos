@@ -17,10 +17,12 @@ namespace SastreriaPresupuestos.Services
             string status,
             decimal deposit,
             string clientNotes,
-            ObservableCollection<ProductLine> products)
+            ObservableCollection<ProductLine> products,
+            int? quoteId = null)
         {
             var exportQuote = new ExportQuote
             {
+                QuoteId = quoteId,
                 ClientName = clientName.Trim(),
                 ClientPhone = clientPhone.Trim(),
                 DeliveryDate = deliveryDate,
@@ -51,7 +53,7 @@ namespace SastreriaPresupuestos.Services
                 {
                     exportQuote.Items.Add(new ExportQuoteItem
                     {
-                        Product = $"Tejido {product.ProductName}",
+                        Product = $"Tejido {NormalizeText(product.ProductName)}",
                         Description = string.IsNullOrWhiteSpace(product.Fabric)
                             ? ""
                             : product.Fabric,
@@ -67,21 +69,23 @@ namespace SastreriaPresupuestos.Services
 
         private static string BuildProductName(ProductLine product)
         {
-            if (string.IsNullOrWhiteSpace(product.TailoringType))
-                return product.ProductName;
-
-            return $"{product.ProductName} {product.TailoringType}";
+            return NormalizeText(product.ProductName);
         }
 
         private static string BuildDescription(ProductLine product)
         {
-            if (string.IsNullOrWhiteSpace(product.Fabric))
-                return "";
+            var details = new List<string>();
 
-            if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
-                return "";
+            if (!string.IsNullOrWhiteSpace(product.TailoringType))
+                details.Add(NormalizeText(product.TailoringType));
 
-            return $"Tejido / referencia: {product.Fabric}";
+            if (!string.IsNullOrWhiteSpace(product.Fabric) &&
+                !(ShouldShowFabricPrice(product) && product.FabricPrice > 0))
+            {
+                details.Add($"Tejido / referencia: {product.Fabric.Trim()}");
+            }
+
+            return string.Join(" · ", details);
         }
 
         private static bool ShouldShowFabricPrice(ProductLine product)
@@ -92,6 +96,15 @@ namespace SastreriaPresupuestos.Services
                    product.ProductName == "Chaleco" ||
                    product.ProductName == "Pantalón" ||
                    product.ProductName == "Camisa";
+        }
+
+        private static string NormalizeText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+
+            return value.Trim()
+                .Replace("Confeccion", "Confección");
         }
     }
 }

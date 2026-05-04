@@ -4,6 +4,7 @@ using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Export;
 using System.IO;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace SastreriaPresupuestos.Services
@@ -33,7 +34,9 @@ namespace SastreriaPresupuestos.Services
                 container.Page(page =>
                 {
                     page.Size(PageSizes.A4);
-                    page.Margin(36);
+                    page.MarginTop(44);
+                    page.MarginHorizontal(36);
+                    page.MarginBottom(36);
 
                     page.DefaultTextStyle(x =>
                         x.FontSize(10)
@@ -42,8 +45,9 @@ namespace SastreriaPresupuestos.Services
                     page.Header()
                         .Element(container => ComposeHeader(container, quote));
 
-                    page.Content()
-                        .PaddingVertical(24)
+                    page.Content()                        
+                        .PaddingTop(4)
+                        .PaddingBottom(18)
                         .Column(column =>
                         {
                             column.Spacing(18);
@@ -101,7 +105,9 @@ namespace SastreriaPresupuestos.Services
                     container.Page(page =>
                     {
                         page.Size(PageSizes.A4);
-                        page.Margin(36);
+                        page.MarginTop(44);
+                        page.MarginHorizontal(36);
+                        page.MarginBottom(36);
 
                         page.DefaultTextStyle(x =>
                             x.FontSize(10)
@@ -111,7 +117,8 @@ namespace SastreriaPresupuestos.Services
                             .Element(container => ComposeHeader(container, quote));
 
                         page.Content()
-                            .PaddingVertical(24)
+                            .PaddingTop(4)
+                            .PaddingBottom(18)
                             .Column(column =>
                             {
                                 column.Spacing(18);
@@ -169,8 +176,8 @@ namespace SastreriaPresupuestos.Services
                 {
                     if (File.Exists(LogoPath))
                     {
-                        row.ConstantItem(80)
-                            .Height(160)
+                        row.ConstantItem(104)
+                            .Height(112)
                             .Image(LogoPath)
                             .FitArea();
 
@@ -181,7 +188,7 @@ namespace SastreriaPresupuestos.Services
                     {
                         left.Item()
                             .Text(BusinessName)
-                            .FontSize(24)
+                            .FontSize(22)
                             .Bold()
                             .FontColor(PrimaryColor);
 
@@ -212,6 +219,15 @@ namespace SastreriaPresupuestos.Services
                                 .Bold()
                                 .FontColor(AccentColor);
 
+                            if (!string.IsNullOrWhiteSpace(quote.DisplayQuoteNumber))
+                            {
+                                right.Item()
+                                    .AlignRight()
+                                    .Text(quote.DisplayQuoteNumber)
+                                    .FontSize(9)
+                                    .FontColor(MutedColor);
+                            }
+
                             right.Item()
                                 .AlignRight()
                                 .Text($"Entrega: {quote.DeliveryDate:dd/MM/yyyy}")
@@ -220,7 +236,7 @@ namespace SastreriaPresupuestos.Services
                 });
 
                 column.Item()
-                    .PaddingTop(14)
+                    .PaddingTop(4)
                     .LineHorizontal(2)
                     .LineColor(AccentColor);
             });
@@ -256,7 +272,7 @@ namespace SastreriaPresupuestos.Services
                             left.Item().Text(text =>
                             {
                                 text.Span("Teléfono: ").Bold();
-                                text.Span(quote.ClientPhone);
+                                text.Span(FormatPhone(quote.ClientPhone));
                             });
                         });
 
@@ -267,19 +283,7 @@ namespace SastreriaPresupuestos.Services
                                 text.Span("Fecha de entrega: ").Bold();
                                 text.Span($"{quote.DeliveryDate:dd/MM/yyyy}");
                             });
-
-                            var status = string.IsNullOrWhiteSpace(quote.Status)
-                                ? "Pendiente"
-                                : quote.Status;
-
-                            if (status != "Pendiente")
-                            {
-                                right.Item().Text(text =>
-                                {
-                                    text.Span("Estado: ").Bold();
-                                    text.Span(status);
-                                });
-                            }
+                            
                         });
                     });
                 });
@@ -300,7 +304,7 @@ namespace SastreriaPresupuestos.Services
                 table.Header(header =>
                 {
                     header.Cell().Element(HeaderCell).Text("Producto");
-                    header.Cell().Element(HeaderCell).Text("Descripción");
+                    header.Cell().Element(HeaderCell).Text("Tipo / Detalle");
                     header.Cell().Element(HeaderCell).AlignRight().Text("Cant.");
                     header.Cell().Element(HeaderCell).AlignRight().Text("Precio");
                 });
@@ -407,7 +411,7 @@ namespace SastreriaPresupuestos.Services
 
                             totalBox.Item().Row(row =>
                             {
-                                row.RelativeItem().Text("Señal");
+                                row.RelativeItem().Text("A Cuenta");
                                 row.ConstantItem(110)
                                     .AlignRight()
                                     .Text($"{quote.Deposit:N2} €");
@@ -478,6 +482,19 @@ namespace SastreriaPresupuestos.Services
                         .FontSize(10)
                         .FontColor(PrimaryColor);
                 });
+        }
+
+        private static string FormatPhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return "";
+
+            var digits = new string(phone.Where(char.IsDigit).ToArray());
+
+            if (digits.Length == 9)
+                return $"{digits[..3]} {digits.Substring(3, 2)} {digits.Substring(5, 2)} {digits.Substring(7, 2)}";
+
+            return phone.Trim();
         }
     }
 }

@@ -1196,7 +1196,8 @@ namespace SastreriaPresupuestos
                 QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente",
                 GetDepositValue(),
                 ClientNotesTextBox.Text,
-                Products);
+                Products,
+                CurrentQuote?.Id);
 
             var safeClientName = MakeSafeFileName(exportQuote.ClientName);
             var exportDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
@@ -1297,7 +1298,8 @@ namespace SastreriaPresupuestos
                         string.IsNullOrWhiteSpace(q.Status) ? "Pendiente" : q.Status,
                         q.Deposit,
                         q.ClientNotes,
-                        productLines);
+                        productLines,
+                        q.Id);
                 })
                 .ToList();
 
