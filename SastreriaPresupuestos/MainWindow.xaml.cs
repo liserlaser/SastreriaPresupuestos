@@ -2,8 +2,10 @@
 using Microsoft.Win32;
 using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Data;
+using SastreriaPresupuestos.Export;
 using SastreriaPresupuestos.Models;
 using SastreriaPresupuestos.Services;
+using SastreriaPresupuestos.ViewModels;
 using SastreriaPresupuestos.Views;
 using System;
 using System.Collections.Generic;
@@ -11,13 +13,12 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Windows.Media;
-using SastreriaPresupuestos.ViewModels;
 
 namespace SastreriaPresupuestos
 {
@@ -41,6 +42,19 @@ namespace SastreriaPresupuestos
 
         private DateTime CalendarReferenceDate = DateTime.Today;
         private string CalendarViewMode = "Semana";
+
+        private string SanitizeFileName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return "Cliente";
+
+            foreach (var invalidChar in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(invalidChar, '_');
+            }
+
+            return name.Trim();
+        }
 
         //private bool MarkAsSaved();
         private bool HasUnsavedChanges = false;
@@ -1336,6 +1350,113 @@ namespace SastreriaPresupuestos
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void ExportClientSheetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentQuote == null)
+            {
+                MessageBox.Show(
+                    "Primero selecciona un presupuesto guardado.",
+                    "Exportar ficha cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "";
+
+            if (!string.Equals(status, "Aceptado", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(
+                    "La ficha interna solo se puede generar cuando el presupuesto está aceptado.",
+                    "Exportar ficha cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(DniTextBox.Text))
+            {
+                MessageBox.Show(
+                    "Para generar la ficha interna, introduce el DNI del cliente.",
+                    "Falta DNI",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                GoToTab(TabPresupuesto);
+                DniTextBox.Focus();
+                return;
+            }
+
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "PDF (*.pdf)|*.pdf",
+                FileName = $"{SanitizeFileName(ClientNameTextBox.Text)}_ficha_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf"
+            };
+
+            if (saveFileDialog.ShowDialog() != true)
+                return;
+
+            var sheet = new ExportClientSheet
+            {
+                QuoteId = CurrentQuote.Id,
+                ClientName = ClientNameTextBox.Text.Trim(),
+                ClientDni = DniTextBox.Text.Trim(),
+                ClientPhone = PhoneTextBox.Text.Trim(),
+                OrderTitle = BuildClientSheetOrderSummary(),
+                DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                Deposit = GetDepositValue(),
+                Observations = QuoteNotesTextBox.Text.Trim()
+            };
+
+            ClientSheetPdfService.ExportClientSheetToPdf(sheet, saveFileDialog.FileName);
+
+            MessageBox.Show(
+                "Ficha interna generada correctamente.",
+                "Exportar ficha cliente",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        private string BuildClientSheetOrderSummary()
+        {
+            var parts = new List<string>();
+
+            if (CurrentQuote != null)
+                parts.Add($"Presupuesto #{CurrentQuote.Id:0000}");
+
+            var firstProduct = Products.FirstOrDefault();
+
+            if (firstProduct != null)
+            {
+                var productSummary = firstProduct.ProductName?.Trim() ?? "";
+
+                if (!string.IsNullOrWhiteSpace(firstProduct.TailoringType))
+                    productSummary += $" {NormalizeDisplayText(firstProduct.TailoringType)}";
+
+                if (!string.IsNullOrWhiteSpace(productSummary))
+                    parts.Add(productSummary.Trim());
+            }
+
+            var title = QuoteTitleTextBox.Text.Trim();
+
+            if (!string.IsNullOrWhiteSpace(title) &&
+                !parts.Any(p => string.Equals(p, title, StringComparison.OrdinalIgnoreCase)))
+            {
+                parts.Add(title);
+            }
+
+            return string.Join(" · ", parts);
+        }
+
+        private string NormalizeDisplayText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+
+            return value.Trim()
+                .Replace("Confeccion", "Confección");
         }
 
         private void StatusFilterButton_Click(object sender, RoutedEventArgs e)
