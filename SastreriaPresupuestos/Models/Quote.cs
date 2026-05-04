@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Media;
 
 namespace SastreriaPresupuestos.Models
 {
@@ -80,6 +82,98 @@ namespace SastreriaPresupuestos.Models
 
                     return $"{item.ProductName} {item.TailoringType}";
                 }));
+            }
+        }
+
+        public string StatusLabelText
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Status))
+                    return "PENDIENTE";
+
+                return Status.Trim().ToUpperInvariant();
+            }
+        }
+
+        public bool IsAccepted =>
+            string.Equals(Status?.Trim(), "Aceptado", StringComparison.OrdinalIgnoreCase);
+
+        public Brush CardBackground
+        {
+            get
+            {
+                return Status?.Trim() switch
+                {
+                    "Aceptado" => new SolidColorBrush(Color.FromRgb(236, 245, 234)),
+                    "Entregado" => new SolidColorBrush(Color.FromRgb(238, 240, 236)),
+                    "Rechazado" => new SolidColorBrush(Color.FromRgb(247, 235, 232)),
+                    _ => Brushes.White
+                };
+            }
+        }
+
+        public Brush CardBorderBrush
+        {
+            get
+            {
+                return Status?.Trim() switch
+                {
+                    "Aceptado" => new SolidColorBrush(Color.FromRgb(93, 135, 88)),
+                    "Entregado" => new SolidColorBrush(Color.FromRgb(120, 130, 112)),
+                    "Rechazado" => new SolidColorBrush(Color.FromRgb(170, 100, 90)),
+                    _ => new SolidColorBrush(Color.FromRgb(215, 221, 210))
+                };
+            }
+        }
+
+        public Thickness CardBorderThickness
+        {
+            get
+            {
+                return Status?.Trim() switch
+                {
+                    "Aceptado" => new Thickness(4, 1, 1, 1),
+                    "Entregado" => new Thickness(3, 1, 1, 1),
+                    "Rechazado" => new Thickness(3, 1, 1, 1),
+                    _ => new Thickness(1)
+                };
+            }
+        }
+
+        public Brush StatusBackground
+        {
+            get
+            {
+                return Status?.Trim() switch
+                {
+                    "Aceptado" => new SolidColorBrush(Color.FromRgb(93, 135, 88)),
+                    "Entregado" => new SolidColorBrush(Color.FromRgb(120, 130, 112)),
+                    "Rechazado" => new SolidColorBrush(Color.FromRgb(170, 100, 90)),
+                    _ => new SolidColorBrush(Color.FromRgb(238, 242, 234))
+                };
+            }
+        }
+
+        public Brush StatusForeground
+        {
+            get
+            {
+                return Status?.Trim() switch
+                {
+                    "Aceptado" => Brushes.White,
+                    "Entregado" => Brushes.White,
+                    "Rechazado" => Brushes.White,
+                    _ => new SolidColorBrush(Color.FromRgb(47, 51, 45))
+                };
+            }
+        }
+
+        public FontWeight TitleWeight
+        {
+            get
+            {
+                return IsAccepted ? FontWeights.Bold : FontWeights.SemiBold;
             }
         }
     }

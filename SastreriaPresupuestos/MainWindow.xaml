@@ -1097,86 +1097,102 @@
 
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid>
+                                                <Border
+                                                    Background="{Binding CardBackground}"
+                                                    BorderBrush="{Binding CardBorderBrush}"
+                                                    BorderThickness="{Binding CardBorderThickness}"
+                                                    CornerRadius="10"
+                                                    Padding="12"
+                                                    Margin="0,0,0,8">
 
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="34"/>
-                                                    </Grid.ColumnDefinitions>
+                                                    <Grid>
 
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="34"/>
+                                                        </Grid.ColumnDefinitions>
 
-                                                    <!-- Nombre del pedido -->
-                                                    <TextBlock
-                                                        Text="{Binding DisplayTitle}"
-                                                        FontSize="15"
-                                                        FontWeight="SemiBold"/>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
 
-                                                    <!-- Entrega -->
-                                                    <TextBlock
-                                                        Grid.Row="1"
-                                                        Text="{Binding DeliveryDate, StringFormat=Entrega: {0:dd/MM/yyyy}}"
-                                                        FontSize="12"
-                                                        Foreground="{StaticResource MutedTextBrush}"
-                                                        Margin="0,3,0,0"/>
-
-                                                    <!-- Estado -->
-                                                    <StackPanel
-                                                        Grid.Row="2"
-                                                        Orientation="Horizontal"
-                                                        Margin="0,4,0,0">
-
+                                                        <!-- Nombre del pedido -->
                                                         <TextBlock
-                                                            Text="Estado: "
-                                                            FontSize="12"
-                                                            Foreground="{StaticResource MutedTextBrush}"/>
+                                                            Text="{Binding DisplayTitle}"
+                                                            FontSize="15"
+                                                            FontWeight="{Binding TitleWeight}"/>
 
+                                                        <!-- Entrega -->
                                                         <TextBlock
-                                                            Text="{Binding Status}"
+                                                            Grid.Row="1"
+                                                            Text="{Binding DeliveryDate, StringFormat=Entrega: {0:dd/MM/yyyy}}"
                                                             FontSize="12"
+                                                            Foreground="{StaticResource MutedTextBrush}"
+                                                            Margin="0,3,0,0"/>
+
+                                                        <!-- Estado -->
+                                                        <StackPanel
+                                                            Grid.Row="2"
+                                                            Orientation="Horizontal"
+                                                            Margin="0,4,0,0">
+
+                                                            <TextBlock
+                                                                Text="Estado: "
+                                                                FontSize="12"
+                                                                Foreground="{StaticResource MutedTextBrush}"
+                                                                VerticalAlignment="Center"/>
+
+                                                            <Border
+                                                                Background="{Binding StatusBackground}"
+                                                                CornerRadius="8"
+                                                                Padding="8,3">
+
+                                                                <TextBlock
+                                                                    Text="{Binding StatusLabelText}"
+                                                                    FontSize="12"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="{Binding StatusForeground}"/>
+                                                            </Border>
+
+                                                        </StackPanel>
+
+                                                        <!-- Total -->
+                                                        <TextBlock
+                                                            Grid.Row="3"
+                                                            Text="{Binding Total, StringFormat=Total: {0:N2} €, ConverterCulture=es-ES}"
+                                                            FontSize="13"
                                                             FontWeight="SemiBold"
-                                                            Foreground="{StaticResource AccentBrush}"/>
+                                                            Foreground="{StaticResource PrimaryBrush}"
+                                                            Margin="0,4,0,0"/>
 
-                                                    </StackPanel>
+                                                        <!-- Productos -->
+                                                        <TextBlock
+                                                            Grid.Row="4"
+                                                            Text="{Binding ProductSummary}"
+                                                            FontSize="12"
+                                                            Foreground="{StaticResource MutedTextBrush}"
+                                                            TextWrapping="Wrap"
+                                                            Margin="0,5,8,0"/>
 
-                                                    <!-- Total -->
-                                                    <TextBlock
-                                                        Grid.Row="3"
-                                                        Text="{Binding Total, StringFormat=Total: {0:N2} €, ConverterCulture=es-ES}"
-                                                        FontSize="13"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{StaticResource PrimaryBrush}"
-                                                        Margin="0,4,0,0"/>
+                                                        <!-- Eliminar presupuesto -->
+                                                        <Button
+                                                            Grid.Column="1"
+                                                            Grid.RowSpan="5"
+                                                            Content="✕"
+                                                            FontSize="8"
+                                                            Width="28"
+                                                            Height="26"
+                                                            VerticalAlignment="Top"
+                                                            ToolTip="Eliminar presupuesto"
+                                                            Click="DeleteQuote_Click"
+                                                            Style="{StaticResource DangerSmallButtonStyle}"/>
 
-                                                    <!-- Productos -->
-                                                    <TextBlock
-                                                        Grid.Row="4"
-                                                        Text="{Binding ProductSummary}"
-                                                        FontSize="12"
-                                                        Foreground="{StaticResource MutedTextBrush}"
-                                                        TextWrapping="Wrap"
-                                                        Margin="0,5,8,0"/>
-
-                                                    <!-- Eliminar presupuesto -->
-                                                    <Button
-                                                        Grid.Column="1"
-                                                        Grid.RowSpan="5"
-                                                        Content="✕"
-                                                        FontSize="8"
-                                                        Width="28"
-                                                        Height="26"
-                                                        VerticalAlignment="Top"
-                                                        ToolTip="Eliminar presupuesto"
-                                                        Click="DeleteQuote_Click"
-                                                        Style="{StaticResource DangerSmallButtonStyle}"/>
-
-                                                </Grid>
+                                                    </Grid>
+                                                </Border>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
 
