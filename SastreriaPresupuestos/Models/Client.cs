@@ -13,6 +13,8 @@ namespace SastreriaPresupuestos.Models
 
         public string Phone { get; set; } = "";
 
+        public string Dni { get; set; } = "";
+
         public List<Quote> Quotes { get; set; } = new();
 
         public DateTime? NextDeliveryDate

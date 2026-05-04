@@ -150,6 +150,7 @@ namespace SastreriaPresupuestos
 
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
+            var clientDni = DniTextBox.Text.Trim();
             var quoteTitle = QuoteTitleTextBox.Text.Trim();
             var quoteNotes = QuoteNotesTextBox.Text.Trim();
             var clientNotes = ClientNotesTextBox.Text.Trim();
@@ -193,7 +194,8 @@ namespace SastreriaPresupuestos
                 client = new Models.Client()
                 {
                     Name = clientName,
-                    Phone = clientPhone
+                    Phone = clientPhone,
+                    Dni = clientDni
                 };
 
                 db.Clients.Add(client);
@@ -204,6 +206,8 @@ namespace SastreriaPresupuestos
             else
             {
                 client.Name = clientName;
+                client.Phone = clientPhone;
+                client.Dni = clientDni;
                 db.SaveChanges();
             }
 
@@ -381,6 +385,7 @@ namespace SastreriaPresupuestos
 
             ClientNameTextBox.Text = client.Name;
             PhoneTextBox.Text = client.Phone;
+            DniTextBox.Text = client.Dni;
 
             using var db = new AppDbContext();
 
@@ -1384,6 +1389,7 @@ namespace SastreriaPresupuestos
 
             ClientNameTextBox.Text = "";
             PhoneTextBox.Text = "";
+            DniTextBox.Text = "";
 
             Products.Clear();
 
@@ -1487,6 +1493,7 @@ namespace SastreriaPresupuestos
         {
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
+            var clientDni = DniTextBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(clientName))
             {
@@ -1556,7 +1563,8 @@ namespace SastreriaPresupuestos
                 client = new Models.Client
                 {
                     Name = clientName,
-                    Phone = clientPhone
+                    Phone = clientPhone,
+                    Dni = clientDni
                 };
 
                 db.Clients.Add(client);
@@ -1565,6 +1573,7 @@ namespace SastreriaPresupuestos
             {
                 client.Name = clientName;
                 client.Phone = clientPhone;
+                client.Dni = clientDni;
             }
 
             db.SaveChanges();
@@ -1994,8 +2003,8 @@ namespace SastreriaPresupuestos
 
             ClientNameTextBox.TextChanged += ClientNameTextBox_TextChanged;
             QuoteTitleTextBox.TextChanged += QuoteTitleTextBox_TextChanged;
-
             PhoneTextBox.TextChanged += AnyEditableField_Changed;
+            DniTextBox.TextChanged += (_, __) => MarkAsChanged();
             QuoteNotesTextBox.TextChanged += AnyEditableField_Changed;
             ClientNotesTextBox.TextChanged += AnyEditableField_Changed;
             DepositTextBox.TextChanged += DepositTextBox_TextChanged;
