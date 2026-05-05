@@ -573,7 +573,7 @@
 
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <UniformGrid Columns="7"/>
+                                                <UniformGrid Columns="{Binding Items.Count, RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
 
