@@ -1033,7 +1033,8 @@
 										Grid.Row="4"
 										Margin="0"
 										HorizontalContentAlignment="Stretch"
-										ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+										ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
+                                        MouseDoubleClick="ClientsListBox_MouseDoubleClick">
 
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>

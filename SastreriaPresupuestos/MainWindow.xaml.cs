@@ -446,6 +446,14 @@ namespace SastreriaPresupuestos
             UpdateSecondaryPlaceholders();
         }
 
+        private void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ClientsListBox.SelectedItem == null)
+                return;
+
+            GoToTab(TabPresupuesto);
+        }
+
         private void QuotesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (IsRevertingSelection)
@@ -604,7 +612,7 @@ namespace SastreriaPresupuestos
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
-                GoToTab(TabPresupuesto);
+                GoToTab(TabProductos);
                 ClientNameTextBox.Focus();
 
                 return;
@@ -649,7 +657,7 @@ namespace SastreriaPresupuestos
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
 
-            GoToTab(TabPresupuesto);
+            GoToTab(TabProductos);
         }
 
         private void ProductsDataGrid_CellEditEnding(object? sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
