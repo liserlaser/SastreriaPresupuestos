@@ -2051,8 +2051,8 @@
 
                                 <WrapPanel
 									Grid.Row="1"
-									ItemWidth="260"
-									ItemHeight="180">
+									ItemWidth="260">
+
 
                                     <Border
 										Background="#F8FAF6"
@@ -2080,12 +2080,14 @@
 												Content="Exportar PDF"
 												Height="40"
 												FontSize="15"
+                                                HorizontalAlignment="Stretch"
 												Style="{StaticResource DarkButtonStyle}"/>
 
                                             <Button
 												x:Name="ExportClientSheetButton"
 												Content="Exportar ficha cliente"
 												Click="ExportClientSheetButton_Click"
+                                                HorizontalAlignment="Stretch"
 												Style="{StaticResource SecondaryButtonStyle}"
 												Margin="0,10,0,0"/>
 
@@ -2111,9 +2113,10 @@
                                             <TextBlock
 												Text="Exporta todos los presupuestos del cliente."
 												FontSize="13"
+                                                HorizontalAlignment="Stretch"
 												Foreground="{StaticResource MutedTextBrush}"
 												TextWrapping="Wrap"
-												Margin="0,6,0,14"/>
+												Margin="0,14,0,14"/>
 
                                             <Button
 												x:Name="ExportAllQuotesPdfButton"
@@ -2237,8 +2240,7 @@
 
                                 <WrapPanel
 									Grid.Row="1"
-									ItemWidth="270"
-									ItemHeight="130">
+									ItemWidth="270">
 
                                     <Border
 										Background="#F8FAF6"
