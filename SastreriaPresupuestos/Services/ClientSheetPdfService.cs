@@ -121,7 +121,7 @@ namespace SastreriaPresupuestos.Services
 
                             right.Item()
                                 .AlignRight()
-                                .Text($"Entrega: {sheet.DeliveryDate:dd/MM/yyyy}")
+                                .Text($"Fecha evento: {sheet.EventDate:dd/MM/yyyy}")
                                 .FontSize(10);
                         });
                 });
@@ -177,8 +177,8 @@ namespace SastreriaPresupuestos.Services
 
                             right.Item().Text(text =>
                             {
-                                text.Span("Fecha de entrega: ").Bold();
-                                text.Span($"{sheet.DeliveryDate:dd/MM/yyyy}");
+                                text.Span("Fecha de evento: ").Bold();
+                                text.Span($"{sheet.EventDate:dd/MM/yyyy}");
                             });
                         });
                     });

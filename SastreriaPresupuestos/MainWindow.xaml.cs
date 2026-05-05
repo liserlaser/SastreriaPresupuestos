@@ -1251,6 +1251,7 @@ namespace SastreriaPresupuestos
                 ClientNameTextBox.Text,
                 PhoneTextBox.Text,
                 DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                EventDatePicker.SelectedDate,
                 QuoteTitleTextBox.Text,
                 QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente",
                 GetDepositValue(),
@@ -1353,6 +1354,7 @@ namespace SastreriaPresupuestos
                         client.Name,
                         client.Phone,
                         q.DeliveryDate,
+                        q.EventDate,
                         q.Title,
                         string.IsNullOrWhiteSpace(q.Status) ? "Pendiente" : q.Status,
                         q.Deposit,
@@ -1445,7 +1447,7 @@ namespace SastreriaPresupuestos
                 ClientDni = DniTextBox.Text.Trim(),
                 ClientPhone = PhoneTextBox.Text.Trim(),
                 OrderTitle = BuildClientSheetOrderSummary(),
-                DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                EventDate = EventDatePicker.SelectedDate ?? DeliveryDatePicker.SelectedDate ?? DateTime.Now,
                 Deposit = GetDepositValue(),
                 Observations = QuoteNotesTextBox.Text.Trim()
             };

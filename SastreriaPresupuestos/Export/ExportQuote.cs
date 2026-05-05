@@ -14,6 +14,8 @@ namespace SastreriaPresupuestos.Export
 
         public DateTime DeliveryDate { get; set; }
 
+        public DateTime? EventDate { get; set; }
+
         public string Title { get; set; } = "";
 
         public string Status { get; set; } = "";

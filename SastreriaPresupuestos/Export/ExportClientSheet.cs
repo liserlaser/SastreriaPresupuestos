@@ -14,7 +14,7 @@ namespace SastreriaPresupuestos.Export
 
         public string OrderTitle { get; set; } = "";
 
-        public DateTime DeliveryDate { get; set; }
+        public DateTime EventDate { get; set; }
 
         public decimal Deposit { get; set; }
 
