@@ -259,6 +259,7 @@ namespace SastreriaPresupuestos
 
                 quote.Total = Products.Sum(p => p.Total);
                 quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
+                quote.EventDate = EventDatePicker.SelectedDate;
                 //quote.Title = QuoteTitleTextBox.Text;
                 //quote.Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
                 //quote.Notes = QuoteNotesTextBox.Text;
@@ -323,6 +324,7 @@ namespace SastreriaPresupuestos
                     .ToList();
 
                 QuotesListBox.ItemsSource = reloadedQuotes;
+                BudgetQuotesListBox.ItemsSource = reloadedQuotes;
 
                 var reloadedQuote = reloadedQuotes
                     .FirstOrDefault(q => q.Id == savedQuoteId);
@@ -411,6 +413,7 @@ namespace SastreriaPresupuestos
                 .ToList();
 
             QuotesListBox.ItemsSource = quotes;
+            BudgetQuotesListBox.ItemsSource = quotes;
 
             Products.Clear();
 
@@ -419,6 +422,7 @@ namespace SastreriaPresupuestos
             CurrentQuote = null;
 
             DeliveryDatePicker.SelectedDate = DateTime.Now;
+            EventDatePicker.SelectedDate = null;
 
             QuoteStatusComboBox.SelectedItem = "Pendiente";
 
@@ -446,6 +450,9 @@ namespace SastreriaPresupuestos
         {
             if (IsRevertingSelection)
                 return;
+
+            if (BudgetQuotesListBox.SelectedItem != QuotesListBox.SelectedItem)
+                BudgetQuotesListBox.SelectedItem = QuotesListBox.SelectedItem;
 
             var selectedQuote = QuotesListBox.SelectedItem as Models.Quote;
 
@@ -478,6 +485,7 @@ namespace SastreriaPresupuestos
             UpdateWorkflowState();
 
             DeliveryDatePicker.SelectedDate = quote.DeliveryDate;
+            EventDatePicker.SelectedDate = quote.EventDate;
             QuoteTitleTextBox.Text = quote.Title;
 
             QuoteStatusComboBox.SelectedItem = string.IsNullOrWhiteSpace(quote.Status)
@@ -523,6 +531,26 @@ namespace SastreriaPresupuestos
             UpdateSecondaryPlaceholders();
 
             GoToTab(TabPresupuesto);
+        }
+
+        private void BudgetQuotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (BudgetQuotesListBox.SelectedItem == null)
+                return;
+
+            if (QuotesListBox.SelectedItem != BudgetQuotesListBox.SelectedItem)
+                QuotesListBox.SelectedItem = BudgetQuotesListBox.SelectedItem;
+        }
+
+        private void BudgetQuotesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (BudgetQuotesListBox.SelectedItem == null)
+                return;
+
+            if (QuotesListBox.SelectedItem != BudgetQuotesListBox.SelectedItem)
+                QuotesListBox.SelectedItem = BudgetQuotesListBox.SelectedItem;
+
+            GoToTab(TabProductos);
         }
 
         private void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -595,9 +623,12 @@ namespace SastreriaPresupuestos
 
             QuotesListBox.SelectedItem = null;
 
+            BudgetQuotesListBox.SelectedItem = null;
+
             LastSelectedQuoteId = null;
 
             DeliveryDatePicker.SelectedDate = DateTime.Now;
+            EventDatePicker.SelectedDate = null;
 
             QuoteTitleTextBox.Text = "";
 
@@ -674,6 +705,7 @@ namespace SastreriaPresupuestos
                 QuotesListBox.SelectedItem = null;
 
                 DeliveryDatePicker.SelectedDate = DateTime.Now;
+                EventDatePicker.SelectedDate = null;
                 QuoteTitleTextBox.Text = "";
                 QuoteStatusComboBox.SelectedItem = "Pendiente";
                 DepositTextBox.Text = "0";
@@ -1520,6 +1552,7 @@ namespace SastreriaPresupuestos
             LastSelectedQuoteId = null;
 
             DeliveryDatePicker.SelectedDate = DateTime.Now;
+            EventDatePicker.SelectedDate = null;
             QuoteTitleTextBox.Text = "";
             QuoteStatusComboBox.SelectedItem = "Pendiente";
             DepositTextBox.Text = "0";
@@ -2136,6 +2169,7 @@ namespace SastreriaPresupuestos
             DataObject.AddPastingHandler(DepositTextBox, DepositTextBox_Pasting);
 
             DeliveryDatePicker.SelectedDateChanged += AnyEditableField_Changed;
+            EventDatePicker.SelectedDateChanged += (_, __) => MarkAsChanged();
             QuoteStatusComboBox.SelectionChanged += AnyEditableField_Changed;
         }
 

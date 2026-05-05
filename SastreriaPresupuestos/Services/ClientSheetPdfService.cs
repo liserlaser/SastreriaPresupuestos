@@ -89,7 +89,7 @@ namespace SastreriaPresupuestos.Services
                     {
                         left.Item()
                             .Text(BusinessName)
-                            .FontSize(22)
+                            .FontSize(20)
                             .Bold()
                             .FontColor(PrimaryColor);
 
