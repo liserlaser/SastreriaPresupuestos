@@ -2074,9 +2074,13 @@ namespace SastreriaPresupuestos
                     group.Deliveries.Add(delivery);
                 }
 
+                var isWeekend =
+                    currentDate.DayOfWeek == DayOfWeek.Saturday ||
+                    currentDate.DayOfWeek == DayOfWeek.Sunday;
+
                 var shouldShowDay =
-                    CalendarViewMode == "Semana" ||
-                    group.HasDeliveries;
+                    group.HasDeliveries ||
+                    (CalendarViewMode == "Semana" && !isWeekend);
 
                 if (shouldShowDay)
                 {
@@ -2093,6 +2097,17 @@ namespace SastreriaPresupuestos
             EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+        }
+
+        private bool IsWeekend(DateTime date)
+        {
+            return date.DayOfWeek == DayOfWeek.Saturday ||
+                   date.DayOfWeek == DayOfWeek.Sunday;
+        }
+
+        private bool HasDeliveriesOnDate(IEnumerable<WeeklyDeliveryItem> deliveries, DateTime date)
+        {
+            return deliveries.Any(d => d.DeliveryDate.Date == date.Date);
         }
 
         private void UpdateActiveContext()
