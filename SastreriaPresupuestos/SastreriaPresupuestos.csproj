@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,5 +37,9 @@
     </PackageReference>
     <PackageReference Include="QuestPDF" Version="2026.2.4" />
   </ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\AppIcon.ico" />
+	</ItemGroup>
 
 </Project>
