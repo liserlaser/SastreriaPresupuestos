@@ -201,8 +201,6 @@ namespace SastreriaPresupuestos
             // Buscar cliente existente
             Models.Client client;
 
-
-            // Crear cliente si no existe
             if (CurrentClientId != null)
             {
                 client = db.Clients.First(c => c.Id == CurrentClientId.Value);
@@ -1590,7 +1588,7 @@ namespace SastreriaPresupuestos
                 return;
 
             ClearScreenForNewClient();
-            
+
             GoToTab(TabPresupuesto);
 
             ClientNameTextBox.Focus();
@@ -1715,14 +1713,14 @@ namespace SastreriaPresupuestos
                     return;
             }
 
+            if (CurrentClientId != null)
+            {
+                client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value);
+            }
+
             if (selectedClient != null)
             {
                 client = db.Clients.FirstOrDefault(c => c.Id == selectedClient.Id);
-            }
-
-            if (client == null)
-            {
-                client = db.Clients.FirstOrDefault(c => c.Phone == clientPhone);
             }
 
             if (client == null)
