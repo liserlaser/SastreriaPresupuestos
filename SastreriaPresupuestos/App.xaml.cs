@@ -6,6 +6,8 @@ using SastreriaPresupuestos.Data;
 
 namespace SastreriaPresupuestos
 {
+    
+    //rebase
     public partial class App : Application
     {
         protected override void OnStartup(StartupEventArgs e)
