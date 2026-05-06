@@ -199,11 +199,21 @@ namespace SastreriaPresupuestos
             }
 
             // Buscar cliente existente
-            var client = db.Clients
-                .FirstOrDefault(c => c.Phone == clientPhone);
+            Models.Client client;
+
 
             // Crear cliente si no existe
-            if (client == null)
+            if (CurrentClientId != null)
+            {
+                client = db.Clients.First(c => c.Id == CurrentClientId.Value);
+
+                client.Name = clientName;
+                client.Phone = clientPhone;
+                client.Dni = clientDni;
+
+                db.SaveChanges();
+            }
+            else
             {
                 client = new Models.Client()
                 {
@@ -213,16 +223,9 @@ namespace SastreriaPresupuestos
                 };
 
                 db.Clients.Add(client);
-
                 db.SaveChanges();
-            }
 
-            else
-            {
-                client.Name = clientName;
-                client.Phone = clientPhone;
-                client.Dni = clientDni;
-                db.SaveChanges();
+                CurrentClientId = client.Id;
             }
 
             Models.Quote quote;
