@@ -2630,13 +2630,13 @@ namespace SastreriaPresupuestos
         {
             var baseInfo = sectionIndex switch
             {
-                0 => ("Dashboard / Calendario", "Próximas entregas, vista semanal y vista mensual", "Inicio > Dashboard"),
-                1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "Inicio > Clientes"),
-                2 => ("Trabajos", "Resumen del presupuesto activo y datos principales", "Inicio > Trabajos"),
-                3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del presupuesto activo", "Inicio > Trabajos > Productos"),
-                4 => ("Trabajos · Documentos", "PDFs, ficha de cliente y exportaciones del trabajo activo", "Inicio > Trabajos > Documentos"),
-                5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "Inicio > Ajustes"),
-                _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "Inicio")
+                0 => ("Inicio / Calendario", "Próximas entregas, vista semanal y vista mensual", "🏠 > Inicio"),
+                1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "🏠 > Clientes"),
+                2 => ("Trabajos", "Resumen del presupuesto activo y datos principales", "🏠 > Trabajos"),
+                3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del presupuesto activo", "🏠 > Trabajos > Productos"),
+                4 => ("Trabajos · Documentos", "PDFs, ficha de cliente y exportaciones del trabajo activo", "🏠 > Trabajos > PDF"),
+                5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
+                _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "🏠")
             };
 
             return (baseInfo.Item1, baseInfo.Item2, BuildContextBreadcrumb(sectionIndex, baseInfo.Item3));
@@ -2656,7 +2656,7 @@ namespace SastreriaPresupuestos
                 : QuoteTitleTextBox.Text.Trim();
 
             if (sectionIndex == TabClientes && clientName != null)
-                return $"Inicio > Clientes > {clientName}";
+                return $"🏠 > Clientes > {clientName}";
 
             if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
             {
@@ -2668,8 +2668,8 @@ namespace SastreriaPresupuestos
                 };
 
                 var basePath = quoteTitle == null
-                    ? $"Inicio > Trabajos > {clientName}"
-                    : $"Inicio > Trabajos > {clientName} > {quoteTitle}";
+                    ? $"🏠 > Trabajos > {clientName}"
+                    : $"🏠 > Trabajos > {clientName} > {quoteTitle}";
 
                 return childSection == null
                     ? basePath
@@ -2774,7 +2774,7 @@ namespace SastreriaPresupuestos
             ActiveWorkspaceBorder.Visibility = compactVisibility;
             ShellFooterTextBlock.Visibility = compactVisibility;
 
-            DashboardNavButton.Content = IsSidebarCollapsed ? "📅" : "📅  Dashboard";
+            DashboardNavButton.Content = IsSidebarCollapsed ? "🏠" : "🏠  Inicio";
             ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
             QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Trabajos";
             SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
@@ -3118,7 +3118,7 @@ namespace SastreriaPresupuestos
                 _ => "Trabajos"
             };
 
-            var parts = new List<string> { "Inicio" };
+            var parts = new List<string> { "🏠" };
 
             if (targetTab == TabClientes)
             {
@@ -3142,7 +3142,7 @@ namespace SastreriaPresupuestos
 
         private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
         {
-            OpenQuoteById(delivery.QuoteId, TabPresupuesto, "Dashboard");
+            OpenQuoteById(delivery.QuoteId, TabPresupuesto, "Inicio");
         }
 
         /*  DESACTIVADO
