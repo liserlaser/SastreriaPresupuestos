@@ -223,6 +223,26 @@
             <Setter Property="BorderBrush" Value="#C8D1C2"/>
         </Style>
 
+
+
+        <!-- NAVEGACIÓN PRINCIPAL / SHELL -->
+        <Style x:Key="SidebarNavButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="ShellIconButtonStyle" TargetType="Button" BasedOn="{StaticResource SmallLightButtonStyle}">
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
         <!-- LISTBOX -->
         <Style TargetType="ListBox">
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
@@ -342,65 +362,138 @@
 
     </Window.Resources>
 
-    <!-- GRID PRINCIPAL -->
-    <Grid Margin="20">
+    <!-- SHELL PRINCIPAL -->
+    <Grid Margin="0" Background="{StaticResource AppBackgroundBrush}">
 
         <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="ShellSidebarColumn" Width="260"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <!-- TOOLBAR LATERAL RETRAÍBLE -->
+        <Border
+            Grid.Column="0"
+            Background="#EEF2EA"
+            BorderBrush="{StaticResource BorderSoftBrush}"
+            BorderThickness="0,0,1,0"
+            Padding="12">
 
-        <!-- PESTAÑAS -->
-        <Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image
+                            x:Name="ShellLogoImage"
+                            Source="/Resources/logovectordefA.png"
+                            Width="46"
+                            Height="46"
+                            Stretch="Uniform"/>
+
+                        <StackPanel
+                            x:Name="ShellBrandPanel"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center">
+                            <TextBlock Text="Martínez Mor" FontSize="18" FontWeight="Bold"/>
+                            <TextBlock Text="Presupuestos y entregas" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button
+                        x:Name="ToggleSidebarButton"
+                        Grid.Column="1"
+                        Content="☰"
+                        Style="{StaticResource ShellIconButtonStyle}"
+                        ToolTip="Contraer o expandir menú"/>
+                </Grid>
+
+                <!-- BÚSQUEDA GLOBAL SIEMPRE DISPONIBLE -->
+                <Grid x:Name="ShellSearchPanel" Grid.Row="1" Margin="0,0,0,18">
+                    <TextBox
+                        x:Name="GlobalSearchTextBox"
+                        Height="34"
+                        FontSize="14"
+                        ToolTip="Buscar cliente, teléfono, fecha, estado o título"
+                        TextChanged="GlobalSearchTextBox_TextChanged"
+                        KeyDown="GlobalSearchTextBox_KeyDown"/>
+
+                    <TextBlock
+                        x:Name="GlobalSearchPlaceholderTextBlock"
+                        Text="Buscar..."
+                        Foreground="{StaticResource MutedTextBrush}"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False"/>
+                </Grid>
+
+                <StackPanel Grid.Row="2">
+                    <Button x:Name="DashboardNavButton" Content="📅  Dashboard" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="ClientsNavButton" Content="👥  Clientes" Tag="1" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="QuotesNavButton" Content="🧾  Presupuestos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="ProductsNavButton" Content="📦  Productos" Tag="3" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="DocumentsNavButton" Content="📄  Documentos" Tag="4" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="SettingsNavButton" Content="⚙  Ajustes" Tag="5" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                </StackPanel>
+
+                <TextBlock
+                    x:Name="ShellFooterTextBlock"
+                    Grid.Row="3"
+                    Text="Sastrería · Rework UX"
+                    FontSize="11"
+                    Foreground="{StaticResource MutedTextBrush}"
+                    Margin="4,12,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <Grid Grid.Column="1" Margin="18">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- CABECERA FIJA -->
+            <!-- CABECERA FIJA CONTEXTUAL -->
             <Grid Margin="0,0,0,16">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="160"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="340"/>
                 </Grid.ColumnDefinitions>
 
-                <Image
-					Grid.Column="0"
-					Source="/Resources/logo_vector_notxt.png"
-					Height="124"
-					Stretch="Uniform"
-					VerticalAlignment="Center"/>
-
-                <StackPanel
-					Grid.Column="1"
-					VerticalAlignment="Top"
-					Margin="16,20,0,0" Height="70">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        x:Name="ShellSectionTitleTextBlock"
+                        Text="Dashboard / Calendario"
+                        FontSize="28"
+                        FontWeight="Bold"/>
 
                     <TextBlock
-						Text="Martínez Mor"
-						FontSize="34"
-						FontWeight="Bold"/>
-
-                    <TextBlock
-						Text="Gestión de clientes y presupuestos a medida... y con todo el A-Mor 💖"
-						FontSize="15"
-						Foreground="{StaticResource MutedTextBrush}"
-						Margin="0,4,0,0"/>
-
+                        Text="Próximas entregas, vista semanal y vista mensual"
+                        FontSize="14"
+                        Foreground="{StaticResource MutedTextBrush}"
+                        Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <!-- CONTEXTO ACTIVO -->
                 <Border
-					Grid.Column="2"
-					Background="{StaticResource CardBackgroundBrush}"
-					BorderBrush="{StaticResource BorderSoftBrush}"
-					BorderThickness="1"
-					CornerRadius="12"
-					Padding="12"
-					VerticalAlignment="Center">
+                    Grid.Column="1"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderSoftBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="12"
+                    VerticalAlignment="Center">
 
                     <Grid>
 
@@ -411,35 +504,35 @@
                         </Grid.RowDefinitions>
 
                         <TextBlock
-							x:Name="ActiveClientTextBlock"
-							Text="Cliente: —"
-							FontSize="13"
-							FontWeight="SemiBold"
-							TextTrimming="CharacterEllipsis"/>
+                            x:Name="ActiveClientTextBlock"
+                            Text="Cliente: —"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            TextTrimming="CharacterEllipsis"/>
 
                         <TextBlock
-							x:Name="ActiveQuoteTextBlock"
-							Grid.Row="1"
-							Text="Presupuesto: —"
-							FontSize="12"
-							Foreground="{StaticResource MutedTextBrush}"
-							TextTrimming="CharacterEllipsis"
-							Margin="0,3,0,0"/>
+                            x:Name="ActiveQuoteTextBlock"
+                            Grid.Row="1"
+                            Text="Presupuesto: —"
+                            FontSize="12"
+                            Foreground="{StaticResource MutedTextBrush}"
+                            TextTrimming="CharacterEllipsis"
+                            Margin="0,3,0,0"/>
 
                         <Border
-							Grid.Row="2"
-							Background="#EEF2EA"
-							CornerRadius="8"
-							Padding="8,4"
-							HorizontalAlignment="Left"
-							Margin="0,8,0,0">
+                            Grid.Row="2"
+                            Background="#EEF2EA"
+                            CornerRadius="8"
+                            Padding="8,4"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0">
 
                             <TextBlock
-								x:Name="ActiveTotalTextBlock"
-								Text="Total: 0,00 €"
-								FontSize="13"
-								FontWeight="Bold"
-								Foreground="{StaticResource PrimaryBrush}"/>
+                                x:Name="ActiveTotalTextBlock"
+                                Text="Total: 0,00 €"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource PrimaryBrush}"/>
 
                         </Border>
 
@@ -448,14 +541,21 @@
                 </Border>
 
             </Grid>
-
             <!-- PESTAÑAS -->
             <TabControl
-				x:Name="MainTabs"
-				Grid.Row="1"
-				FontSize="14"
-				FontWeight="SemiBold"
-				SelectedIndex="0">
+                x:Name="MainTabs"
+                Grid.Row="1"
+                FontSize="14"
+                FontWeight="SemiBold"
+                SelectedIndex="0"
+                SelectionChanged="MainTabs_SelectionChanged">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                        <Setter Property="Height" Value="0"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                </TabControl.ItemContainerStyle>
 
                 <TabItem Header="Semana">
                     <Grid Margin="0,0,0,0">

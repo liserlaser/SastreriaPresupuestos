@@ -38,6 +38,8 @@ namespace SastreriaPresupuestos
         private Models.Quote? CurrentQuote = null;
 
         private string ActiveStatusFilter = "Todos";
+
+        private bool IsSidebarCollapsed = false;
         private string ActiveDeliveryFilter = "Todas";
 
         private DateTime CalendarReferenceDate = DateTime.Today;
@@ -445,6 +447,8 @@ namespace SastreriaPresupuestos
             UpdateSaveButtonText();
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
+            UpdateGlobalSearchPlaceholder();
+            UpdateShellSectionTitle();
         }
 
         private void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -2175,6 +2179,7 @@ namespace SastreriaPresupuestos
             NextCalendarButton.Click += NextCalendarButton_Click;
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
+            ToggleSidebarButton.Click += ToggleSidebarButton_Click;
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
@@ -2275,6 +2280,103 @@ namespace SastreriaPresupuestos
 
             MainTabs.SelectedIndex = tabIndex;
         }
+        private void SidebarNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button)
+                return;
+
+            if (button.Tag == null)
+                return;
+
+            if (int.TryParse(button.Tag.ToString(), out var tabIndex))
+            {
+                GoToTab(tabIndex);
+            }
+        }
+
+        private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender != MainTabs)
+                return;
+
+            UpdateShellSectionTitle();
+        }
+
+        private void UpdateShellSectionTitle()
+        {
+            if (ShellSectionTitleTextBlock == null || MainTabs == null)
+                return;
+
+            ShellSectionTitleTextBlock.Text = MainTabs.SelectedIndex switch
+            {
+                0 => "Dashboard / Calendario",
+                1 => "Clientes",
+                2 => "Presupuestos",
+                3 => "Productos",
+                4 => "Documentos",
+                5 => "Ajustes",
+                _ => "Sastrería Martínez Mor"
+            };
+        }
+
+        private void ToggleSidebarButton_Click(object sender, RoutedEventArgs e)
+        {
+            IsSidebarCollapsed = !IsSidebarCollapsed;
+            ApplySidebarState();
+        }
+
+        private void ApplySidebarState()
+        {
+            if (ShellSidebarColumn == null)
+                return;
+
+            ShellSidebarColumn.Width = new GridLength(IsSidebarCollapsed ? 72 : 260);
+
+            var compactVisibility = IsSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+
+            ShellBrandPanel.Visibility = compactVisibility;
+            ShellSearchPanel.Visibility = compactVisibility;
+            ShellFooterTextBlock.Visibility = compactVisibility;
+
+            DashboardNavButton.Content = IsSidebarCollapsed ? "📅" : "📅  Dashboard";
+            ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
+            QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Presupuestos";
+            ProductsNavButton.Content = IsSidebarCollapsed ? "📦" : "📦  Productos";
+            DocumentsNavButton.Content = IsSidebarCollapsed ? "📄" : "📄  Documentos";
+            SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
+        }
+
+        private void GlobalSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateGlobalSearchPlaceholder();
+        }
+
+        private void UpdateGlobalSearchPlaceholder()
+        {
+            if (GlobalSearchPlaceholderTextBlock == null || GlobalSearchTextBox == null)
+                return;
+
+            GlobalSearchPlaceholderTextBlock.Visibility =
+                string.IsNullOrWhiteSpace(GlobalSearchTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        private void GlobalSearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            var search = GlobalSearchTextBox.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(search))
+                return;
+
+            GoToTab(1);
+            ClientSearchTextBox.Text = search;
+            ClientSearchTextBox.Focus();
+            ClientSearchTextBox.CaretIndex = ClientSearchTextBox.Text.Length;
+        }
+
 
         private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
         {
