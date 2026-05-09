@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Data;
@@ -33,6 +33,9 @@ namespace SastreriaPresupuestos
 
         private ObservableCollection<CalendarDayGroup> CalendarDayGroups =
             new ObservableCollection<CalendarDayGroup>();
+
+        private ObservableCollection<WeeklyDeliveryItem> UpcomingDeliveries =
+            new ObservableCollection<WeeklyDeliveryItem>();
 
         private List<Models.Client> AllClients = new();
 
@@ -2185,6 +2188,50 @@ namespace SastreriaPresupuestos
                 : Visibility.Collapsed;
 
             UpdateDashboardSummary();
+            LoadUpcomingDeliveries();
+        }
+
+        private void LoadUpcomingDeliveries()
+        {
+            UpcomingDeliveries.Clear();
+
+            using var db = new AppDbContext();
+
+            var today = DateTime.Today;
+            var limit = today.AddDays(21);
+
+            var deliveries = db.Quotes
+                .AsNoTracking()
+                .Include(q => q.Client)
+                .Where(q => q.DeliveryDate.Date >= today
+                    && q.DeliveryDate.Date <= limit
+                    && q.Status != "Entregado")
+                .OrderBy(q => q.DeliveryDate)
+                .ThenBy(q => q.Client != null ? q.Client.Name : "")
+                .Take(8)
+                .ToList();
+
+            foreach (var quote in deliveries)
+            {
+                UpcomingDeliveries.Add(new WeeklyDeliveryItem
+                {
+                    QuoteId = quote.Id,
+                    ClientId = quote.ClientId,
+                    DeliveryDate = quote.DeliveryDate,
+                    ClientName = quote.Client?.Name ?? "",
+                    ClientPhone = quote.Client?.Phone ?? "",
+                    QuoteTitle = quote.Title,
+                    Status = string.IsNullOrWhiteSpace(quote.Status) ? "Pendiente" : quote.Status,
+                    Total = quote.Total
+                });
+            }
+
+            if (UpcomingDeliveriesEmptyTextBlock != null)
+            {
+                UpcomingDeliveriesEmptyTextBlock.Visibility = UpcomingDeliveries.Count == 0
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
         }
 
         private void UpdateDashboardSummary()
@@ -2351,6 +2398,7 @@ namespace SastreriaPresupuestos
         {
             WeeklyColumnsItemsControl.ItemsSource = CalendarDayGroups;
             CalendarGroupsListBox.ItemsSource = CalendarDayGroups;
+            UpcomingDeliveriesItemsControl.ItemsSource = UpcomingDeliveries;
             ProductsDataGrid.ItemsSource = Products;
         }
 
@@ -2741,6 +2789,25 @@ namespace SastreriaPresupuestos
                 return;
 
             OpenWeeklyDelivery(delivery);
+        }
+
+        private void UpcomingDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not FrameworkElement element)
+                return;
+
+            if (element.DataContext is not WeeklyDeliveryItem delivery)
+                return;
+
+            OpenWeeklyDelivery(delivery);
+        }
+
+        private void UpcomingDeliveriesMonthButton_Click(object sender, RoutedEventArgs e)
+        {
+            CalendarViewMode = "Mes";
+            CalendarReferenceDate = DateTime.Today;
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
         }
 
         private void UpdateEmptyStateMessages()
