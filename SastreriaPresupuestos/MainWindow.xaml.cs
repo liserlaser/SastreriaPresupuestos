@@ -85,6 +85,13 @@ namespace SastreriaPresupuestos
         private Button NewQuoteButton => PresupuestoView.NewQuoteButton;
         private Button DuplicateQuoteButton => PresupuestoView.DuplicateQuoteButton;
         private Button SaveButton => PresupuestoView.SaveButton;
+        private Border ProductsEmptyHintBorder => ProductosView.ProductsEmptyHintBorder;
+        private TextBlock ProductsEmptyHintTextBlock => ProductosView.ProductsEmptyHintTextBlock;
+        private TextBlock ProductsUnsavedChangesTextBlock => ProductosView.ProductsUnsavedChangesTextBlock;
+        private Button AddProductButton => ProductosView.AddProductButton;
+        private Button SaveProductsButton => ProductosView.SaveProductsButton;
+        private DataGrid ProductsDataGrid => ProductosView.ProductsDataGrid;
+        private TextBlock TotalTextBlock => ProductosView.TotalTextBlock;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -723,7 +730,7 @@ namespace SastreriaPresupuestos
             OpenQuoteById(quote.Id, TabProductos, "Presupuestos");
         }
 
-        private void DeleteProduct_Click(object sender, RoutedEventArgs e)
+        internal void DeleteProduct_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
@@ -737,7 +744,7 @@ namespace SastreriaPresupuestos
             MarkAsChanged();
         }
 
-        private void DuplicateProduct_Click(object sender, RoutedEventArgs e)
+        internal void DuplicateProduct_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
@@ -1974,7 +1981,7 @@ namespace SastreriaPresupuestos
             }
         }
 
-        private void ProductsDataGrid_PreparingCellForEdit(
+        internal void ProductsDataGrid_PreparingCellForEdit(
             object? sender,
             System.Windows.Controls.DataGridPreparingCellForEditEventArgs e)
         {
@@ -2086,7 +2093,7 @@ namespace SastreriaPresupuestos
             return currentText.Insert(selectionStart, newText);
         }
 
-        private void MoveProductUp_Click(object sender, RoutedEventArgs e)
+        internal void MoveProductUp_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
@@ -2106,7 +2113,7 @@ namespace SastreriaPresupuestos
             MarkAsChanged();
         }
 
-        private void MoveProductDown_Click(object sender, RoutedEventArgs e)
+        internal void MoveProductDown_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
