@@ -24,6 +24,8 @@ namespace SastreriaPresupuestos.ViewModels
 
         public string Status { get; set; } = "Pendiente";
 
+        public decimal Deposit { get; set; }
+
         public decimal Total { get; set; }
 
         public string DisplayTitle

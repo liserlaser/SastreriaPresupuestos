@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Data;
@@ -30,14 +30,14 @@ namespace SastreriaPresupuestos
         private Button PreviousCalendarButton => DashboardView.PreviousCalendarButton;
         private Button TodayCalendarButton => DashboardView.TodayCalendarButton;
         private Button NextCalendarButton => DashboardView.NextCalendarButton;
+        private Button ListViewButton => DashboardView.ListViewButton;
         private Button WeekViewButton => DashboardView.WeekViewButton;
         private Button MonthViewButton => DashboardView.MonthViewButton;
         private TextBlock DashboardTodayCountTextBlock => DashboardView.DashboardTodayCountTextBlock;
         private TextBlock DashboardNext7CountTextBlock => DashboardView.DashboardNext7CountTextBlock;
         private TextBlock DashboardPendingCountTextBlock => DashboardView.DashboardPendingCountTextBlock;
         private TextBlock DashboardMonthCountTextBlock => DashboardView.DashboardMonthCountTextBlock;
-        private ItemsControl UpcomingDeliveriesItemsControl => DashboardView.UpcomingDeliveriesItemsControl;
-        private TextBlock UpcomingDeliveriesEmptyTextBlock => DashboardView.UpcomingDeliveriesEmptyTextBlock;
+        private ListBox DeliveriesListBox => DashboardView.DeliveriesListBox;
         private TextBlock EmptyWeekTextBlock => DashboardView.EmptyWeekTextBlock;
         private ItemsControl WeeklyColumnsItemsControl => DashboardView.WeeklyColumnsItemsControl;
         private ListBox CalendarGroupsListBox => DashboardView.CalendarGroupsListBox;
@@ -127,7 +127,7 @@ namespace SastreriaPresupuestos
         private string ActiveDeliveryFilter = "Todas";
 
         private DateTime CalendarReferenceDate = DateTime.Today;
-        private string CalendarViewMode = "Semana";
+        private string CalendarViewMode = "Lista";
 
         private string SanitizeFileName(string name)
         {
@@ -2204,7 +2204,7 @@ namespace SastreriaPresupuestos
 
                 WeekTitleTextBlock.Text = $"Mes de {CalendarReferenceDate:MMMM yyyy}";
             }
-            else
+            else if (CalendarViewMode == "Semana")
             {
                 int diff = (7 + (CalendarReferenceDate.DayOfWeek - DayOfWeek.Monday)) % 7;
                 startDate = CalendarReferenceDate.AddDays(-diff).Date;
@@ -2212,10 +2212,24 @@ namespace SastreriaPresupuestos
 
                 WeekTitleTextBlock.Text = $"Semana del {startDate:dd/MM/yyyy} al {endDate:dd/MM/yyyy}";
             }
+            else
+            {
+                startDate = DateTime.Today;
+                endDate = DateTime.Today.AddMonths(6);
 
-            var deliveries = db.Quotes
+                WeekTitleTextBlock.Text = "Próximas entregas ordenadas por fecha";
+            }
+
+            var deliveriesQuery = db.Quotes
                 .Include(q => q.Client)
-                .Where(q => q.DeliveryDate.Date >= startDate && q.DeliveryDate.Date <= endDate)
+                .Where(q => q.DeliveryDate.Date >= startDate && q.DeliveryDate.Date <= endDate);
+
+            if (CalendarViewMode == "Lista")
+            {
+                deliveriesQuery = deliveriesQuery.Where(q => q.Status != "Entregado");
+            }
+
+            var deliveries = deliveriesQuery
                 .OrderBy(q => q.DeliveryDate)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
                 .ToList();
@@ -2231,55 +2245,61 @@ namespace SastreriaPresupuestos
                     ClientPhone = quote.Client?.Phone ?? "",
                     QuoteTitle = quote.Title,
                     Status = string.IsNullOrWhiteSpace(quote.Status) ? "Pendiente" : quote.Status,
+                    Deposit = quote.Deposit,
                     Total = quote.Total
                 });
             }
 
-            var currentDate = startDate;
-
-            while (currentDate <= endDate)
+            if (CalendarViewMode != "Lista")
             {
-                var group = new CalendarDayGroup
-                {
-                    Date = currentDate
-                };
+                var currentDate = startDate;
 
-                var dayDeliveries = WeeklyDeliveries
-                    .Where(d => d.DeliveryDate.Date == currentDate.Date)
-                    .OrderBy(d => d.ClientName)
-                    .ToList();
-
-                foreach (var delivery in dayDeliveries)
+                while (currentDate <= endDate)
                 {
-                    group.Deliveries.Add(delivery);
+                    var group = new CalendarDayGroup
+                    {
+                        Date = currentDate
+                    };
+
+                    var dayDeliveries = WeeklyDeliveries
+                        .Where(d => d.DeliveryDate.Date == currentDate.Date)
+                        .OrderBy(d => d.ClientName)
+                        .ToList();
+
+                    foreach (var delivery in dayDeliveries)
+                    {
+                        group.Deliveries.Add(delivery);
+                    }
+
+                    var isWeekend =
+                        currentDate.DayOfWeek == DayOfWeek.Saturday ||
+                        currentDate.DayOfWeek == DayOfWeek.Sunday;
+
+                    var shouldShowDay =
+                        group.HasDeliveries ||
+                        (CalendarViewMode == "Semana" && !isWeekend);
+
+                    if (shouldShowDay)
+                    {
+                        CalendarDayGroups.Add(group);
+                    }
+
+                    currentDate = currentDate.AddDays(1);
                 }
-
-                var isWeekend =
-                    currentDate.DayOfWeek == DayOfWeek.Saturday ||
-                    currentDate.DayOfWeek == DayOfWeek.Sunday;
-
-                var shouldShowDay =
-                    group.HasDeliveries ||
-                    (CalendarViewMode == "Semana" && !isWeekend);
-
-                if (shouldShowDay)
-                {
-                    CalendarDayGroups.Add(group);
-                }
-
-                currentDate = currentDate.AddDays(1);
             }
 
-            EmptyWeekTextBlock.Text = CalendarViewMode == "Mes"
-                ? "No hay entregas programadas para este mes."
-                : "No hay entregas programadas para esta semana.";
+            EmptyWeekTextBlock.Text = CalendarViewMode switch
+            {
+                "Mes" => "No hay entregas programadas para este mes.",
+                "Semana" => "No hay entregas programadas para esta semana.",
+                _ => "No hay próximas entregas pendientes."
+            };
 
             EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
             UpdateDashboardSummary();
-            LoadUpcomingDeliveries();
         }
 
         private void LoadUpcomingDeliveries()
@@ -2313,16 +2333,11 @@ namespace SastreriaPresupuestos
                     ClientPhone = quote.Client?.Phone ?? "",
                     QuoteTitle = quote.Title,
                     Status = string.IsNullOrWhiteSpace(quote.Status) ? "Pendiente" : quote.Status,
+                    Deposit = quote.Deposit,
                     Total = quote.Total
                 });
             }
 
-            if (UpcomingDeliveriesEmptyTextBlock != null)
-            {
-                UpcomingDeliveriesEmptyTextBlock.Visibility = UpcomingDeliveries.Count == 0
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-            }
         }
 
         private void UpdateDashboardSummary()
@@ -2458,7 +2473,7 @@ namespace SastreriaPresupuestos
         {
             WeeklyColumnsItemsControl.ItemsSource = CalendarDayGroups;
             CalendarGroupsListBox.ItemsSource = CalendarDayGroups;
-            UpcomingDeliveriesItemsControl.ItemsSource = UpcomingDeliveries;
+            DeliveriesListBox.ItemsSource = WeeklyDeliveries;
             GlobalSearchResultsListBox.ItemsSource = GlobalSearchResults;
             ProductsDataGrid.ItemsSource = Products;
         }
@@ -2492,6 +2507,7 @@ namespace SastreriaPresupuestos
             PreviousCalendarButton.Click += PreviousCalendarButton_Click;
             TodayCalendarButton.Click += TodayCalendarButton_Click;
             NextCalendarButton.Click += NextCalendarButton_Click;
+            ListViewButton.Click += ListViewButton_Click;
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
             ToggleSidebarButton.Click += ToggleSidebarButton_Click;
@@ -3343,7 +3359,7 @@ namespace SastreriaPresupuestos
         {
             if (CalendarViewMode == "Mes")
                 CalendarReferenceDate = CalendarReferenceDate.AddMonths(-1);
-            else
+            else if (CalendarViewMode == "Semana")
                 CalendarReferenceDate = CalendarReferenceDate.AddDays(-7);
 
             LoadCalendarDeliveries();
@@ -3354,7 +3370,7 @@ namespace SastreriaPresupuestos
         {
             if (CalendarViewMode == "Mes")
                 CalendarReferenceDate = CalendarReferenceDate.AddMonths(1);
-            else
+            else if (CalendarViewMode == "Semana")
                 CalendarReferenceDate = CalendarReferenceDate.AddDays(7);
 
             LoadCalendarDeliveries();
@@ -3363,6 +3379,15 @@ namespace SastreriaPresupuestos
 
         private void TodayCalendarButton_Click(object sender, RoutedEventArgs e)
         {
+            CalendarReferenceDate = DateTime.Today;
+
+            LoadCalendarDeliveries();
+            UpdateCalendarViewButtons();
+        }
+
+        private void ListViewButton_Click(object sender, RoutedEventArgs e)
+        {
+            CalendarViewMode = "Lista";
             CalendarReferenceDate = DateTime.Today;
 
             LoadCalendarDeliveries();
@@ -3387,7 +3412,14 @@ namespace SastreriaPresupuestos
 
         private void UpdateCalendarViewButtons()
         {
+            var isListView = CalendarViewMode == "Lista";
             var isWeekView = CalendarViewMode == "Semana";
+            var isMonthView = CalendarViewMode == "Mes";
+
+            ListViewButton.Style = (Style)FindResource(
+                isListView
+                    ? "ActiveFilterButtonStyle"
+                    : "SecondaryButtonStyle");
 
             WeekViewButton.Style = (Style)FindResource(
                 isWeekView
@@ -3395,17 +3427,24 @@ namespace SastreriaPresupuestos
                     : "SecondaryButtonStyle");
 
             MonthViewButton.Style = (Style)FindResource(
-                CalendarViewMode == "Mes"
+                isMonthView
                     ? "ActiveFilterButtonStyle"
                     : "SecondaryButtonStyle");
+
+            DeliveriesListBox.Visibility = isListView
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             WeeklyColumnsItemsControl.Visibility = isWeekView
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
-            CalendarGroupsListBox.Visibility = isWeekView
-                ? Visibility.Collapsed
-                : Visibility.Visible;
+            CalendarGroupsListBox.Visibility = isMonthView
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            PreviousCalendarButton.IsEnabled = !isListView;
+            NextCalendarButton.IsEnabled = !isListView;
         }
 
         private void DepositTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
