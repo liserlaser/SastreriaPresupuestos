@@ -2627,9 +2627,9 @@ namespace SastreriaPresupuestos
             {
                 0 => ("Dashboard / Calendario", "Próximas entregas, vista semanal y vista mensual", "Inicio > Dashboard"),
                 1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "Inicio > Clientes"),
-                2 => ("Presupuestos", "Creación, edición y seguimiento de presupuestos", "Inicio > Presupuestos"),
-                3 => ("Productos", "Catálogo de productos y líneas de trabajo", "Inicio > Productos"),
-                4 => ("Documentos", "Exportación y consulta de documentos", "Inicio > Documentos"),
+                2 => ("Trabajos", "Resumen del presupuesto activo y datos principales", "Inicio > Trabajos"),
+                3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del presupuesto activo", "Inicio > Trabajos > Productos"),
+                4 => ("Trabajos · Documentos", "Generación de PDF y documentos del trabajo activo", "Inicio > Trabajos > Documentos"),
                 5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "Inicio > Ajustes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "Inicio")
             };
@@ -2655,16 +2655,16 @@ namespace SastreriaPresupuestos
 
             if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
             {
-                var section = sectionIndex switch
+                var workspaceSection = sectionIndex switch
                 {
                     TabProductos => "Productos",
                     TabDocumentos => "Documentos",
-                    _ => "Presupuestos"
+                    _ => "Resumen"
                 };
 
                 return quoteTitle == null
-                    ? $"Inicio > {section} > {clientName}"
-                    : $"Inicio > {section} > {clientName} > {quoteTitle}";
+                    ? $"Inicio > Trabajos > {workspaceSection} > {clientName}"
+                    : $"Inicio > Trabajos > {workspaceSection} > {clientName} > {quoteTitle}";
             }
 
             return fallback;
@@ -2694,24 +2694,45 @@ namespace SastreriaPresupuestos
             if (MainTabs == null)
                 return;
 
-            var buttons = new[]
+            var mainButtons = new[]
             {
-                DashboardNavButton,
-                ClientsNavButton,
-                QuotesNavButton,
-                ProductsNavButton,
-                DocumentsNavButton,
-                SettingsNavButton
+                (Button: DashboardNavButton, Tab: TabSemana),
+                (Button: ClientsNavButton, Tab: TabClientes),
+                (Button: QuotesNavButton, Tab: TabPresupuesto),
+                (Button: SettingsNavButton, Tab: TabAjustes)
             };
 
-            for (var i = 0; i < buttons.Length; i++)
+            foreach (var item in mainButtons)
             {
-                if (buttons[i] == null)
+                if (item.Button == null)
                     continue;
 
-                var isActive = MainTabs.SelectedIndex == i;
-                buttons[i].Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
-                buttons[i].BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
+                var isActive = item.Tab == TabPresupuesto
+                    ? MainTabs.SelectedIndex == TabPresupuesto ||
+                      MainTabs.SelectedIndex == TabProductos ||
+                      MainTabs.SelectedIndex == TabDocumentos
+                    : MainTabs.SelectedIndex == item.Tab;
+
+                item.Button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
+                item.Button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
+            }
+
+            var workspaceButtons = new[]
+            {
+                (Button: WorkspaceSummaryButton, Tab: TabPresupuesto),
+                (Button: WorkspaceProductsButton, Tab: TabProductos),
+                (Button: WorkspaceDocumentsButton, Tab: TabDocumentos)
+            };
+
+            foreach (var item in workspaceButtons)
+            {
+                if (item.Button == null)
+                    continue;
+
+                var isActive = MainTabs.SelectedIndex == item.Tab;
+                item.Button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(168, 178, 161)) : new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
+                item.Button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(168, 178, 161)) : new SolidColorBrush(MediaColor.FromRgb(200, 209, 194));
+                item.Button.Foreground = new SolidColorBrush(MediaColor.FromRgb(47, 51, 45));
             }
         }
 
@@ -2737,8 +2758,6 @@ namespace SastreriaPresupuestos
             DashboardNavButton.Content = IsSidebarCollapsed ? "📅" : "📅  Dashboard";
             ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
             QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Trabajos";
-            ProductsNavButton.Content = IsSidebarCollapsed ? "📦" : "📦  Productos";
-            DocumentsNavButton.Content = IsSidebarCollapsed ? "📄" : "📄  Documentos";
             SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
         }
 
