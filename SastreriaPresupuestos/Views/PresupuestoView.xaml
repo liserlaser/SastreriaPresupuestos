@@ -89,9 +89,9 @@
                                         Margin="24,0,0,0">
 
                                         <Button
-                                            x:Name="BudgetQuickExportPdfButton"
-                                            Content="PDF"
-                                            Width="92"
+                                            x:Name="BudgetQuickProductsButton"
+                                            Content="Productos"
+                                            Width="112"
                                             Height="38"
                                             Margin="0,0,8,0"
                                             Style="{StaticResource SecondaryButtonStyle}"/>
@@ -100,6 +100,14 @@
                                             x:Name="BudgetQuickDocumentsButton"
                                             Content="Documentos"
                                             Width="126"
+                                            Height="38"
+                                            Margin="0,0,8,0"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+
+                                        <Button
+                                            x:Name="BudgetQuickExportPdfButton"
+                                            Content="PDF"
+                                            Width="92"
                                             Height="38"
                                             Style="{StaticResource SecondaryButtonStyle}"/>
                                     </StackPanel>

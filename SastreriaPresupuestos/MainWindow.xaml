@@ -588,42 +588,44 @@
                                 Margin="0,12,0,10"/>
 
                             <TextBlock
-                                Text="WORKSPACE"
+                                Text="Workspace"
                                 FontSize="10"
                                 FontWeight="Bold"
                                 Foreground="{StaticResource MutedTextBrush}"
                                 Margin="0,0,0,6"/>
 
-                            <UniformGrid Columns="3" Margin="0,0,0,0">
+                            <UniformGrid Columns="3">
                                 <Button
-                                    x:Name="WorkspaceSummaryButton"
+                                    x:Name="ActiveSummaryButton"
                                     Content="Resumen"
                                     Tag="2"
+                                    Height="30"
                                     FontSize="11"
-                                    Padding="4,5"
+                                    Padding="4,2"
                                     Margin="0,0,4,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="SidebarNavButton_Click"/>
+                                    Click="WorkspaceSectionButton_Click"/>
 
                                 <Button
-                                    x:Name="WorkspaceProductsButton"
+                                    x:Name="ActiveProductsButton"
                                     Content="Productos"
                                     Tag="3"
+                                    Height="30"
                                     FontSize="11"
-                                    Padding="4,5"
-                                    Margin="2,0,2,0"
+                                    Padding="4,2"
+                                    Margin="0,0,4,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="SidebarNavButton_Click"/>
+                                    Click="WorkspaceSectionButton_Click"/>
 
                                 <Button
-                                    x:Name="WorkspaceDocumentsButton"
+                                    x:Name="ActiveDocumentsButton"
                                     Content="Docs"
                                     Tag="4"
+                                    Height="30"
                                     FontSize="11"
-                                    Padding="4,5"
-                                    Margin="4,0,0,0"
+                                    Padding="4,2"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    Click="SidebarNavButton_Click"/>
+                                    Click="WorkspaceSectionButton_Click"/>
                             </UniformGrid>
                         </StackPanel>
                     </Border>
@@ -642,11 +644,10 @@
                     <Image
                         x:Name="ShellLogoImage"
                         Source="/Resources/logo_vector_notxt.png"
-                        Width="130"
-                        Height="130"
+                        Width="160"
+                        Height="160"
                         Stretch="Uniform"
-                        HorizontalAlignment="Left"
-                        Margin="8,0,0,0"/>
+                        />
 
                     <TextBlock
                         x:Name="ShellFooterTextBlock"

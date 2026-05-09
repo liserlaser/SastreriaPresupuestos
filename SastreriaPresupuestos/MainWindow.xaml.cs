@@ -63,6 +63,7 @@ namespace SastreriaPresupuestos
         private TextBlock BudgetWorkspaceDeliveryTextBlock => PresupuestoView.BudgetWorkspaceDeliveryTextBlock;
         private TextBlock BudgetWorkspaceTotalTextBlock => PresupuestoView.BudgetWorkspaceTotalTextBlock;
         private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
+        private Button BudgetQuickProductsButton => PresupuestoView.BudgetQuickProductsButton;
         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
@@ -2492,6 +2493,9 @@ namespace SastreriaPresupuestos
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
             ToggleSidebarButton.Click += ToggleSidebarButton_Click;
+            BudgetQuickProductsButton.Click += BudgetQuickProductsButton_Click;
+            BudgetQuickDocumentsButton.Click += BudgetQuickDocumentsButton_Click;
+            BudgetQuickExportPdfButton.Click += BudgetQuickExportPdfButton_Click;
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
@@ -2629,7 +2633,7 @@ namespace SastreriaPresupuestos
                 1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "Inicio > Clientes"),
                 2 => ("Trabajos", "Resumen del presupuesto activo y datos principales", "Inicio > Trabajos"),
                 3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del presupuesto activo", "Inicio > Trabajos > Productos"),
-                4 => ("Trabajos · Documentos", "Generación de PDF y documentos del trabajo activo", "Inicio > Trabajos > Documentos"),
+                4 => ("Trabajos · Documentos", "PDFs, ficha de cliente y exportaciones del trabajo activo", "Inicio > Trabajos > Documentos"),
                 5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "Inicio > Ajustes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "Inicio")
             };
@@ -2655,16 +2659,20 @@ namespace SastreriaPresupuestos
 
             if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
             {
-                var workspaceSection = sectionIndex switch
+                var childSection = sectionIndex switch
                 {
                     TabProductos => "Productos",
                     TabDocumentos => "Documentos",
-                    _ => "Resumen"
+                    _ => null
                 };
 
-                return quoteTitle == null
-                    ? $"Inicio > Trabajos > {workspaceSection} > {clientName}"
-                    : $"Inicio > Trabajos > {workspaceSection} > {clientName} > {quoteTitle}";
+                var basePath = quoteTitle == null
+                    ? $"Inicio > Trabajos > {clientName}"
+                    : $"Inicio > Trabajos > {clientName} > {quoteTitle}";
+
+                return childSection == null
+                    ? basePath
+                    : $"{basePath} > {childSection}";
             }
 
             return fallback;
@@ -2694,45 +2702,33 @@ namespace SastreriaPresupuestos
             if (MainTabs == null)
                 return;
 
-            var mainButtons = new[]
+            SetSidebarButtonActive(DashboardNavButton, MainTabs.SelectedIndex == TabSemana);
+            SetSidebarButtonActive(ClientsNavButton, MainTabs.SelectedIndex == TabClientes);
+            SetSidebarButtonActive(QuotesNavButton, MainTabs.SelectedIndex == TabPresupuesto || MainTabs.SelectedIndex == TabProductos || MainTabs.SelectedIndex == TabDocumentos);
+            SetSidebarButtonActive(SettingsNavButton, MainTabs.SelectedIndex == TabAjustes);
+        }
+
+        private void SetSidebarButtonActive(Button button, bool isActive)
+        {
+            if (button == null)
+                return;
+
+            button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
+            button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
+        }
+
+        private void WorkspaceSectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button)
+                return;
+
+            if (button.Tag == null)
+                return;
+
+            if (int.TryParse(button.Tag.ToString(), out var targetTab))
             {
-                (Button: DashboardNavButton, Tab: TabSemana),
-                (Button: ClientsNavButton, Tab: TabClientes),
-                (Button: QuotesNavButton, Tab: TabPresupuesto),
-                (Button: SettingsNavButton, Tab: TabAjustes)
-            };
-
-            foreach (var item in mainButtons)
-            {
-                if (item.Button == null)
-                    continue;
-
-                var isActive = item.Tab == TabPresupuesto
-                    ? MainTabs.SelectedIndex == TabPresupuesto ||
-                      MainTabs.SelectedIndex == TabProductos ||
-                      MainTabs.SelectedIndex == TabDocumentos
-                    : MainTabs.SelectedIndex == item.Tab;
-
-                item.Button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
-                item.Button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
-            }
-
-            var workspaceButtons = new[]
-            {
-                (Button: WorkspaceSummaryButton, Tab: TabPresupuesto),
-                (Button: WorkspaceProductsButton, Tab: TabProductos),
-                (Button: WorkspaceDocumentsButton, Tab: TabDocumentos)
-            };
-
-            foreach (var item in workspaceButtons)
-            {
-                if (item.Button == null)
-                    continue;
-
-                var isActive = MainTabs.SelectedIndex == item.Tab;
-                item.Button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(168, 178, 161)) : new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
-                item.Button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(168, 178, 161)) : new SolidColorBrush(MediaColor.FromRgb(200, 209, 194));
-                item.Button.Foreground = new SolidColorBrush(MediaColor.FromRgb(47, 51, 45));
+                ShellBreadcrumbOverride = null;
+                GoToTab(targetTab);
             }
         }
 
@@ -3012,10 +3008,16 @@ namespace SastreriaPresupuestos
             ExportPdfButton_Click(sender, e);
         }
 
+        private void BudgetQuickProductsButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateContextBreadcrumb("Trabajos", TabProductos);
+            NavigateToSection(TabProductos);
+        }
+
         private void BudgetQuickDocumentsButton_Click(object sender, RoutedEventArgs e)
         {
-            UpdateContextBreadcrumb("Presupuestos", TabDocumentos);
-            NavigateToSection(4);
+            UpdateContextBreadcrumb("Trabajos", TabDocumentos);
+            NavigateToSection(TabDocumentos);
         }
 
         private void OpenQuoteById(int quoteId, int targetTab = TabPresupuesto, string? breadcrumbOrigin = null)
@@ -3090,21 +3092,27 @@ namespace SastreriaPresupuestos
                 TabProductos => "Productos",
                 TabDocumentos => "Documentos",
                 TabClientes => "Clientes",
-                _ => "Presupuestos"
+                _ => "Trabajos"
             };
 
             var parts = new List<string> { "Inicio" };
 
-            if (!string.IsNullOrWhiteSpace(origin))
-                parts.Add(origin);
+            if (targetTab == TabClientes)
+            {
+                parts.Add("Clientes");
+                parts.Add(clientName);
+            }
+            else
+            {
+                parts.Add("Trabajos");
+                parts.Add(clientName);
 
-            if (parts.Last() != target)
-                parts.Add(target);
+                if (quoteTitle != null)
+                    parts.Add(quoteTitle);
 
-            parts.Add(clientName);
-
-            if (quoteTitle != null)
-                parts.Add(quoteTitle);
+                if (targetTab == TabProductos || targetTab == TabDocumentos)
+                    parts.Add(target);
+            }
 
             ShellBreadcrumbOverride = string.Join(" > ", parts);
         }
@@ -3227,6 +3235,7 @@ namespace SastreriaPresupuestos
 
             ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
             ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
+            BudgetQuickProductsButton.IsEnabled = hasSavedClient;
             BudgetQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
             BudgetQuickDocumentsButton.IsEnabled = hasSavedClient;
 
