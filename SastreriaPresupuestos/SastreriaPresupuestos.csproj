@@ -1,42 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-	<ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net9.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Resources\7_1_125589-159125425871522.jpeg" />
-    <None Remove="Resources\logo.png" />
-    <None Remove="Resources\logosq.png" />
-    <None Remove="Resources\logovectordefA.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Resources\logovectordefA.png" />
+		<None Remove="Resources\logo_vector_notxt.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Resources\logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\logosq.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\logovectordefA.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<!-- Logo usado para generar PDFs -->
+		<Content Include="Resources\logovectordefA.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.15">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="QuestPDF" Version="2026.2.4" />
-  </ItemGroup>
+		<!-- Logo usado solo en la cabecera de la ventana principal -->
+		<Content Include="Resources\logo_vector_notxt.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.15" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.15">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="QuestPDF" Version="2026.2.4" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Resource Include="Resources\AppIcon.ico" />

@@ -369,8 +369,8 @@
 
                 <Image
 					Grid.Column="0"
-					Source="/Resources/logovectordefA.png"
-					Height="148"
+					Source="/Resources/logo_vector_notxt.png"
+					Height="124"
 					Stretch="Uniform"
 					VerticalAlignment="Center"/>
 
