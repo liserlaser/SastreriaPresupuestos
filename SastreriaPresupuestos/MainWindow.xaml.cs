@@ -2262,8 +2262,80 @@ namespace SastreriaPresupuestos
             if (BudgetWorkspaceTotalTextBlock != null)
                 BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
 
+            UpdateContextPanel(clientName, quoteTitle, total);
+
             UpdateEmptyStateMessages();
             UpdateWorkflowState();
+        }
+
+
+        private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
+        {
+            if (ContextPanelTitleTextBlock == null)
+                return;
+
+            var hasClient = clientName != "—";
+            var hasQuote = quoteTitle != "—";
+            var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
+            var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
+                ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
+                : "—";
+            var eventText = EventDatePicker.SelectedDate.HasValue
+                ? EventDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
+                : "—";
+
+            var deposit = GetDepositValue();
+            var pending = Math.Max(0, total - deposit);
+
+            ContextPanelTitleTextBlock.Text = hasQuote
+                ? quoteTitle
+                : hasClient ? clientName : "Sin selección";
+
+            ContextPanelSubtitleTextBlock.Text = hasQuote
+                ? "Presupuesto activo dentro del workspace."
+                : hasClient ? "Cliente activo sin presupuesto seleccionado." : "Selecciona un cliente, presupuesto o entrega.";
+
+            ContextClientTextBlock.Text = $"Cliente: {clientName}";
+            ContextQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
+            ContextStatusTextBlock.Text = $"Estado: {status}";
+            ContextDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
+            ContextEventTextBlock.Text = $"Evento: {eventText}";
+            ContextTotalTextBlock.Text = $"Total: {total:N2} €";
+            ContextPendingTextBlock.Text = $"Pendiente: {pending:N2} €";
+
+            var notes = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(QuoteNotesTextBox.Text))
+                notes.Add($"Presupuesto: {QuoteNotesTextBox.Text.Trim()}");
+
+            if (!string.IsNullOrWhiteSpace(ClientNotesTextBox.Text))
+                notes.Add($"Cliente: {ClientNotesTextBox.Text.Trim()}");
+
+            ContextNotesTextBlock.Text = notes.Count == 0
+                ? "Sin notas visibles."
+                : string.Join(Environment.NewLine + Environment.NewLine, notes);
+        }
+
+        private void ContextSaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveButton_Click(sender, e);
+        }
+
+        private void ContextMarkDeliveredButton_Click(object sender, RoutedEventArgs e)
+        {
+            QuoteStatusComboBox.SelectedItem = "Entregado";
+            MarkAsChanged();
+            UpdateActiveContext();
+        }
+
+        private void ContextExportPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportPdfButton_Click(sender, e);
+        }
+
+        private void ContextDocumentsButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToSection(4);
         }
 
         private void ConfigureCulture()

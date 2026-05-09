@@ -463,8 +463,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="310"/>
+            </Grid.ColumnDefinitions>
+
             <!-- CABECERA FIJA CONTEXTUAL -->
-            <Grid Margin="0,0,0,16">
+            <Grid Grid.ColumnSpan="2" Margin="0,0,0,16">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -554,6 +559,7 @@
             <TabControl
                 x:Name="MainTabs"
                 Grid.Row="1"
+                Grid.Column="0"
                 FontSize="14"
                 FontWeight="SemiBold"
                 SelectedIndex="0"
@@ -2655,6 +2661,124 @@
                 </TabItem>
 
             </TabControl>
+
+            <!-- PANEL CONTEXTUAL DERECHO -->
+            <Border
+                x:Name="ContextPanelBorder"
+                Grid.Row="1"
+                Grid.Column="1"
+                Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource BorderSoftBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="16"
+                Margin="16,0,0,0">
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+
+                        <TextBlock
+                            Text="CONTEXTO"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource AccentBrush}"/>
+
+                        <TextBlock
+                            x:Name="ContextPanelTitleTextBlock"
+                            Text="Sin selección"
+                            FontSize="21"
+                            FontWeight="Bold"
+                            TextWrapping="Wrap"
+                            Margin="0,6,0,2"/>
+
+                        <TextBlock
+                            x:Name="ContextPanelSubtitleTextBlock"
+                            Text="Selecciona un cliente, presupuesto o entrega."
+                            FontSize="13"
+                            Foreground="{StaticResource MutedTextBrush}"
+                            TextWrapping="Wrap"
+                            Margin="0,0,0,14"/>
+
+                        <Border
+                            Background="#F8FAF6"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12"
+                            Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Resumen" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                                <TextBlock x:Name="ContextClientTextBlock" Text="Cliente: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ContextQuoteTextBlock" Text="Presupuesto: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ContextStatusTextBlock" Text="Estado: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ContextDeliveryTextBlock" Text="Entrega: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ContextEventTextBlock" Text="Evento: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ContextTotalTextBlock" Text="Total: 0,00 €" FontSize="15" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="ContextPendingTextBlock" Text="Pendiente: 0,00 €" FontSize="13" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                            Background="#F8FAF6"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12"
+                            Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Acciones rápidas" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                                <Button
+                                    Content="Guardar"
+                                    Height="36"
+                                    Margin="0,0,0,8"
+                                    Style="{StaticResource PrimaryActionButtonStyle}"
+                                    Click="ContextSaveButton_Click"/>
+
+                                <Button
+                                    Content="Marcar entregado"
+                                    Height="34"
+                                    Margin="0,0,0,8"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ContextMarkDeliveredButton_Click"/>
+
+                                <Button
+                                    Content="Exportar PDF"
+                                    Height="34"
+                                    Margin="0,0,0,8"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ContextExportPdfButton_Click"/>
+
+                                <Button
+                                    Content="Ver documentos"
+                                    Height="34"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ContextDocumentsButton_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                            Background="#F8FAF6"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="Notas" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
+                                <TextBlock
+                                    x:Name="ContextNotesTextBlock"
+                                    Text="Sin notas visibles."
+                                    FontSize="13"
+                                    Foreground="{StaticResource MutedTextBrush}"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
 
         </Grid>
 
