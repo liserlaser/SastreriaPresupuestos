@@ -1251,13 +1251,95 @@
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <!-- PRESUPUESTOS -->
+                                    <!-- FICHA RÁPIDA DEL CLIENTE -->
+                                    <Border
+                                        Grid.Row="0"
+                                        Background="#F8FAF6"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="16"
+                                        Margin="0,0,0,16">
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <DockPanel Grid.Row="0">
+                                                <StackPanel DockPanel.Dock="Left">
+                                                    <TextBlock
+                                                        x:Name="ClientDetailNameTextBlock"
+                                                        Text="Selecciona un cliente"
+                                                        FontSize="20"
+                                                        FontWeight="Bold"
+                                                        Foreground="{StaticResource PrimaryBrush}"/>
+
+                                                    <TextBlock
+                                                        x:Name="ClientDetailMetaTextBlock"
+                                                        Text="Busca o selecciona un cliente para ver su ficha rápida."
+                                                        FontSize="13"
+                                                        Foreground="{StaticResource MutedTextBrush}"
+                                                        Margin="0,4,0,0"/>
+                                                </StackPanel>
+
+                                                <StackPanel
+                                                    DockPanel.Dock="Right"
+                                                    Orientation="Horizontal"
+                                                    HorizontalAlignment="Right">
+
+                                                    <Button
+                                                        x:Name="NewQuoteFromClientButton"
+                                                        Content="+ Presupuesto"
+                                                        Height="32"
+                                                        Margin="0,0,8,0"
+                                                        Style="{StaticResource PrimaryActionButtonStyle}"/>
+
+                                                    <Button
+                                                        x:Name="OpenSelectedClientQuoteButton"
+                                                        Content="Abrir"
+                                                        Height="32"
+                                                        Style="{StaticResource SecondaryButtonStyle}"/>
+                                                </StackPanel>
+                                            </DockPanel>
+
+                                            <UniformGrid Grid.Row="1" Columns="3" Margin="0,14,0,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="Teléfono" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}"/>
+                                                    <TextBlock x:Name="ClientDetailPhoneTextBlock" Text="—" FontSize="14" Margin="0,3,10,0"/>
+                                                </StackPanel>
+
+                                                <StackPanel>
+                                                    <TextBlock Text="DNI" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}"/>
+                                                    <TextBlock x:Name="ClientDetailDniTextBlock" Text="—" FontSize="14" Margin="0,3,10,0"/>
+                                                </StackPanel>
+
+                                                <StackPanel>
+                                                    <TextBlock Text="Próxima entrega" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}"/>
+                                                    <TextBlock x:Name="ClientDetailNextDeliveryTextBlock" Text="—" FontSize="14" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                            </UniformGrid>
+
+                                            <TextBlock
+                                                x:Name="ClientDetailSummaryTextBlock"
+                                                Grid.Row="2"
+                                                Text="Sin cliente seleccionado."
+                                                FontSize="13"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                Margin="0,12,0,0"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- PRESUPUESTOS DEL CLIENTE -->
                                     <TextBlock
-										Grid.Row="0"
-										Text="PRESUPUESTOS"
+										Grid.Row="1"
+										Text="PRESUPUESTOS DEL CLIENTE"
 										FontSize="18"
 										FontWeight="Bold"
 										Foreground="{StaticResource PrimaryBrush}"
@@ -1265,7 +1347,7 @@
 
                                     <ListBox
 										x:Name="QuotesListBox"
-										Grid.Row="1"
+										Grid.Row="2"
 										HorizontalContentAlignment="Stretch"
 										ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
 

@@ -418,6 +418,7 @@ namespace SastreriaPresupuestos
 
             QuotesListBox.ItemsSource = quotes;
             BudgetQuotesListBox.ItemsSource = quotes;
+            UpdateClientDetailPanel(client, quotes);
 
             Products.Clear();
 
@@ -450,6 +451,82 @@ namespace SastreriaPresupuestos
             UpdateSecondaryPlaceholders();
             UpdateGlobalSearchPlaceholder();
             UpdateShellNavigationState();
+        }
+
+        private void UpdateClientDetailPanel(Models.Client? client, IEnumerable<Models.Quote>? quotes)
+        {
+            if (ClientDetailNameTextBlock == null)
+                return;
+
+            if (client == null)
+            {
+                ClientDetailNameTextBlock.Text = "Selecciona un cliente";
+                ClientDetailMetaTextBlock.Text = "Busca o selecciona un cliente para ver su ficha rápida.";
+                ClientDetailPhoneTextBlock.Text = "—";
+                ClientDetailDniTextBlock.Text = "—";
+                ClientDetailNextDeliveryTextBlock.Text = "—";
+                ClientDetailSummaryTextBlock.Text = "Sin cliente seleccionado.";
+                OpenSelectedClientQuoteButton.IsEnabled = false;
+                NewQuoteFromClientButton.IsEnabled = false;
+                return;
+            }
+
+            var quoteList = quotes?.ToList() ?? new List<Models.Quote>();
+            var nextQuote = quoteList
+                .Where(q => q.DeliveryDate.Date >= DateTime.Today)
+                .OrderBy(q => q.DeliveryDate)
+                .FirstOrDefault();
+
+            ClientDetailNameTextBlock.Text = client.Name;
+            ClientDetailMetaTextBlock.Text = quoteList.Count == 1
+                ? "1 presupuesto asociado"
+                : $"{quoteList.Count} presupuestos asociados";
+
+            ClientDetailPhoneTextBlock.Text = string.IsNullOrWhiteSpace(client.DisplayPhone) ? "—" : client.DisplayPhone;
+            ClientDetailDniTextBlock.Text = string.IsNullOrWhiteSpace(client.Dni) ? "—" : client.Dni;
+            ClientDetailNextDeliveryTextBlock.Text = nextQuote == null
+                ? "Sin próximas entregas"
+                : nextQuote.DeliveryDate.ToString("dd/MM/yyyy");
+
+            ClientDetailSummaryTextBlock.Text = nextQuote == null
+                ? "No hay entregas próximas para este cliente."
+                : $"Próxima entrega: {nextQuote.DisplayTitle} · {nextQuote.StatusLabelText} · {nextQuote.Total:N2} €";
+
+            OpenSelectedClientQuoteButton.IsEnabled = quoteList.Count > 0;
+            NewQuoteFromClientButton.IsEnabled = true;
+        }
+
+        private void OpenSelectedClientQuoteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ClientsListBox.SelectedItem == null)
+            {
+                MessageBox.Show(
+                    "Selecciona un cliente para abrir sus presupuestos.",
+                    "Abrir presupuesto",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            if (QuotesListBox.SelectedItem == null && QuotesListBox.Items.Count > 0)
+                QuotesListBox.SelectedIndex = 0;
+
+            GoToTab(TabPresupuesto);
+        }
+
+        private void NewQuoteFromClientButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ClientsListBox.SelectedItem == null)
+            {
+                MessageBox.Show(
+                    "Selecciona un cliente antes de crear un presupuesto.",
+                    "Nuevo presupuesto",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            NewQuoteButton_Click(sender, e);
         }
 
         private void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1555,6 +1632,7 @@ namespace SastreriaPresupuestos
             ClientsListBox.SelectedItem = null;
             QuotesListBox.SelectedItem = null;
             QuotesListBox.ItemsSource = null;
+            UpdateClientDetailPanel(null, null);
 
             ClientNameTextBox.Text = "";
             PhoneTextBox.Text = "";
@@ -1585,6 +1663,7 @@ namespace SastreriaPresupuestos
             UpdateActiveContext();
             UpdateWorkflowState();
             UpdateSecondaryPlaceholders();
+            UpdateClientDetailPanel(null, null);
         }
 
         private void NewClientButton_Click(object sender, RoutedEventArgs e)
@@ -2198,6 +2277,8 @@ namespace SastreriaPresupuestos
             SaveButton.Click += SaveButton_Click;
             SaveProductsButton.Click += SaveButton_Click;
             NewQuoteButton.Click += NewQuoteButton_Click;
+            NewQuoteFromClientButton.Click += NewQuoteFromClientButton_Click;
+            OpenSelectedClientQuoteButton.Click += OpenSelectedClientQuoteButton_Click;
             NewClientButton.Click += NewClientButton_Click;
             SaveClientButton.Click += SaveClientButton_Click;
             DeleteClientButton.Click += DeleteClientButton_Click;
