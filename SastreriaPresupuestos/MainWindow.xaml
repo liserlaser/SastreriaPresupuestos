@@ -1,4 +1,4 @@
-<Window x:Class="SastreriaPresupuestos.MainWindow"
+﻿<Window x:Class="SastreriaPresupuestos.MainWindow"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:sys="clr-namespace:System;assembly=System.Runtime"
@@ -466,8 +466,11 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ToolTip" Value="Doble clic para abrir el trabajo"/>
             <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=(ItemsControl.AlternationIndex)}" Value="1">
+                    <Setter Property="Background" Value="#F6F8F3"/>
+                </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F8FAF6"/>
+                    <Setter Property="Background" Value="#EEF2EA"/>
                     <Setter Property="BorderBrush" Value="#C8D1C2"/>
                 </Trigger>
             </Style.Triggers>
@@ -509,7 +512,7 @@
                         x:Name="ShellBrandTextBlock"
                         Text="Martínez Mor"
                         VerticalAlignment="Center"
-                        FontSize="16"
+                        FontSize="20"
                         FontWeight="Bold"/>
 
                     <Button
@@ -675,7 +678,7 @@
 
                             <TextBlock
                                 x:Name="ActiveDepositTextBlock"
-                                Text="Señal: 0,00 €"
+                                Text="A cuenta: 0,00 €"
                                 FontSize="11"
                                 Foreground="{StaticResource MutedTextBrush}"
                                 Margin="0,4,0,0"
@@ -742,9 +745,9 @@
                         </StackPanel>
                     </Border>
 
-                    <Button x:Name="DashboardNavButton" Content="🏠  Inicio" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="ClientsNavButton" Content="👥  Clientes" Tag="1" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="QuotesNavButton" Content="🧾  Trabajos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="DashboardNavButton" Content="⌂ Inicio" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="ClientsNavButton" Content="👤 Clientes" Tag="1" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="QuotesNavButton" Content="📜 Trabajos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                 </StackPanel>
 
                 <StackPanel
@@ -802,8 +805,8 @@
 
                     <TextBlock
                         x:Name="ShellBreadcrumbTextBlock"
-                        Text="🏠"
-                        FontSize="12"
+                        Text="⌂"
+                        FontSize="16"
                         FontWeight="SemiBold"
                         Foreground="{StaticResource MutedTextBrush}"
                         Margin="0,12,0,0"/>
@@ -825,7 +828,7 @@
 
                     <Button
                         x:Name="BackNavigationButton"
-                        Content="← Atrás"
+                        Content="Atrás"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Margin="0,0,8,0"
                         ToolTip="Volver a la sección anterior"
