@@ -41,6 +41,22 @@ namespace SastreriaPresupuestos
         private TextBlock EmptyWeekTextBlock => DashboardView.EmptyWeekTextBlock;
         private ItemsControl WeeklyColumnsItemsControl => DashboardView.WeeklyColumnsItemsControl;
         private ListBox CalendarGroupsListBox => DashboardView.CalendarGroupsListBox;
+        private Button NewClientButton => ClientesView.NewClientButton;
+        private Button DeleteClientButton => ClientesView.DeleteClientButton;
+        private TextBox ClientSearchTextBox => ClientesView.ClientSearchTextBox;
+        private TextBlock ClientSearchPlaceholderTextBlock => ClientesView.ClientSearchPlaceholderTextBlock;
+        private WrapPanel StatusFiltersPanel => ClientesView.StatusFiltersPanel;
+        private WrapPanel DeliveryFiltersPanel => ClientesView.DeliveryFiltersPanel;
+        private ListBox ClientsListBox => ClientesView.ClientsListBox;
+        private TextBlock ClientDetailNameTextBlock => ClientesView.ClientDetailNameTextBlock;
+        private TextBlock ClientDetailMetaTextBlock => ClientesView.ClientDetailMetaTextBlock;
+        private Button NewQuoteFromClientButton => ClientesView.NewQuoteFromClientButton;
+        private Button OpenSelectedClientQuoteButton => ClientesView.OpenSelectedClientQuoteButton;
+        private TextBlock ClientDetailPhoneTextBlock => ClientesView.ClientDetailPhoneTextBlock;
+        private TextBlock ClientDetailDniTextBlock => ClientesView.ClientDetailDniTextBlock;
+        private TextBlock ClientDetailNextDeliveryTextBlock => ClientesView.ClientDetailNextDeliveryTextBlock;
+        private TextBlock ClientDetailSummaryTextBlock => ClientesView.ClientDetailSummaryTextBlock;
+        private ListBox QuotesListBox => ClientesView.QuotesListBox;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -565,7 +581,7 @@ namespace SastreriaPresupuestos
             NewQuoteButton_Click(sender, e);
         }
 
-        private void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        internal void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (ClientsListBox.SelectedItem == null)
                 return;
@@ -790,7 +806,7 @@ namespace SastreriaPresupuestos
             }
         }
 
-        private void DeleteQuote_Click(object sender, RoutedEventArgs e)
+        internal void DeleteQuote_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
@@ -1076,7 +1092,7 @@ namespace SastreriaPresupuestos
                 .ToList();
         }
 
-        private void ClientSearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        internal void ClientSearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             ClientSearchPlaceholderTextBlock.Visibility =
                 string.IsNullOrWhiteSpace(ClientSearchTextBox.Text)
@@ -1619,7 +1635,7 @@ namespace SastreriaPresupuestos
                 .Replace("Confeccion", "Confección");
         }
 
-        private void StatusFilterButton_Click(object sender, RoutedEventArgs e)
+        internal void StatusFilterButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
@@ -1890,7 +1906,7 @@ namespace SastreriaPresupuestos
                 MessageBoxImage.Information);
         }
 
-        private void DeliveryFilterButton_Click(object sender, RoutedEventArgs e)
+        internal void DeliveryFilterButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.Button button)
                 return;
