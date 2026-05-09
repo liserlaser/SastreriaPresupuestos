@@ -293,128 +293,120 @@
 
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <UniformGrid Columns="{Binding Items.Count, RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
+                                                <StackPanel/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
 
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border
-													Background="#F8FAF6"
-													BorderBrush="{StaticResource BorderSoftBrush}"
-													BorderThickness="1"
-													CornerRadius="12"
-													Padding="10"
-													Margin="0,0,8,0">
+                                                    Background="#F8FAF6"
+                                                    BorderBrush="{StaticResource BorderSoftBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="14"
+                                                    Padding="14"
+                                                    Margin="0,0,0,12">
+                                                    <StackPanel>
+                                                        <TextBlock
+                                                            Text="{Binding DayTitle}"
+                                                            FontSize="16"
+                                                            FontWeight="Bold"
+                                                            Foreground="{StaticResource PrimaryBrush}"
+                                                            Margin="0,0,0,10"/>
 
-                                                    <Grid>
+                                                        <ItemsControl ItemsSource="{Binding Deliveries}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Border
+                                                                        Background="{Binding CardBackground}"
+                                                                        BorderBrush="{Binding CardBorderBrush}"
+                                                                        BorderThickness="{Binding CardBorderThickness}"
+                                                                        CornerRadius="12"
+                                                                        Padding="12"
+                                                                        Margin="0,0,0,8"
+                                                                        Cursor="Hand"
+                                                                        ToolTip="Doble clic para abrir el trabajo">
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="110"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                                <ColumnDefinition Width="Auto"/>
+                                                                            </Grid.ColumnDefinitions>
 
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="*"/>
-                                                        </Grid.RowDefinitions>
+                                                                            <TextBlock
+                                                                                Text="{Binding DayText}"
+                                                                                FontSize="12"
+                                                                                FontWeight="SemiBold"
+                                                                                Foreground="{StaticResource MutedTextBrush}"
+                                                                                VerticalAlignment="Center"/>
+
+                                                                            <StackPanel Grid.Column="1" Margin="8,0,16,0">
+                                                                                <TextBlock
+                                                                                    Text="{Binding ClientName}"
+                                                                                    FontSize="15"
+                                                                                    FontWeight="{Binding ClientNameWeight}"
+                                                                                    TextTrimming="CharacterEllipsis"/>
+
+                                                                                <TextBlock
+                                                                                    Text="{Binding DisplayTitle}"
+                                                                                    FontSize="13"
+                                                                                    Foreground="{StaticResource MutedTextBrush}"
+                                                                                    TextTrimming="CharacterEllipsis"
+                                                                                    Margin="0,2,0,0"/>
+
+                                                                                <TextBlock
+                                                                                    Text="{Binding ClientPhone}"
+                                                                                    FontSize="12"
+                                                                                    Foreground="{StaticResource MutedTextBrush}"
+                                                                                    TextTrimming="CharacterEllipsis"
+                                                                                    Margin="0,2,0,0"/>
+                                                                            </StackPanel>
+
+                                                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                                <Border
+                                                                                    Background="{Binding StatusBackground}"
+                                                                                    CornerRadius="10"
+                                                                                    Padding="8,3"
+                                                                                    HorizontalAlignment="Right">
+                                                                                    <TextBlock
+                                                                                        Text="{Binding StatusLabelText}"
+                                                                                        FontSize="11"
+                                                                                        FontWeight="Bold"
+                                                                                        Foreground="{Binding StatusForeground}"/>
+                                                                                </Border>
+
+                                                                                <TextBlock
+                                                                                    Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                                                                    FontSize="13"
+                                                                                    FontWeight="SemiBold"
+                                                                                    Foreground="{StaticResource PrimaryBrush}"
+                                                                                    HorizontalAlignment="Right"
+                                                                                    Margin="0,5,0,0"/>
+                                                                            </StackPanel>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
 
                                                         <TextBlock
-															Text="{Binding DayTitle}"
-															FontSize="14"
-															FontWeight="Bold"
-															Foreground="{StaticResource PrimaryBrush}"
-															TextAlignment="Center"
-															Margin="0,0,0,10"/>
-
-                                                        <ScrollViewer
-															Grid.Row="1"
-															VerticalScrollBarVisibility="Auto"
-															HorizontalScrollBarVisibility="Disabled">
-
-                                                            <StackPanel>
-
-                                                                <ItemsControl ItemsSource="{Binding Deliveries}">
-
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <Border
-																				Background="{Binding CardBackground}"
-																				BorderBrush="{Binding CardBorderBrush}"
-																				BorderThickness="{Binding CardBorderThickness}"
-																				CornerRadius="10"
-																				Padding="10"
-																				Margin="0,0,0,8"
-																				Cursor="Hand"
-																				ToolTip="Doble clic para abrir el trabajo">
-
-                                                                                <StackPanel>
-
-                                                                                    <TextBlock
-																						Text="{Binding ClientName}"
-																						FontSize="13"
-																						FontWeight="{Binding ClientNameWeight}"
-																						TextWrapping="Wrap"/>
-
-                                                                                    <TextBlock
-																						Text="{Binding DisplayTitle}"
-																						FontSize="12"
-																						Foreground="{StaticResource MutedTextBrush}"
-																						TextWrapping="Wrap"
-																						Margin="0,2,0,0"/>
-
-                                                                                    <Border
-																						Background="{Binding StatusBackground}"
-																						CornerRadius="8"
-																						Padding="7,3"
-																						HorizontalAlignment="Left"
-																						Margin="0,7,0,0">
-
-                                                                                        <TextBlock
-																							Text="{Binding StatusLabelText}"
-																							FontSize="11"
-																							FontWeight="Bold"
-																							Foreground="{Binding StatusForeground}"/>
-
-                                                                                    </Border>
-
-                                                                                    <TextBlock
-																						Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
-																						FontSize="12"
-																						FontWeight="SemiBold"
-																						Foreground="{StaticResource PrimaryBrush}"
-																						Margin="0,6,0,0"/>
-
-                                                                                </StackPanel>
-
-                                                                            </Border>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-
-                                                                </ItemsControl>
-
-                                                                <TextBlock
-																	Text="Sin entregas"
-																	FontSize="12"
-																	Foreground="{StaticResource MutedTextBrush}"
-																	FontStyle="Italic"
-																	TextAlignment="Center"
-																	Margin="0,8,0,0">
-
-                                                                    <TextBlock.Style>
-                                                                        <Style TargetType="TextBlock">
-                                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding HasDeliveries}" Value="False">
-                                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </TextBlock.Style>
-
-                                                                </TextBlock>
-
-                                                            </StackPanel>
-
-                                                        </ScrollViewer>
-
-                                                    </Grid>
-
+                                                            Text="Sin entregas"
+                                                            FontSize="12"
+                                                            Foreground="{StaticResource MutedTextBrush}"
+                                                            FontStyle="Italic"
+                                                            Margin="0,4,0,0">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasDeliveries}" Value="False">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </StackPanel>
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>

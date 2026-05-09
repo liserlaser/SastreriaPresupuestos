@@ -181,6 +181,36 @@
             <Setter Property="Padding" Value="10,6"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="ActiveFilterButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -402,6 +432,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock
+                        x:Name="ShellBrandTextBlock"
                         Text="Martínez Mor"
                         VerticalAlignment="Center"
                         FontSize="16"
@@ -645,7 +676,8 @@
                 <StackPanel
                     x:Name="ShellFooterPanel"
                     Grid.Row="3"
-                    Margin="0,18,0,0">
+                    Margin="0,18,0,0"
+                    HorizontalAlignment="Center">
 
                     <Image
                         x:Name="ShellLogoImage"
@@ -675,6 +707,10 @@
 
             <!-- CABECERA FIJA CONTEXTUAL -->
             <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
@@ -699,6 +735,26 @@
                         Margin="0,12,0,0"/>
                 </StackPanel>
 
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Top"
+                    Margin="16,2,0,0">
+                    <Button
+                        x:Name="BackNavigationButton"
+                        Content="← Atrás"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,0,8,0"
+                        ToolTip="Volver a la sección anterior"
+                        Click="BackNavigationButton_Click"/>
+
+                    <Button
+                        x:Name="CreateQuoteShellButton"
+                        Content="＋ Crear Presupuesto"
+                        Style="{StaticResource PrimaryActionButtonStyle}"
+                        ToolTip="Crear un nuevo presupuesto"
+                        Click="NewQuoteButton_Click"/>
+                </StackPanel>
             </Grid>
             <!-- PESTAÑAS -->
             <TabControl

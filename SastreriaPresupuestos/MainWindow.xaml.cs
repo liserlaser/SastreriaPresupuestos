@@ -155,6 +155,7 @@ namespace SastreriaPresupuestos
         private bool SuppressSelectionConfirm = false;
         private string? ShellBreadcrumbOverride = null;
         private int? PendingNavigationTargetTab = null;
+        private int? PreviousNavigationTab = null;
 
         private const int TabSemana = 0;
         private const int TabClientes = 1;
@@ -2597,11 +2598,30 @@ namespace SastreriaPresupuestos
             if (sectionIndex < 0 || sectionIndex >= MainTabs.Items.Count)
                 return;
 
+            if (MainTabs.SelectedIndex != sectionIndex)
+                PreviousNavigationTab = MainTabs.SelectedIndex;
+
             MainTabs.SelectedIndex = sectionIndex;
             UpdateShellNavigationState();
         }
 
         private void GoToTab(int tabIndex) => NavigateToSection(tabIndex);
+
+        private void BackNavigationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (PreviousNavigationTab.HasValue)
+            {
+                var targetTab = PreviousNavigationTab.Value;
+                PreviousNavigationTab = MainTabs?.SelectedIndex;
+                ShellBreadcrumbOverride = null;
+                NavigateToSection(targetTab);
+            }
+            else
+            {
+                ShellBreadcrumbOverride = null;
+                NavigateToSection(TabSemana);
+            }
+        }
 
         private void SidebarNavButton_Click(object sender, RoutedEventArgs e)
         {
@@ -2770,9 +2790,13 @@ namespace SastreriaPresupuestos
 
             var compactVisibility = IsSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
+            ShellBrandTextBlock.Visibility = compactVisibility;
             ShellSearchPanel.Visibility = compactVisibility;
             ActiveWorkspaceBorder.Visibility = compactVisibility;
             ShellFooterTextBlock.Visibility = compactVisibility;
+
+            ShellLogoImage.Width = IsSidebarCollapsed ? 40 : 60;
+            ShellLogoImage.Height = IsSidebarCollapsed ? 40 : 60;
 
             DashboardNavButton.Content = IsSidebarCollapsed ? "🏠" : "🏠  Inicio";
             ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
