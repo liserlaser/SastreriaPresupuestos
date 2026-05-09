@@ -510,8 +510,8 @@
                             <TextBlock
                                 x:Name="ActiveWorkspaceTitle"
                                 Text="Ningún presupuesto abierto"
-                                FontSize="13"
-                                FontWeight="SemiBold"
+                                FontSize="14"
+                                FontWeight="Bold"
                                 Margin="0,8,0,0"
                                 TextWrapping="Wrap"/>
 
@@ -522,6 +522,65 @@
                                 Foreground="{StaticResource MutedTextBrush}"
                                 Margin="0,4,0,0"
                                 TextWrapping="Wrap"/>
+
+                            <Border
+                                Height="1"
+                                Background="{StaticResource BorderSoftBrush}"
+                                Margin="0,10,0,10"/>
+
+                            <TextBlock
+                                x:Name="ActiveClientTextBlock"
+                                Text="Cliente: —"
+                                FontSize="11"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock
+                                x:Name="ActivePhoneTextBlock"
+                                Text="Teléfono: —"
+                                FontSize="11"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,4,0,0"
+                                TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock
+                                x:Name="ActiveQuoteTextBlock"
+                                Text="Estado: Pendiente"
+                                FontSize="11"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,4,0,0"
+                                TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock
+                                x:Name="ActiveDeliveryTextBlock"
+                                Text="Entrega: —"
+                                FontSize="11"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,4,0,0"
+                                TextTrimming="CharacterEllipsis"/>
+
+                            <TextBlock
+                                x:Name="ActiveDepositTextBlock"
+                                Text="Señal: 0,00 €"
+                                FontSize="11"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,4,0,0"
+                                TextTrimming="CharacterEllipsis"/>
+
+                            <Border
+                                Background="#EEF2EA"
+                                CornerRadius="8"
+                                Padding="8,5"
+                                HorizontalAlignment="Left"
+                                Margin="0,10,0,0">
+
+                                <TextBlock
+                                    x:Name="ActiveTotalTextBlock"
+                                    Text="Total: 0,00 €"
+                                    FontSize="13"
+                                    FontWeight="Bold"
+                                    Foreground="{StaticResource PrimaryBrush}"/>
+                            </Border>
                         </StackPanel>
                     </Border>
 
@@ -567,11 +626,6 @@
             <!-- CABECERA FIJA CONTEXTUAL -->
             <Grid Margin="0,0,0,16">
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="340"/>
-                </Grid.ColumnDefinitions>
-
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
                         x:Name="ShellSectionTitleTextBlock"
@@ -594,61 +648,6 @@
                         Foreground="{StaticResource MutedTextBrush}"
                         Margin="0,12,0,0"/>
                 </StackPanel>
-
-                <!-- CONTEXTO ACTIVO TEMPORAL: se mantiene arriba hasta moverlo a la sidebar en 12B.3 -->
-                <Border
-                    Grid.Column="1"
-                    Background="{StaticResource CardBackgroundBrush}"
-                    BorderBrush="{StaticResource BorderSoftBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="12"
-                    VerticalAlignment="Center">
-
-                    <Grid>
-
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock
-                            x:Name="ActiveClientTextBlock"
-                            Text="Cliente: —"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            TextTrimming="CharacterEllipsis"/>
-
-                        <TextBlock
-                            x:Name="ActiveQuoteTextBlock"
-                            Grid.Row="1"
-                            Text="Presupuesto: —"
-                            FontSize="12"
-                            Foreground="{StaticResource MutedTextBrush}"
-                            TextTrimming="CharacterEllipsis"
-                            Margin="0,3,0,0"/>
-
-                        <Border
-                            Grid.Row="2"
-                            Background="#EEF2EA"
-                            CornerRadius="8"
-                            Padding="8,4"
-                            HorizontalAlignment="Left"
-                            Margin="0,8,0,0">
-
-                            <TextBlock
-                                x:Name="ActiveTotalTextBlock"
-                                Text="Total: 0,00 €"
-                                FontSize="13"
-                                FontWeight="Bold"
-                                Foreground="{StaticResource PrimaryBrush}"/>
-
-                        </Border>
-
-                    </Grid>
-
-                </Border>
 
             </Grid>
             <!-- PESTAÑAS -->

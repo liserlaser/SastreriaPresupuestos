@@ -2368,14 +2368,28 @@ namespace SastreriaPresupuestos
                 ? "—"
                 : ClientNameTextBox.Text.Trim();
 
+            var phone = string.IsNullOrWhiteSpace(PhoneTextBox.Text)
+                ? "—"
+                : PhoneTextBox.Text.Trim();
+
             var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
                 ? "—"
                 : QuoteTitleTextBox.Text.Trim();
 
+            var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
+            var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
+                ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
+                : "—";
+            var deposit = GetDepositValue();
             decimal total = Products.Sum(p => p.Total);
 
+            ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo presupuesto" : quoteTitle;
+            ActiveWorkspaceSubtitle.Text = clientName == "—" ? "Selecciona un cliente o crea un trabajo" : clientName;
             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
-            ActiveQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
+            ActivePhoneTextBlock.Text = $"Teléfono: {phone}";
+            ActiveQuoteTextBlock.Text = $"Estado: {status}";
+            ActiveDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
+            ActiveDepositTextBlock.Text = $"Señal: {deposit:N2} €";
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
 
             if (BudgetWorkspaceTitleTextBlock != null)
@@ -2385,15 +2399,10 @@ namespace SastreriaPresupuestos
                 BudgetWorkspaceClientTextBlock.Text = $"Cliente: {clientName}";
 
             if (BudgetWorkspaceStatusTextBlock != null)
-                BudgetWorkspaceStatusTextBlock.Text = $"Estado: {QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente"}";
+                BudgetWorkspaceStatusTextBlock.Text = $"Estado: {status}";
 
             if (BudgetWorkspaceDeliveryTextBlock != null)
-            {
-                var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
-                    ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
-                    : "—";
                 BudgetWorkspaceDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
-            }
 
             if (BudgetWorkspaceTotalTextBlock != null)
                 BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
@@ -2407,8 +2416,8 @@ namespace SastreriaPresupuestos
 
         private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
         {
-            // 12B.1: el panel contextual derecho se ha eliminado.
-            // El contexto visible se concentra ahora en la cabecera y en el futuro panel "Trabajo activo" de la sidebar.
+            // 12B.3: el panel contextual derecho se ha eliminado.
+            // El contexto visible vive ahora en el panel persistente "Trabajo activo" de la sidebar.
         }
 
         private void ContextSaveButton_Click(object sender, RoutedEventArgs e)
