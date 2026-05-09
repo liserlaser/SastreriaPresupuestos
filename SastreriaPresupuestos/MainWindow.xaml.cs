@@ -57,6 +57,34 @@ namespace SastreriaPresupuestos
         private TextBlock ClientDetailNextDeliveryTextBlock => ClientesView.ClientDetailNextDeliveryTextBlock;
         private TextBlock ClientDetailSummaryTextBlock => ClientesView.ClientDetailSummaryTextBlock;
         private ListBox QuotesListBox => ClientesView.QuotesListBox;
+        private TextBlock BudgetWorkspaceTitleTextBlock => PresupuestoView.BudgetWorkspaceTitleTextBlock;
+        private TextBlock BudgetWorkspaceClientTextBlock => PresupuestoView.BudgetWorkspaceClientTextBlock;
+        private TextBlock BudgetWorkspaceStatusTextBlock => PresupuestoView.BudgetWorkspaceStatusTextBlock;
+        private TextBlock BudgetWorkspaceDeliveryTextBlock => PresupuestoView.BudgetWorkspaceDeliveryTextBlock;
+        private TextBlock BudgetWorkspaceTotalTextBlock => PresupuestoView.BudgetWorkspaceTotalTextBlock;
+        private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
+        private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
+        private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
+        private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
+        private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
+        private TextBox DniTextBox => PresupuestoView.DniTextBox;
+        private Button SaveClientButton => PresupuestoView.SaveClientButton;
+        private DatePicker DeliveryDatePicker => PresupuestoView.DeliveryDatePicker;
+        private DatePicker EventDatePicker => PresupuestoView.EventDatePicker;
+        private TextBox QuoteTitleTextBox => PresupuestoView.QuoteTitleTextBox;
+        private TextBlock QuoteTitlePlaceholderTextBlock => PresupuestoView.QuoteTitlePlaceholderTextBlock;
+        private ComboBox QuoteStatusComboBox => PresupuestoView.QuoteStatusComboBox;
+        private TextBox DepositTextBox => PresupuestoView.DepositTextBox;
+        private TextBlock PendingAmountTextBlock => PresupuestoView.PendingAmountTextBlock;
+        private TextBox QuoteNotesTextBox => PresupuestoView.QuoteNotesTextBox;
+        private TextBlock QuoteNotesPlaceholderTextBlock => PresupuestoView.QuoteNotesPlaceholderTextBlock;
+        private TextBox ClientNotesTextBox => PresupuestoView.ClientNotesTextBox;
+        private TextBlock ClientNotesPlaceholderTextBlock => PresupuestoView.ClientNotesPlaceholderTextBlock;
+        private ListBox BudgetQuotesListBox => PresupuestoView.BudgetQuotesListBox;
+        private TextBlock UnsavedChangesTextBlock => PresupuestoView.UnsavedChangesTextBlock;
+        private Button NewQuoteButton => PresupuestoView.NewQuoteButton;
+        private Button DuplicateQuoteButton => PresupuestoView.DuplicateQuoteButton;
+        private Button SaveButton => PresupuestoView.SaveButton;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -678,7 +706,7 @@ namespace SastreriaPresupuestos
             GoToTab(targetTab);
         }
 
-        private void BudgetQuotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void BudgetQuotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (BudgetQuotesListBox.SelectedItem == null)
                 return;
@@ -687,7 +715,7 @@ namespace SastreriaPresupuestos
                 QuotesListBox.SelectedItem = BudgetQuotesListBox.SelectedItem;
         }
 
-        private void BudgetQuotesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        public void BudgetQuotesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (BudgetQuotesListBox.SelectedItem is not Models.Quote quote)
                 return;
