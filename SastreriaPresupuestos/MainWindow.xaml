@@ -465,7 +465,7 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="310"/>
+                <ColumnDefinition x:Name="ContextPanelColumn" Width="310"/>
             </Grid.ColumnDefinitions>
 
             <!-- CABECERA FIJA CONTEXTUAL -->
@@ -474,6 +474,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="340"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel VerticalAlignment="Center">
@@ -553,6 +554,16 @@
                     </Grid>
 
                 </Border>
+
+                <Button
+                    x:Name="ToggleContextPanelButton"
+                    Grid.Column="2"
+                    Content="›"
+                    Width="38"
+                    Height="38"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource ShellIconButtonStyle}"/>
 
             </Grid>
             <!-- PESTAÑAS -->

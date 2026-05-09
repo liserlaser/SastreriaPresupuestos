@@ -41,6 +41,7 @@ namespace SastreriaPresupuestos
         private string ActiveStatusFilter = "Todos";
 
         private bool IsSidebarCollapsed = false;
+        private bool IsContextPanelCollapsed = false;
         private string ActiveDeliveryFilter = "Todas";
 
         private DateTime CalendarReferenceDate = DateTime.Today;
@@ -2385,6 +2386,7 @@ namespace SastreriaPresupuestos
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
             ToggleSidebarButton.Click += ToggleSidebarButton_Click;
+            ToggleContextPanelButton.Click += ToggleContextPanelButton_Click;
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
@@ -2427,6 +2429,7 @@ namespace SastreriaPresupuestos
             UpdateWorkflowState();
             UpdateCalendarViewButtons();
             UpdateSecondaryPlaceholders();
+            ApplyContextPanelState();
         }
 
         private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -2597,6 +2600,31 @@ namespace SastreriaPresupuestos
             ProductsNavButton.Content = IsSidebarCollapsed ? "📦" : "📦  Productos";
             DocumentsNavButton.Content = IsSidebarCollapsed ? "📄" : "📄  Documentos";
             SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
+        }
+
+
+        private void ToggleContextPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            IsContextPanelCollapsed = !IsContextPanelCollapsed;
+            ApplyContextPanelState();
+        }
+
+        private void ApplyContextPanelState()
+        {
+            if (ContextPanelColumn == null)
+                return;
+
+            ContextPanelColumn.Width = IsContextPanelCollapsed
+                ? new GridLength(0)
+                : new GridLength(310);
+
+            if (ContextPanelBorder != null)
+                ContextPanelBorder.Visibility = IsContextPanelCollapsed ? Visibility.Collapsed : Visibility.Visible;
+
+            if (ToggleContextPanelButton != null)
+            {
+                ToggleContextPanelButton.Content = IsContextPanelCollapsed ? "‹" : "›";
+            }
         }
 
         private void GlobalSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
