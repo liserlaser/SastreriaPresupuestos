@@ -1,11 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Data;
-using SastreriaPresupuestos.Export;
 using SastreriaPresupuestos.Models;
 using SastreriaPresupuestos.Services;
-using SastreriaPresupuestos.ViewModels;
 using SastreriaPresupuestos.Views;
 using System;
 using System.Collections.Generic;
@@ -13,76 +11,25 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
-using System.Windows.Media;
-using MediaColor = System.Windows.Media.Color;
 
 namespace SastreriaPresupuestos
 {
     public partial class MainWindow : Window
     {
-
-        private TextBlock WeekTitleTextBlock => DashboardView.WeekTitleTextBlock;
-        private Button PreviousCalendarButton => DashboardView.PreviousCalendarButton;
-        private Button TodayCalendarButton => DashboardView.TodayCalendarButton;
-        private Button NextCalendarButton => DashboardView.NextCalendarButton;
-        private Button WeekViewButton => DashboardView.WeekViewButton;
-        private Button MonthViewButton => DashboardView.MonthViewButton;
-        private TextBlock DashboardTodayCountTextBlock => DashboardView.DashboardTodayCountTextBlock;
-        private TextBlock DashboardNext7CountTextBlock => DashboardView.DashboardNext7CountTextBlock;
-        private TextBlock DashboardPendingCountTextBlock => DashboardView.DashboardPendingCountTextBlock;
-        private TextBlock DashboardMonthCountTextBlock => DashboardView.DashboardMonthCountTextBlock;
-        private ItemsControl UpcomingDeliveriesItemsControl => DashboardView.UpcomingDeliveriesItemsControl;
-        private TextBlock UpcomingDeliveriesEmptyTextBlock => DashboardView.UpcomingDeliveriesEmptyTextBlock;
-        private TextBlock EmptyWeekTextBlock => DashboardView.EmptyWeekTextBlock;
-        private ItemsControl WeeklyColumnsItemsControl => DashboardView.WeeklyColumnsItemsControl;
-        private ListBox CalendarGroupsListBox => DashboardView.CalendarGroupsListBox;
-
-
         private ObservableCollection<ProductLine> Products =
             new ObservableCollection<ProductLine>();
-
-        private ObservableCollection<WeeklyDeliveryItem> WeeklyDeliveries =
-            new ObservableCollection<WeeklyDeliveryItem>();
-
-        private ObservableCollection<CalendarDayGroup> CalendarDayGroups =
-            new ObservableCollection<CalendarDayGroup>();
-
-        private ObservableCollection<WeeklyDeliveryItem> UpcomingDeliveries =
-            new ObservableCollection<WeeklyDeliveryItem>();
-
-        private ObservableCollection<GlobalSearchResult> GlobalSearchResults =
-            new ObservableCollection<GlobalSearchResult>();
 
         private List<Models.Client> AllClients = new();
 
         private Models.Quote? CurrentQuote = null;
 
         private string ActiveStatusFilter = "Todos";
-
-        private bool IsSidebarCollapsed = false;
-        private bool IsContextPanelCollapsed = false;
         private string ActiveDeliveryFilter = "Todas";
-
-        private DateTime CalendarReferenceDate = DateTime.Today;
-        private string CalendarViewMode = "Semana";
-
-        private string SanitizeFileName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                return "Cliente";
-
-            foreach (var invalidChar in Path.GetInvalidFileNameChars())
-            {
-                name = name.Replace(invalidChar, '_');
-            }
-
-            return name.Trim();
-        }
 
         //private bool MarkAsSaved();
         private bool HasUnsavedChanges = false;
@@ -91,32 +38,92 @@ namespace SastreriaPresupuestos
 
         private int? LastSelectedClientId = null;
         private int? LastSelectedQuoteId = null;
-        private int? CurrentClientId = null;
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
-        private string? ShellBreadcrumbOverride = null;
-        private int? PendingNavigationTargetTab = null;
-
-        private const int TabSemana = 0;
-        private const int TabClientes = 1;
-        private const int TabPresupuesto = 2;
-        private const int TabProductos = 3;
-        private const int TabDocumentos = 4;
-        private const int TabAjustes = 5;
 
         public MainWindow()
         {
-            ConfigureCulture();
+            var culture = new CultureInfo("es-ES");
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
 
             InitializeComponent();
 
             QuestPDF.Settings.License = LicenseType.Community;
 
-            InitializeDataSources();
-            LoadInitialData();
-            WireEvents();
-            InitializeUiState();
+            PriceService.LoadPrices();
+
+            //var culture = new CultureInfo("es-ES");
+            //Thread.CurrentThread.CurrentCulture = culture;
+            //Thread.CurrentThread.CurrentUICulture = culture;
+
+            LoadClients();
+
+            ProductsDataGrid.ItemsSource = Products;
+
+            Products.CollectionChanged += (s, e) =>
+            {
+                if (e.NewItems != null)
+                {
+                    foreach (ProductLine item in e.NewItems)
+                    {
+                        item.PropertyChanged += (a, b) =>
+                        {
+                            UpdateGrandTotal();
+                            MarkAsChanged();
+                        };
+                    }
+                }
+
+                UpdateGrandTotal();
+                MarkAsChanged();
+            };
+
+            AddProductButton.Click += AddProductButton_Click;
+            SaveButton.Click += SaveButton_Click;
+            NewQuoteButton.Click += NewQuoteButton_Click;
+            NewClientButton.Click += NewClientButton_Click;
+            SaveClientButton.Click += SaveClientButton_Click;
+            DeleteClientButton.Click += DeleteClientButton_Click;
+            DuplicateQuoteButton.Click += DuplicateQuoteButton_Click;
+            PricesConfigButton.Click += PricesConfigButton_Click;
+            BackupButton.Click += BackupButton_Click;
+            ExportPdfButton.Click += ExportPdfButton_Click;
+            ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
+
+            DepositTextBox.TextChanged += (s, e) =>
+            {
+                UpdatePendingAmount();
+            };
+
+            ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
+            QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
+            //ClientSearchTextBox.TextChanged += ClientSearchTextBox_TextChanged;
+
+            ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
+
+            ClientNameTextBox.TextChanged += (s, e) => MarkAsChanged();
+            PhoneTextBox.TextChanged += (s, e) => MarkAsChanged();
+            QuoteTitleTextBox.TextChanged += (s, e) => MarkAsChanged();
+            QuoteNotesTextBox.TextChanged += (s, e) => MarkAsChanged();
+            DepositTextBox.TextChanged += (s, e) => MarkAsChanged();
+            DeliveryDatePicker.SelectedDateChanged += (s, e) => MarkAsChanged();
+            QuoteStatusComboBox.SelectionChanged += (s, e) => MarkAsChanged();
+
+            UpdateSaveButtonText();
+            UpdateUnsavedChangesIndicator();
+
+            UpdateWindowTitle();
+
+            ClientSearchPlaceholderTextBlock.Visibility =
+                string.IsNullOrWhiteSpace(ClientSearchTextBox.Text)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
+            UpdateStatusFilterButtons();
+            UpdateDeliveryFilterButtons();
+
         }
 
         private List<string> GetTailoringOptions(string product)
@@ -139,20 +146,6 @@ namespace SastreriaPresupuestos
 
         private void AddProductButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CurrentClientId == null)
-            {
-                MessageBox.Show(
-                    "Primero debes guardar o seleccionar un cliente antes de añadir productos.",
-                    "Añadir producto",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-
-                GoToTab(TabPresupuesto);
-                ClientNameTextBox.Focus();
-
-                return;
-            }
-
             var line = new ProductLine()
             {
                 ProductName = "Concepto Libre",
@@ -167,26 +160,10 @@ namespace SastreriaPresupuestos
             Products.Add(line);
 
             UpdateGrandTotal();
-
-            GoToTab(TabProductos);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CurrentClientId == null)
-            {
-                MessageBox.Show(
-                    "Primero debes guardar el cliente antes de guardar un presupuesto.",
-                    "Guardar presupuesto",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                GoToTab(TabPresupuesto);
-                ClientNameTextBox.Focus();
-
-                return;
-            }
-
             if (!ValidateBeforeSave())
                 return;
 
@@ -194,7 +171,6 @@ namespace SastreriaPresupuestos
 
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
-            var clientDni = DniTextBox.Text.Trim();
             var quoteTitle = QuoteTitleTextBox.Text.Trim();
             var quoteNotes = QuoteNotesTextBox.Text.Trim();
             var clientNotes = ClientNotesTextBox.Text.Trim();
@@ -229,31 +205,27 @@ namespace SastreriaPresupuestos
             }
 
             // Buscar cliente existente
-            Models.Client client;
+            var client = db.Clients
+                .FirstOrDefault(c => c.Phone == clientPhone);
 
-            if (CurrentClientId != null)
-            {
-                client = db.Clients.First(c => c.Id == CurrentClientId.Value);
-
-                client.Name = clientName;
-                client.Phone = clientPhone;
-                client.Dni = clientDni;
-
-                db.SaveChanges();
-            }
-            else
+            // Crear cliente si no existe
+            if (client == null)
             {
                 client = new Models.Client()
                 {
                     Name = clientName,
-                    Phone = clientPhone,
-                    Dni = clientDni
+                    Phone = clientPhone
                 };
 
                 db.Clients.Add(client);
-                db.SaveChanges();
 
-                CurrentClientId = client.Id;
+                db.SaveChanges();
+            }
+
+            else
+            {
+                client.Name = clientName;
+                db.SaveChanges();
             }
 
             Models.Quote quote;
@@ -290,7 +262,6 @@ namespace SastreriaPresupuestos
 
                 quote.Total = Products.Sum(p => p.Total);
                 quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
-                quote.EventDate = EventDatePicker.SelectedDate;
                 //quote.Title = QuoteTitleTextBox.Text;
                 //quote.Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
                 //quote.Notes = QuoteNotesTextBox.Text;
@@ -337,8 +308,6 @@ namespace SastreriaPresupuestos
 
             LoadClients();
 
-            LoadCalendarDeliveries();
-
             var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
                 .FirstOrDefault(c => c.Id == savedClientId);
 
@@ -355,7 +324,6 @@ namespace SastreriaPresupuestos
                     .ToList();
 
                 QuotesListBox.ItemsSource = reloadedQuotes;
-                BudgetQuotesListBox.ItemsSource = reloadedQuotes;
 
                 var reloadedQuote = reloadedQuotes
                     .FirstOrDefault(q => q.Id == savedQuoteId);
@@ -394,8 +362,6 @@ namespace SastreriaPresupuestos
             TotalTextBlock.Text = $"{total:N2} €";
 
             UpdatePendingAmount();
-            UpdateActiveContext();
-            UpdateWorkflowState();
         }
 
         private void LoadClients()
@@ -432,20 +398,14 @@ namespace SastreriaPresupuestos
 
             ClientNameTextBox.Text = client.Name;
             PhoneTextBox.Text = client.Phone;
-            DniTextBox.Text = client.Dni;
 
             using var db = new AppDbContext();
 
             var quotes = db.Quotes
-                .Include(q => q.Items)
                 .Where(q => q.ClientId == client.Id)
-                .OrderBy(q => q.DeliveryDate)
-                .ThenBy(q => q.Id)
                 .ToList();
 
             QuotesListBox.ItemsSource = quotes;
-            BudgetQuotesListBox.ItemsSource = quotes;
-            UpdateClientDetailPanel(client, quotes);
 
             Products.Clear();
 
@@ -454,7 +414,6 @@ namespace SastreriaPresupuestos
             CurrentQuote = null;
 
             DeliveryDatePicker.SelectedDate = DateTime.Now;
-            EventDatePicker.SelectedDate = null;
 
             QuoteStatusComboBox.SelectedItem = "Pendiente";
 
@@ -467,119 +426,17 @@ namespace SastreriaPresupuestos
 
             LastSelectedClientId = client.Id;
             LastSelectedQuoteId = null;
-            CurrentClientId = client.Id;
-            UpdateWorkflowState();
 
             IsLoadingData = false;
             MarkAsSaved();
 
             UpdateSaveButtonText();
-            UpdateActiveContext();
-            UpdateSecondaryPlaceholders();
-            UpdateGlobalSearchPlaceholder();
-            UpdateShellNavigationState();
-        }
-
-        private void UpdateClientDetailPanel(Models.Client? client, IEnumerable<Models.Quote>? quotes)
-        {
-            if (ClientDetailNameTextBlock == null)
-                return;
-
-            if (client == null)
-            {
-                ClientDetailNameTextBlock.Text = "Selecciona un cliente";
-                ClientDetailMetaTextBlock.Text = "Busca o selecciona un cliente para ver su ficha rápida.";
-                ClientDetailPhoneTextBlock.Text = "—";
-                ClientDetailDniTextBlock.Text = "—";
-                ClientDetailNextDeliveryTextBlock.Text = "—";
-                ClientDetailSummaryTextBlock.Text = "Sin cliente seleccionado.";
-                OpenSelectedClientQuoteButton.IsEnabled = false;
-                NewQuoteFromClientButton.IsEnabled = false;
-                return;
-            }
-
-            var quoteList = quotes?.ToList() ?? new List<Models.Quote>();
-            var nextQuote = quoteList
-                .Where(q => q.DeliveryDate.Date >= DateTime.Today)
-                .OrderBy(q => q.DeliveryDate)
-                .FirstOrDefault();
-
-            ClientDetailNameTextBlock.Text = client.Name;
-            ClientDetailMetaTextBlock.Text = quoteList.Count == 1
-                ? "1 presupuesto asociado"
-                : $"{quoteList.Count} presupuestos asociados";
-
-            ClientDetailPhoneTextBlock.Text = string.IsNullOrWhiteSpace(client.DisplayPhone) ? "—" : client.DisplayPhone;
-            ClientDetailDniTextBlock.Text = string.IsNullOrWhiteSpace(client.Dni) ? "—" : client.Dni;
-            ClientDetailNextDeliveryTextBlock.Text = nextQuote == null
-                ? "Sin próximas entregas"
-                : nextQuote.DeliveryDate.ToString("dd/MM/yyyy");
-
-            ClientDetailSummaryTextBlock.Text = nextQuote == null
-                ? "No hay entregas próximas para este cliente."
-                : $"Próxima entrega: {nextQuote.DisplayTitle} · {nextQuote.StatusLabelText} · {nextQuote.Total:N2} €";
-
-            OpenSelectedClientQuoteButton.IsEnabled = quoteList.Count > 0;
-            NewQuoteFromClientButton.IsEnabled = true;
-        }
-
-        private void OpenSelectedClientQuoteButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ClientsListBox.SelectedItem == null)
-            {
-                MessageBox.Show(
-                    "Selecciona un cliente para abrir sus presupuestos.",
-                    "Abrir presupuesto",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            if (QuotesListBox.SelectedItem is Models.Quote selectedQuote)
-            {
-                OpenQuoteById(selectedQuote.Id, TabPresupuesto, "Clientes");
-                return;
-            }
-
-            if (QuotesListBox.Items.Count > 0 && QuotesListBox.Items[0] is Models.Quote firstQuote)
-            {
-                OpenQuoteById(firstQuote.Id, TabPresupuesto, "Clientes");
-                return;
-            }
-
-            GoToTab(TabPresupuesto);
-        }
-
-        private void NewQuoteFromClientButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (ClientsListBox.SelectedItem == null)
-            {
-                MessageBox.Show(
-                    "Selecciona un cliente antes de crear un presupuesto.",
-                    "Nuevo presupuesto",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            NewQuoteButton_Click(sender, e);
-        }
-
-        private void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (ClientsListBox.SelectedItem == null)
-                return;
-
-            OpenSelectedClientQuoteButton_Click(sender, e);
         }
 
         private void QuotesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (IsRevertingSelection)
                 return;
-
-            if (BudgetQuotesListBox.SelectedItem != QuotesListBox.SelectedItem)
-                BudgetQuotesListBox.SelectedItem = QuotesListBox.SelectedItem;
 
             var selectedQuote = QuotesListBox.SelectedItem as Models.Quote;
 
@@ -608,11 +465,7 @@ namespace SastreriaPresupuestos
 
             CurrentQuote = quote;
 
-            CurrentClientId = quote.ClientId;
-            UpdateWorkflowState();
-
             DeliveryDatePicker.SelectedDate = quote.DeliveryDate;
-            EventDatePicker.SelectedDate = quote.EventDate;
             QuoteTitleTextBox.Text = quote.Title;
 
             QuoteStatusComboBox.SelectedItem = string.IsNullOrWhiteSpace(quote.Status)
@@ -654,29 +507,6 @@ namespace SastreriaPresupuestos
             MarkAsSaved();
 
             UpdateSaveButtonText();
-            UpdateActiveContext();
-            UpdateSecondaryPlaceholders();
-
-            var targetTab = PendingNavigationTargetTab ?? TabPresupuesto;
-            PendingNavigationTargetTab = null;
-            GoToTab(targetTab);
-        }
-
-        private void BudgetQuotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (BudgetQuotesListBox.SelectedItem == null)
-                return;
-
-            if (QuotesListBox.SelectedItem != BudgetQuotesListBox.SelectedItem)
-                QuotesListBox.SelectedItem = BudgetQuotesListBox.SelectedItem;
-        }
-
-        private void BudgetQuotesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (BudgetQuotesListBox.SelectedItem is not Models.Quote quote)
-                return;
-
-            OpenQuoteById(quote.Id, TabProductos, "Presupuestos");
         }
 
         private void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -722,20 +552,6 @@ namespace SastreriaPresupuestos
 
         private void NewQuoteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CurrentClientId == null)
-            {
-                MessageBox.Show(
-                    "Primero debes guardar o seleccionar un cliente.",
-                    "Nuevo presupuesto",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-
-                GoToTab(TabProductos);
-                ClientNameTextBox.Focus();
-
-                return;
-            }
-
             if (!ConfirmDiscardChanges())
                 return;
 
@@ -749,12 +565,9 @@ namespace SastreriaPresupuestos
 
             QuotesListBox.SelectedItem = null;
 
-            BudgetQuotesListBox.SelectedItem = null;
-
             LastSelectedQuoteId = null;
 
             DeliveryDatePicker.SelectedDate = DateTime.Now;
-            EventDatePicker.SelectedDate = null;
 
             QuoteTitleTextBox.Text = "";
 
@@ -772,10 +585,6 @@ namespace SastreriaPresupuestos
             MarkAsSaved();
 
             UpdateSaveButtonText();
-            UpdateActiveContext();
-            UpdateSecondaryPlaceholders();
-
-            GoToTab(TabProductos);
         }
 
         private void ProductsDataGrid_CellEditEnding(object? sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
@@ -831,7 +640,6 @@ namespace SastreriaPresupuestos
                 QuotesListBox.SelectedItem = null;
 
                 DeliveryDatePicker.SelectedDate = DateTime.Now;
-                EventDatePicker.SelectedDate = null;
                 QuoteTitleTextBox.Text = "";
                 QuoteStatusComboBox.SelectedItem = "Pendiente";
                 DepositTextBox.Text = "0";
@@ -848,7 +656,6 @@ namespace SastreriaPresupuestos
             var selectedClient = ClientsListBox.SelectedItem as Models.Client;
 
             LoadClients();
-            LoadCalendarDeliveries();
 
             if (selectedClient != null)
             {
@@ -971,19 +778,7 @@ namespace SastreriaPresupuestos
 
         private decimal GetDepositValue()
         {
-            var text = DepositTextBox.Text
-                .Replace("€", "")
-                .Trim();
-
-            if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var deposit))
-            {
-                if (deposit < 0)
-                    deposit = 0;
-
-                return deposit;
-            }
-
-            if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out deposit))
+            if (decimal.TryParse(DepositTextBox.Text, out var deposit))
             {
                 if (deposit < 0)
                     deposit = 0;
@@ -1245,9 +1040,6 @@ namespace SastreriaPresupuestos
             }
 
             IsRevertingSelection = false;
-
-            GoToTab(TabClientes);
-            FocusSelectedClient();
         }
 
         private void RevertQuoteSelection()
@@ -1267,9 +1059,6 @@ namespace SastreriaPresupuestos
             }
 
             IsRevertingSelection = false;
-
-            GoToTab(TabClientes);
-            FocusSelectedQuote();
         }
 
         private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -1282,22 +1071,21 @@ namespace SastreriaPresupuestos
 
         private void UpdateSaveButtonText()
         {
-            var text = CurrentQuote == null
-                ? "Guardar"
-                : "Actualizar";
-
-            SaveButton.Content = text;
-            SaveProductsButton.Content = text;
+            if (CurrentQuote == null)
+            {
+                SaveButton.Content = "Guardar";
+            }
+            else
+            {
+                SaveButton.Content = "Actualizar";
+            }
         }
 
         private void UpdateUnsavedChangesIndicator()
         {
-            var visibility = HasUnsavedChanges
+            UnsavedChangesTextBlock.Visibility = HasUnsavedChanges
                 ? Visibility.Visible
                 : Visibility.Collapsed;
-
-            UnsavedChangesTextBlock.Visibility = visibility;
-            ProductsUnsavedChangesTextBlock.Visibility = visibility;
         }
 
         private void MarkAsSaved()
@@ -1369,22 +1157,17 @@ namespace SastreriaPresupuestos
                 ClientNameTextBox.Text,
                 PhoneTextBox.Text,
                 DeliveryDatePicker.SelectedDate ?? DateTime.Now,
-                EventDatePicker.SelectedDate,
                 QuoteTitleTextBox.Text,
                 QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente",
                 GetDepositValue(),
                 ClientNotesTextBox.Text,
-                Products,
-                CurrentQuote?.Id);
-
-            var safeClientName = MakeSafeFileName(exportQuote.ClientName);
-            var exportDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
+                Products);
 
             var dialog = new SaveFileDialog
             {
                 Title = "Guardar PDF",
                 Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{safeClientName}_{exportDateTime}.pdf"
+                FileName = $"{exportQuote.DisplayTitle}_{DateTime.Now:yyyy-MM-dd}.pdf"
             };
 
             if (dialog.ShowDialog() != true)
@@ -1472,13 +1255,11 @@ namespace SastreriaPresupuestos
                         client.Name,
                         client.Phone,
                         q.DeliveryDate,
-                        q.EventDate,
                         q.Title,
                         string.IsNullOrWhiteSpace(q.Status) ? "Pendiente" : q.Status,
                         q.Deposit,
                         q.ClientNotes,
-                        productLines,
-                        q.Id);
+                        productLines);
                 })
                 .ToList();
 
@@ -1486,7 +1267,7 @@ namespace SastreriaPresupuestos
             {
                 Title = "Guardar PDF con opciones",
                 Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf"
+                FileName = $"{client.Name}_opciones_{DateTime.Now:yyyy-MM-dd}.pdf"
             };
 
             if (dialog.ShowDialog() != true)
@@ -1510,113 +1291,6 @@ namespace SastreriaPresupuestos
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
-        }
-
-        private void ExportClientSheetButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (CurrentQuote == null)
-            {
-                MessageBox.Show(
-                    "Primero selecciona un presupuesto guardado.",
-                    "Exportar ficha cliente",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "";
-
-            if (!string.Equals(status, "Aceptado", StringComparison.OrdinalIgnoreCase))
-            {
-                MessageBox.Show(
-                    "La ficha interna solo se puede generar cuando el presupuesto está aceptado.",
-                    "Exportar ficha cliente",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(DniTextBox.Text))
-            {
-                MessageBox.Show(
-                    "Para generar la ficha interna, introduce el DNI del cliente.",
-                    "Falta DNI",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                GoToTab(TabPresupuesto);
-                DniTextBox.Focus();
-                return;
-            }
-
-            var saveFileDialog = new SaveFileDialog
-            {
-                Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{SanitizeFileName(ClientNameTextBox.Text)}_ficha_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf"
-            };
-
-            if (saveFileDialog.ShowDialog() != true)
-                return;
-
-            var sheet = new ExportClientSheet
-            {
-                QuoteId = CurrentQuote.Id,
-                ClientName = ClientNameTextBox.Text.Trim(),
-                ClientDni = DniTextBox.Text.Trim(),
-                ClientPhone = PhoneTextBox.Text.Trim(),
-                OrderTitle = BuildClientSheetOrderSummary(),
-                EventDate = EventDatePicker.SelectedDate ?? DeliveryDatePicker.SelectedDate ?? DateTime.Now,
-                Deposit = GetDepositValue(),
-                Observations = QuoteNotesTextBox.Text.Trim()
-            };
-
-            ClientSheetPdfService.ExportClientSheetToPdf(sheet, saveFileDialog.FileName);
-
-            MessageBox.Show(
-                "Ficha interna generada correctamente.",
-                "Exportar ficha cliente",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-
-        private string BuildClientSheetOrderSummary()
-        {
-            var parts = new List<string>();
-
-            if (CurrentQuote != null)
-                parts.Add($"Presupuesto #{CurrentQuote.Id:0000}");
-
-            var firstProduct = Products.FirstOrDefault();
-
-            if (firstProduct != null)
-            {
-                var productSummary = firstProduct.ProductName?.Trim() ?? "";
-
-                if (!string.IsNullOrWhiteSpace(firstProduct.TailoringType))
-                    productSummary += $" {NormalizeDisplayText(firstProduct.TailoringType)}";
-
-                if (!string.IsNullOrWhiteSpace(productSummary))
-                    parts.Add(productSummary.Trim());
-            }
-
-            var title = QuoteTitleTextBox.Text.Trim();
-
-            if (!string.IsNullOrWhiteSpace(title) &&
-                !parts.Any(p => string.Equals(p, title, StringComparison.OrdinalIgnoreCase)))
-            {
-                parts.Add(title);
-            }
-
-            return string.Join(" · ", parts);
-        }
-
-        private string NormalizeDisplayText(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return "";
-
-            return value.Trim()
-                .Replace("Confeccion", "Confección");
         }
 
         private void StatusFilterButton_Click(object sender, RoutedEventArgs e)
@@ -1667,21 +1341,17 @@ namespace SastreriaPresupuestos
             ClientsListBox.SelectedItem = null;
             QuotesListBox.SelectedItem = null;
             QuotesListBox.ItemsSource = null;
-            UpdateClientDetailPanel(null, null);
 
             ClientNameTextBox.Text = "";
             PhoneTextBox.Text = "";
-            DniTextBox.Text = "";
 
             Products.Clear();
 
             CurrentQuote = null;
-            CurrentClientId = null;
             LastSelectedClientId = null;
             LastSelectedQuoteId = null;
 
             DeliveryDatePicker.SelectedDate = DateTime.Now;
-            EventDatePicker.SelectedDate = null;
             QuoteTitleTextBox.Text = "";
             QuoteStatusComboBox.SelectedItem = "Pendiente";
             DepositTextBox.Text = "0";
@@ -1695,10 +1365,6 @@ namespace SastreriaPresupuestos
 
             MarkAsSaved();
             UpdateSaveButtonText();
-            UpdateActiveContext();
-            UpdateWorkflowState();
-            UpdateSecondaryPlaceholders();
-            UpdateClientDetailPanel(null, null);
         }
 
         private void NewClientButton_Click(object sender, RoutedEventArgs e)
@@ -1707,8 +1373,6 @@ namespace SastreriaPresupuestos
                 return;
 
             ClearScreenForNewClient();
-
-            GoToTab(TabPresupuesto);
 
             ClientNameTextBox.Focus();
         }
@@ -1762,7 +1426,6 @@ namespace SastreriaPresupuestos
             db.SaveChanges();
 
             LoadClients();
-            LoadCalendarDeliveries();
 
             ClearScreenForNewClient();
 
@@ -1777,7 +1440,6 @@ namespace SastreriaPresupuestos
         {
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
-            var clientDni = DniTextBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(clientName))
             {
@@ -1832,11 +1494,6 @@ namespace SastreriaPresupuestos
                     return;
             }
 
-            if (CurrentClientId != null)
-            {
-                client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value);
-            }
-
             if (selectedClient != null)
             {
                 client = db.Clients.FirstOrDefault(c => c.Id == selectedClient.Id);
@@ -1844,11 +1501,15 @@ namespace SastreriaPresupuestos
 
             if (client == null)
             {
+                client = db.Clients.FirstOrDefault(c => c.Phone == clientPhone);
+            }
+
+            if (client == null)
+            {
                 client = new Models.Client
                 {
                     Name = clientName,
-                    Phone = clientPhone,
-                    Dni = clientDni
+                    Phone = clientPhone
                 };
 
                 db.Clients.Add(client);
@@ -1857,7 +1518,6 @@ namespace SastreriaPresupuestos
             {
                 client.Name = clientName;
                 client.Phone = clientPhone;
-                client.Dni = clientDni;
             }
 
             db.SaveChanges();
@@ -1875,8 +1535,6 @@ namespace SastreriaPresupuestos
             {
                 ClientsListBox.SelectedItem = reloadedClient;
                 LastSelectedClientId = savedClientId;
-                CurrentClientId = savedClientId;
-                UpdateWorkflowState();
             }
 
             SuppressSelectionConfirm = false;
@@ -1931,8 +1589,8 @@ namespace SastreriaPresupuestos
         }
 
         private void ProductsDataGrid_PreparingCellForEdit(
-            object? sender,
-            System.Windows.Controls.DataGridPreparingCellForEditEventArgs e)
+    object? sender,
+    System.Windows.Controls.DataGridPreparingCellForEditEventArgs e)
         {
             if (e.EditingElement is not System.Windows.Controls.TextBox textBox)
                 return;
@@ -1940,25 +1598,6 @@ namespace SastreriaPresupuestos
             var header = e.Column.Header?.ToString() ?? "";
 
             textBox.Tag = header;
-
-            if (header == "Base" ||
-                header == "Precio tejido" ||
-                header == "Tejido" ||
-                header == "Ajuste")
-            {
-                textBox.Text = textBox.Text
-                    .Replace("€", "")
-                    .Trim();
-
-                if (e.EditingEventArgs is not TextCompositionEventArgs)
-                {
-                    textBox.SelectAll();
-                }
-                else
-                {
-                    textBox.CaretIndex = textBox.Text.Length;
-                }
-            }
 
             if (header == "Cant." ||
                 header == "Base" ||
@@ -2093,10 +1732,10 @@ namespace SastreriaPresupuestos
         }
 
         private Models.Client? FindPossibleDuplicateClient(
-            AppDbContext db,
-            string clientName,
-            string clientPhone,
-            int? currentClientId = null)
+    AppDbContext db,
+    string clientName,
+    string clientPhone,
+    int? currentClientId = null)
         {
             var normalizedName = NormalizeText(clientName);
             var normalizedPhone = NormalizeText(clientPhone);
@@ -2126,1319 +1765,5 @@ namespace SastreriaPresupuestos
 
             return null;
         }
-
-        private void LoadCalendarDeliveries()
-        {
-            WeeklyDeliveries.Clear();
-            CalendarDayGroups.Clear();
-
-            using var db = new AppDbContext();
-
-            DateTime startDate;
-            DateTime endDate;
-
-            if (CalendarViewMode == "Mes")
-            {
-                startDate = new DateTime(CalendarReferenceDate.Year, CalendarReferenceDate.Month, 1);
-                endDate = startDate.AddMonths(1).AddDays(-1);
-
-                WeekTitleTextBlock.Text = $"Mes de {CalendarReferenceDate:MMMM yyyy}";
-            }
-            else
-            {
-                int diff = (7 + (CalendarReferenceDate.DayOfWeek - DayOfWeek.Monday)) % 7;
-                startDate = CalendarReferenceDate.AddDays(-diff).Date;
-                endDate = startDate.AddDays(6).Date;
-
-                WeekTitleTextBlock.Text = $"Semana del {startDate:dd/MM/yyyy} al {endDate:dd/MM/yyyy}";
-            }
-
-            var deliveries = db.Quotes
-                .Include(q => q.Client)
-                .Where(q => q.DeliveryDate.Date >= startDate && q.DeliveryDate.Date <= endDate)
-                .OrderBy(q => q.DeliveryDate)
-                .ThenBy(q => q.Client != null ? q.Client.Name : "")
-                .ToList();
-
-            foreach (var quote in deliveries)
-            {
-                WeeklyDeliveries.Add(new WeeklyDeliveryItem
-                {
-                    QuoteId = quote.Id,
-                    ClientId = quote.ClientId,
-                    DeliveryDate = quote.DeliveryDate,
-                    ClientName = quote.Client?.Name ?? "",
-                    ClientPhone = quote.Client?.Phone ?? "",
-                    QuoteTitle = quote.Title,
-                    Status = string.IsNullOrWhiteSpace(quote.Status) ? "Pendiente" : quote.Status,
-                    Total = quote.Total
-                });
-            }
-
-            var currentDate = startDate;
-
-            while (currentDate <= endDate)
-            {
-                var group = new CalendarDayGroup
-                {
-                    Date = currentDate
-                };
-
-                var dayDeliveries = WeeklyDeliveries
-                    .Where(d => d.DeliveryDate.Date == currentDate.Date)
-                    .OrderBy(d => d.ClientName)
-                    .ToList();
-
-                foreach (var delivery in dayDeliveries)
-                {
-                    group.Deliveries.Add(delivery);
-                }
-
-                var isWeekend =
-                    currentDate.DayOfWeek == DayOfWeek.Saturday ||
-                    currentDate.DayOfWeek == DayOfWeek.Sunday;
-
-                var shouldShowDay =
-                    group.HasDeliveries ||
-                    (CalendarViewMode == "Semana" && !isWeekend);
-
-                if (shouldShowDay)
-                {
-                    CalendarDayGroups.Add(group);
-                }
-
-                currentDate = currentDate.AddDays(1);
-            }
-
-            EmptyWeekTextBlock.Text = CalendarViewMode == "Mes"
-                ? "No hay entregas programadas para este mes."
-                : "No hay entregas programadas para esta semana.";
-
-            EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            UpdateDashboardSummary();
-            LoadUpcomingDeliveries();
-        }
-
-        private void LoadUpcomingDeliveries()
-        {
-            UpcomingDeliveries.Clear();
-
-            using var db = new AppDbContext();
-
-            var today = DateTime.Today;
-            var limit = today.AddDays(21);
-
-            var deliveries = db.Quotes
-                .AsNoTracking()
-                .Include(q => q.Client)
-                .Where(q => q.DeliveryDate.Date >= today
-                    && q.DeliveryDate.Date <= limit
-                    && q.Status != "Entregado")
-                .OrderBy(q => q.DeliveryDate)
-                .ThenBy(q => q.Client != null ? q.Client.Name : "")
-                .Take(8)
-                .ToList();
-
-            foreach (var quote in deliveries)
-            {
-                UpcomingDeliveries.Add(new WeeklyDeliveryItem
-                {
-                    QuoteId = quote.Id,
-                    ClientId = quote.ClientId,
-                    DeliveryDate = quote.DeliveryDate,
-                    ClientName = quote.Client?.Name ?? "",
-                    ClientPhone = quote.Client?.Phone ?? "",
-                    QuoteTitle = quote.Title,
-                    Status = string.IsNullOrWhiteSpace(quote.Status) ? "Pendiente" : quote.Status,
-                    Total = quote.Total
-                });
-            }
-
-            if (UpcomingDeliveriesEmptyTextBlock != null)
-            {
-                UpcomingDeliveriesEmptyTextBlock.Visibility = UpcomingDeliveries.Count == 0
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-            }
-        }
-
-        private void UpdateDashboardSummary()
-        {
-            using var db = new AppDbContext();
-
-            var today = DateTime.Today;
-            var next7Limit = today.AddDays(7);
-            var monthStart = new DateTime(today.Year, today.Month, 1);
-            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-
-            var quotes = db.Quotes
-                .AsNoTracking()
-                .ToList();
-
-            var todayCount = quotes.Count(q => q.DeliveryDate.Date == today);
-            var next7Count = quotes.Count(q =>
-                q.DeliveryDate.Date >= today &&
-                q.DeliveryDate.Date <= next7Limit);
-            var pendingCount = quotes.Count(q =>
-                !string.Equals(q.Status, "Entregado", StringComparison.OrdinalIgnoreCase));
-            var monthCount = quotes.Count(q =>
-                q.DeliveryDate.Date >= monthStart &&
-                q.DeliveryDate.Date <= monthEnd);
-
-            DashboardTodayCountTextBlock.Text = todayCount.ToString("N0");
-            DashboardNext7CountTextBlock.Text = next7Count.ToString("N0");
-            DashboardPendingCountTextBlock.Text = pendingCount.ToString("N0");
-            DashboardMonthCountTextBlock.Text = monthCount.ToString("N0");
-        }
-
-        private bool IsWeekend(DateTime date)
-        {
-            return date.DayOfWeek == DayOfWeek.Saturday ||
-                   date.DayOfWeek == DayOfWeek.Sunday;
-        }
-
-        private bool HasDeliveriesOnDate(IEnumerable<WeeklyDeliveryItem> deliveries, DateTime date)
-        {
-            return deliveries.Any(d => d.DeliveryDate.Date == date.Date);
-        }
-
-        private void UpdateActiveContext()
-        {
-            var clientName = string.IsNullOrWhiteSpace(ClientNameTextBox.Text)
-                ? "—"
-                : ClientNameTextBox.Text.Trim();
-
-            var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
-                ? "—"
-                : QuoteTitleTextBox.Text.Trim();
-
-            decimal total = Products.Sum(p => p.Total);
-
-            ActiveClientTextBlock.Text = $"Cliente: {clientName}";
-            ActiveQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
-            ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
-
-            if (BudgetWorkspaceTitleTextBlock != null)
-                BudgetWorkspaceTitleTextBlock.Text = quoteTitle == "—" ? "Nuevo presupuesto" : quoteTitle;
-
-            if (BudgetWorkspaceClientTextBlock != null)
-                BudgetWorkspaceClientTextBlock.Text = $"Cliente: {clientName}";
-
-            if (BudgetWorkspaceStatusTextBlock != null)
-                BudgetWorkspaceStatusTextBlock.Text = $"Estado: {QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente"}";
-
-            if (BudgetWorkspaceDeliveryTextBlock != null)
-            {
-                var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
-                    ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
-                    : "—";
-                BudgetWorkspaceDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
-            }
-
-            if (BudgetWorkspaceTotalTextBlock != null)
-                BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
-
-            UpdateContextPanel(clientName, quoteTitle, total);
-
-            UpdateEmptyStateMessages();
-            UpdateWorkflowState();
-        }
-
-
-        private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
-        {
-            if (ContextPanelView == null)
-                return;
-
-            var hasClient = clientName != "—";
-            var hasQuote = quoteTitle != "—";
-            var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
-            var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
-                ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
-                : "—";
-            var eventText = EventDatePicker.SelectedDate.HasValue
-                ? EventDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
-                : "—";
-
-            var deposit = GetDepositValue();
-            var pending = Math.Max(0, total - deposit);
-
-            ContextPanelView.TitleTextBlock.Text = hasQuote
-                ? quoteTitle
-                : hasClient ? clientName : "Sin selección";
-
-            ContextPanelView.SubtitleTextBlock.Text = hasQuote
-                ? "Presupuesto activo dentro del workspace."
-                : hasClient ? "Cliente activo sin presupuesto seleccionado." : "Selecciona un cliente, presupuesto o entrega.";
-
-            ContextPanelView.ClientTextBlock.Text = $"Cliente: {clientName}";
-            ContextPanelView.QuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
-            ContextPanelView.StatusTextBlock.Text = $"Estado: {status}";
-            ContextPanelView.DeliveryTextBlock.Text = $"Entrega: {deliveryText}";
-            ContextPanelView.EventTextBlock.Text = $"Evento: {eventText}";
-            ContextPanelView.TotalTextBlock.Text = $"Total: {total:N2} €";
-            ContextPanelView.PendingTextBlock.Text = $"Pendiente: {pending:N2} €";
-
-            var notes = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(QuoteNotesTextBox.Text))
-                notes.Add($"Presupuesto: {QuoteNotesTextBox.Text.Trim()}");
-
-            if (!string.IsNullOrWhiteSpace(ClientNotesTextBox.Text))
-                notes.Add($"Cliente: {ClientNotesTextBox.Text.Trim()}");
-
-            ContextPanelView.NotesTextBlock.Text = notes.Count == 0
-                ? "Sin notas visibles."
-                : string.Join(Environment.NewLine + Environment.NewLine, notes);
-        }
-
-        private void ContextSaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            SaveButton_Click(sender, e);
-        }
-
-        private void ContextMarkDeliveredButton_Click(object sender, RoutedEventArgs e)
-        {
-            QuoteStatusComboBox.SelectedItem = "Entregado";
-            MarkAsChanged();
-            UpdateActiveContext();
-        }
-
-        private void ContextExportPdfButton_Click(object sender, RoutedEventArgs e)
-        {
-            ExportPdfButton_Click(sender, e);
-        }
-
-        private void ContextDocumentsButton_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateContextBreadcrumb("Presupuestos", TabDocumentos);
-            NavigateToSection(4);
-        }
-
-        private void ConfigureCulture()
-        {
-            var culture = new CultureInfo("es-ES");
-
-            Thread.CurrentThread.CurrentCulture = culture;
-            Thread.CurrentThread.CurrentUICulture = culture;
-        }
-
-        private void InitializeDataSources()
-        {
-            WeeklyColumnsItemsControl.ItemsSource = CalendarDayGroups;
-            CalendarGroupsListBox.ItemsSource = CalendarDayGroups;
-            UpcomingDeliveriesItemsControl.ItemsSource = UpcomingDeliveries;
-            GlobalSearchResultsListBox.ItemsSource = GlobalSearchResults;
-            ProductsDataGrid.ItemsSource = Products;
-        }
-
-        private void LoadInitialData()
-        {
-            PriceService.LoadPrices();
-
-            LoadClients();
-            LoadCalendarDeliveries();
-        }
-
-        private void WireEvents()
-        {
-            Products.CollectionChanged += Products_CollectionChanged;
-
-            AddProductButton.Click += AddProductButton_Click;
-            SaveButton.Click += SaveButton_Click;
-            SaveProductsButton.Click += SaveButton_Click;
-            NewQuoteButton.Click += NewQuoteButton_Click;
-            NewQuoteFromClientButton.Click += NewQuoteFromClientButton_Click;
-            OpenSelectedClientQuoteButton.Click += OpenSelectedClientQuoteButton_Click;
-            NewClientButton.Click += NewClientButton_Click;
-            SaveClientButton.Click += SaveClientButton_Click;
-            DeleteClientButton.Click += DeleteClientButton_Click;
-            DuplicateQuoteButton.Click += DuplicateQuoteButton_Click;
-            PricesConfigButton.Click += PricesConfigButton_Click;
-            BackupButton.Click += BackupButton_Click;
-            ExportPdfButton.Click += ExportPdfButton_Click;
-            ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
-            PreviousCalendarButton.Click += PreviousCalendarButton_Click;
-            TodayCalendarButton.Click += TodayCalendarButton_Click;
-            NextCalendarButton.Click += NextCalendarButton_Click;
-            WeekViewButton.Click += WeekViewButton_Click;
-            MonthViewButton.Click += MonthViewButton_Click;
-            ToggleSidebarButton.Click += ToggleSidebarButton_Click;
-            ToggleContextPanelButton.Click += ToggleContextPanelButton_Click;
-
-            ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
-            QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
-
-            ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
-
-            ClientNameTextBox.TextChanged += ClientNameTextBox_TextChanged;
-            QuoteTitleTextBox.TextChanged += QuoteTitleTextBox_TextChanged;
-            PhoneTextBox.TextChanged += AnyEditableField_Changed;
-            DniTextBox.TextChanged += (_, __) => MarkAsChanged();
-            QuoteNotesTextBox.TextChanged += AnyEditableField_Changed;
-            ClientNotesTextBox.TextChanged += AnyEditableField_Changed;
-            DepositTextBox.TextChanged += DepositTextBox_TextChanged;
-            DepositTextBox.PreviewTextInput += DepositTextBox_PreviewTextInput;
-            DepositTextBox.GotKeyboardFocus += DepositTextBox_GotKeyboardFocus;
-            DepositTextBox.LostKeyboardFocus += DepositTextBox_LostKeyboardFocus;
-
-            DataObject.AddPastingHandler(DepositTextBox, DepositTextBox_Pasting);
-
-            DeliveryDatePicker.SelectedDateChanged += AnyEditableField_Changed;
-            EventDatePicker.SelectedDateChanged += (_, __) => MarkAsChanged();
-            QuoteStatusComboBox.SelectionChanged += AnyEditableField_Changed;
-        }
-
-        private void InitializeUiState()
-        {
-            UpdateSaveButtonText();
-            UpdateUnsavedChangesIndicator();
-            UpdateWindowTitle();
-
-            ClientSearchPlaceholderTextBlock.Visibility =
-                string.IsNullOrWhiteSpace(ClientSearchTextBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-
-            UpdateStatusFilterButtons();
-            UpdateDeliveryFilterButtons();
-            UpdateActiveContext();
-            UpdateEmptyStateMessages();
-            UpdateWorkflowState();
-            UpdateCalendarViewButtons();
-            UpdateSecondaryPlaceholders();
-            ApplyContextPanelState();
-        }
-
-        private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            if (e.NewItems != null)
-            {
-                foreach (ProductLine item in e.NewItems)
-                {
-                    item.PropertyChanged += ProductLine_PropertyChanged;
-                }
-            }
-
-            UpdateGrandTotal();
-            UpdateWorkflowState();
-            MarkAsChanged();
-        }
-
-        private void ProductLine_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            UpdateGrandTotal();
-            MarkAsChanged();
-        }
-
-        private void ClientNameTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            MarkAsChanged();
-            UpdateActiveContext();
-        }
-
-        private void QuoteTitleTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            MarkAsChanged();
-            UpdateActiveContext();
-            UpdateSecondaryPlaceholders();
-        }
-
-        private void DepositTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            UpdatePendingAmount();
-            MarkAsChanged();
-            UpdateActiveContext();
-        }
-
-        private void AnyEditableField_Changed(object? sender, EventArgs e)
-        {
-            MarkAsChanged();
-            UpdateActiveContext();
-            UpdateSecondaryPlaceholders();
-        }
-        
-        private void NavigateToSection(int sectionIndex)
-        {
-            if (MainTabs == null)
-                return;
-
-            if (sectionIndex < 0 || sectionIndex >= MainTabs.Items.Count)
-                return;
-
-            MainTabs.SelectedIndex = sectionIndex;
-            UpdateShellNavigationState();
-        }
-
-        private void GoToTab(int tabIndex) => NavigateToSection(tabIndex);
-
-        private void SidebarNavButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button)
-                return;
-
-            if (button.Tag == null)
-                return;
-
-            if (int.TryParse(button.Tag.ToString(), out var tabIndex))
-            {
-                ShellBreadcrumbOverride = null;
-                GoToTab(tabIndex);
-            }
-        }
-
-        private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender != MainTabs)
-                return;
-
-            UpdateShellNavigationState();
-        }
-
-        private (string Title, string Subtitle, string Breadcrumb) GetSectionInfo(int sectionIndex)
-        {
-            var baseInfo = sectionIndex switch
-            {
-                0 => ("Dashboard / Calendario", "Próximas entregas, vista semanal y vista mensual", "Inicio > Dashboard"),
-                1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "Inicio > Clientes"),
-                2 => ("Presupuestos", "Creación, edición y seguimiento de presupuestos", "Inicio > Presupuestos"),
-                3 => ("Productos", "Catálogo de productos y líneas de trabajo", "Inicio > Productos"),
-                4 => ("Documentos", "Exportación y consulta de documentos", "Inicio > Documentos"),
-                5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "Inicio > Ajustes"),
-                _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "Inicio")
-            };
-
-            return (baseInfo.Item1, baseInfo.Item2, BuildContextBreadcrumb(sectionIndex, baseInfo.Item3));
-        }
-
-        private string BuildContextBreadcrumb(int sectionIndex, string fallback)
-        {
-            if (!string.IsNullOrWhiteSpace(ShellBreadcrumbOverride))
-                return ShellBreadcrumbOverride;
-
-            var clientName = string.IsNullOrWhiteSpace(ClientNameTextBox?.Text)
-                ? null
-                : ClientNameTextBox.Text.Trim();
-
-            var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox?.Text)
-                ? null
-                : QuoteTitleTextBox.Text.Trim();
-
-            if (sectionIndex == TabClientes && clientName != null)
-                return $"Inicio > Clientes > {clientName}";
-
-            if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
-            {
-                var section = sectionIndex switch
-                {
-                    TabProductos => "Productos",
-                    TabDocumentos => "Documentos",
-                    _ => "Presupuestos"
-                };
-
-                return quoteTitle == null
-                    ? $"Inicio > {section} > {clientName}"
-                    : $"Inicio > {section} > {clientName} > {quoteTitle}";
-            }
-
-            return fallback;
-        }
-
-        private void UpdateShellNavigationState()
-        {
-            if (MainTabs == null)
-                return;
-
-            var sectionInfo = GetSectionInfo(MainTabs.SelectedIndex);
-
-            if (ShellSectionTitleTextBlock != null)
-                ShellSectionTitleTextBlock.Text = sectionInfo.Title;
-
-            if (ShellSectionSubtitleTextBlock != null)
-                ShellSectionSubtitleTextBlock.Text = sectionInfo.Subtitle;
-
-            if (ShellBreadcrumbTextBlock != null)
-                ShellBreadcrumbTextBlock.Text = sectionInfo.Breadcrumb;
-
-            UpdateSidebarButtonState();
-        }
-
-        private void UpdateSidebarButtonState()
-        {
-            if (MainTabs == null)
-                return;
-
-            var buttons = new[]
-            {
-                DashboardNavButton,
-                ClientsNavButton,
-                QuotesNavButton,
-                ProductsNavButton,
-                DocumentsNavButton,
-                SettingsNavButton
-            };
-
-            for (var i = 0; i < buttons.Length; i++)
-            {
-                if (buttons[i] == null)
-                    continue;
-
-                var isActive = MainTabs.SelectedIndex == i;
-                buttons[i].Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
-                buttons[i].BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
-            }
-        }
-
-        private void ToggleSidebarButton_Click(object sender, RoutedEventArgs e)
-        {
-            IsSidebarCollapsed = !IsSidebarCollapsed;
-            ApplySidebarState();
-        }
-
-        private void ApplySidebarState()
-        {
-            if (ShellSidebarColumn == null)
-                return;
-
-            ShellSidebarColumn.Width = new GridLength(IsSidebarCollapsed ? 72 : 260);
-
-            var compactVisibility = IsSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
-
-            ShellBrandPanel.Visibility = compactVisibility;
-            ShellSearchPanel.Visibility = compactVisibility;
-            ShellFooterTextBlock.Visibility = compactVisibility;
-
-            DashboardNavButton.Content = IsSidebarCollapsed ? "📅" : "📅  Dashboard";
-            ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
-            QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Presupuestos";
-            ProductsNavButton.Content = IsSidebarCollapsed ? "📦" : "📦  Productos";
-            DocumentsNavButton.Content = IsSidebarCollapsed ? "📄" : "📄  Documentos";
-            SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
-        }
-
-
-        private void ToggleContextPanelButton_Click(object sender, RoutedEventArgs e)
-        {
-            IsContextPanelCollapsed = !IsContextPanelCollapsed;
-            ApplyContextPanelState();
-        }
-
-        private void ApplyContextPanelState()
-        {
-            if (ContextPanelColumn == null)
-                return;
-
-            ContextPanelColumn.Width = IsContextPanelCollapsed
-                ? new GridLength(0)
-                : new GridLength(310);
-
-            if (ContextPanelView != null)
-                ContextPanelView.Visibility = IsContextPanelCollapsed ? Visibility.Collapsed : Visibility.Visible;
-
-            if (ToggleContextPanelButton != null)
-            {
-                ToggleContextPanelButton.Content = IsContextPanelCollapsed ? "‹" : "›";
-            }
-        }
-
-        private void GlobalSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            UpdateGlobalSearchPlaceholder();
-            RefreshGlobalSearchResults();
-        }
-
-        private void UpdateGlobalSearchPlaceholder()
-        {
-            if (GlobalSearchPlaceholderTextBlock == null || GlobalSearchTextBox == null)
-                return;
-
-            GlobalSearchPlaceholderTextBlock.Visibility =
-                string.IsNullOrWhiteSpace(GlobalSearchTextBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-        }
-
-        private void RefreshGlobalSearchResults()
-        {
-            if (GlobalSearchResultsBorder == null || GlobalSearchResultsListBox == null)
-                return;
-
-            GlobalSearchResults.Clear();
-
-            var search = GlobalSearchTextBox.Text?.Trim() ?? string.Empty;
-            if (search.Length < 2)
-            {
-                GlobalSearchResultsBorder.Visibility = Visibility.Collapsed;
-                return;
-            }
-
-            var term = search.ToLowerInvariant();
-
-            using var db = new AppDbContext();
-
-            var clients = db.Clients
-                .Include(c => c.Quotes)
-                .AsNoTracking()
-                .ToList()
-                .Where(c =>
-                    ContainsSearch(c.Name, term) ||
-                    ContainsSearch(c.Phone, term) ||
-                    ContainsSearch(c.Dni, term))
-                .OrderBy(c => c.Name)
-                .Take(5)
-                .Select(c => new GlobalSearchResult
-                {
-                    ResultType = GlobalSearchResultType.Client,
-                    ClientId = c.Id,
-                    TypeLabel = "CLIENTE",
-                    PrimaryText = string.IsNullOrWhiteSpace(c.Name) ? "Cliente sin nombre" : c.Name,
-                    SecondaryText = BuildGlobalClientSummary(c)
-                });
-
-            foreach (var result in clients)
-                GlobalSearchResults.Add(result);
-
-            var quotes = db.Quotes
-                .Include(q => q.Client)
-                .AsNoTracking()
-                .ToList()
-                .Where(q =>
-                    ContainsSearch(q.Title, term) ||
-                    ContainsSearch(q.Status, term) ||
-                    ContainsSearch(q.Client?.Name, term) ||
-                    ContainsSearch(q.Client?.Phone, term) ||
-                    ContainsSearch(q.Client?.Dni, term) ||
-                    q.DeliveryDate.ToString("dd/MM/yyyy").Contains(term) ||
-                    q.DeliveryDate.ToString("dd-MM-yyyy").Contains(term) ||
-                    (q.EventDate.HasValue && q.EventDate.Value.ToString("dd/MM/yyyy").Contains(term)))
-                .OrderBy(q => q.DeliveryDate)
-                .Take(7)
-                .Select(q => new GlobalSearchResult
-                {
-                    ResultType = GlobalSearchResultType.Quote,
-                    ClientId = q.ClientId,
-                    QuoteId = q.Id,
-                    TypeLabel = "PRESUP.",
-                    PrimaryText = string.IsNullOrWhiteSpace(q.Title) ? $"Presupuesto #{q.Id}" : q.Title,
-                    SecondaryText = $"{q.Client?.Name ?? "Cliente"} · {q.Status} · Entrega {q.DeliveryDate:dd/MM/yyyy} · {q.Total:N2} €"
-                });
-
-            foreach (var result in quotes)
-            {
-                if (!GlobalSearchResults.Any(r => r.ResultType == result.ResultType && r.QuoteId == result.QuoteId))
-                    GlobalSearchResults.Add(result);
-            }
-
-            GlobalSearchResultsBorder.Visibility = GlobalSearchResults.Count > 0
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            if (GlobalSearchResults.Count > 0)
-                GlobalSearchResultsListBox.SelectedIndex = 0;
-        }
-
-        private static bool ContainsSearch(string? value, string term)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return false;
-
-            return value.ToLowerInvariant().Contains(term);
-        }
-
-        private static string BuildGlobalClientSummary(Models.Client client)
-        {
-            var parts = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(client.DisplayPhone))
-                parts.Add(client.DisplayPhone);
-
-            if (!string.IsNullOrWhiteSpace(client.Dni))
-                parts.Add(client.Dni);
-
-            var nextDelivery = client.Quotes?
-                .Where(q => q.DeliveryDate.Date >= DateTime.Today && q.Status != "Entregado")
-                .OrderBy(q => q.DeliveryDate)
-                .FirstOrDefault();
-
-            if (nextDelivery != null)
-                parts.Add($"Próxima entrega {nextDelivery.DeliveryDate:dd/MM/yyyy}");
-
-            return parts.Count == 0 ? "Sin teléfono ni entregas próximas" : string.Join(" · ", parts);
-        }
-
-        private void GlobalSearchTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Down)
-            {
-                MoveGlobalSearchSelection(1);
-                e.Handled = true;
-                return;
-            }
-
-            if (e.Key == Key.Up)
-            {
-                MoveGlobalSearchSelection(-1);
-                e.Handled = true;
-                return;
-            }
-
-            if (e.Key == Key.Escape)
-            {
-                HideGlobalSearchResults();
-                e.Handled = true;
-                return;
-            }
-
-            if (e.Key != Key.Enter)
-                return;
-
-            e.Handled = true;
-
-            if (GlobalSearchResultsListBox.SelectedItem is GlobalSearchResult selectedResult)
-            {
-                OpenGlobalSearchResult(selectedResult);
-                return;
-            }
-
-            var search = GlobalSearchTextBox.Text?.Trim() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(search))
-                return;
-
-            NavigateToSection(TabClientes);
-            ClientSearchTextBox.Text = search;
-            ClientSearchTextBox.Focus();
-            ClientSearchTextBox.CaretIndex = ClientSearchTextBox.Text.Length;
-        }
-
-        private void MoveGlobalSearchSelection(int offset)
-        {
-            if (GlobalSearchResultsListBox == null || GlobalSearchResults.Count == 0)
-                return;
-
-            var nextIndex = GlobalSearchResultsListBox.SelectedIndex + offset;
-
-            if (nextIndex < 0)
-                nextIndex = GlobalSearchResults.Count - 1;
-
-            if (nextIndex >= GlobalSearchResults.Count)
-                nextIndex = 0;
-
-            GlobalSearchResultsListBox.SelectedIndex = nextIndex;
-            GlobalSearchResultsListBox.ScrollIntoView(GlobalSearchResultsListBox.SelectedItem);
-        }
-
-        private void GlobalSearchResultsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (GlobalSearchResultsListBox.SelectedItem is GlobalSearchResult result)
-                OpenGlobalSearchResult(result);
-        }
-
-        private void OpenGlobalSearchResult(GlobalSearchResult result)
-        {
-            HideGlobalSearchResults(clearText: true);
-
-            if (result.ResultType == GlobalSearchResultType.Quote && result.QuoteId.HasValue)
-            {
-                OpenQuoteById(result.QuoteId.Value, TabPresupuesto, "Búsqueda");
-                return;
-            }
-
-            if (result.ResultType == GlobalSearchResultType.Client && result.ClientId.HasValue)
-            {
-                OpenClientById(result.ClientId.Value);
-            }
-        }
-
-        private void OpenClientById(int clientId)
-        {
-            if (!ConfirmDiscardChanges())
-                return;
-
-            SuppressSelectionConfirm = true;
-            ShellBreadcrumbOverride = null;
-
-            LoadClients();
-
-            var client = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                .FirstOrDefault(c => c.Id == clientId);
-
-            if (client != null)
-            {
-                ClientsListBox.SelectedItem = client;
-                LastSelectedClientId = client.Id;
-            }
-
-            SuppressSelectionConfirm = false;
-
-            NavigateToSection(TabClientes);
-            UpdateContextBreadcrumb("Búsqueda", TabClientes);
-            UpdateShellNavigationState();
-        }
-
-        private void HideGlobalSearchResults(bool clearText = false)
-        {
-            if (clearText && GlobalSearchTextBox != null)
-                GlobalSearchTextBox.Text = string.Empty;
-
-            GlobalSearchResults.Clear();
-
-            if (GlobalSearchResultsBorder != null)
-                GlobalSearchResultsBorder.Visibility = Visibility.Collapsed;
-        }
-
-        private void BudgetQuickExportPdfButton_Click(object sender, RoutedEventArgs e)
-        {
-            ExportPdfButton_Click(sender, e);
-        }
-
-        private void BudgetQuickDocumentsButton_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateContextBreadcrumb("Presupuestos", TabDocumentos);
-            NavigateToSection(4);
-        }
-
-        private void OpenQuoteById(int quoteId, int targetTab = TabPresupuesto, string? breadcrumbOrigin = null)
-        {
-            if (!ConfirmDiscardChanges())
-                return;
-
-            using var db = new AppDbContext();
-
-            var quoteSnapshot = db.Quotes
-                .AsNoTracking()
-                .FirstOrDefault(q => q.Id == quoteId);
-
-            if (quoteSnapshot == null)
-                return;
-
-            SuppressSelectionConfirm = true;
-            PendingNavigationTargetTab = targetTab;
-            ShellBreadcrumbOverride = null;
-
-            LoadClients();
-
-            var client = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                .FirstOrDefault(c => c.Id == quoteSnapshot.ClientId);
-
-            if (client != null)
-            {
-                ClientsListBox.SelectedItem = client;
-                LastSelectedClientId = client.Id;
-            }
-
-            var selectedQuote = QuotesListBox.Items
-                .OfType<Models.Quote>()
-                .FirstOrDefault(q => q.Id == quoteId);
-
-            if (selectedQuote != null)
-            {
-                QuotesListBox.SelectedItem = selectedQuote;
-                LastSelectedQuoteId = selectedQuote.Id;
-            }
-
-            SuppressSelectionConfirm = false;
-
-            if (selectedQuote == null)
-            {
-                PendingNavigationTargetTab = null;
-                GoToTab(targetTab);
-            }
-
-            UpdateContextBreadcrumb(breadcrumbOrigin, targetTab);
-            UpdateShellNavigationState();
-        }
-
-        private void UpdateContextBreadcrumb(string? origin, int targetTab)
-        {
-            var clientName = string.IsNullOrWhiteSpace(ClientNameTextBox.Text)
-                ? null
-                : ClientNameTextBox.Text.Trim();
-
-            var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
-                ? null
-                : QuoteTitleTextBox.Text.Trim();
-
-            if (clientName == null)
-            {
-                ShellBreadcrumbOverride = null;
-                return;
-            }
-
-            var target = targetTab switch
-            {
-                TabProductos => "Productos",
-                TabDocumentos => "Documentos",
-                TabClientes => "Clientes",
-                _ => "Presupuestos"
-            };
-
-            var parts = new List<string> { "Inicio" };
-
-            if (!string.IsNullOrWhiteSpace(origin))
-                parts.Add(origin);
-
-            if (parts.Last() != target)
-                parts.Add(target);
-
-            parts.Add(clientName);
-
-            if (quoteTitle != null)
-                parts.Add(quoteTitle);
-
-            ShellBreadcrumbOverride = string.Join(" > ", parts);
-        }
-
-        private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
-        {
-            OpenQuoteById(delivery.QuoteId, TabPresupuesto, "Dashboard");
-        }
-
-        /*  DESACTIVADO
-         private void WeeklyDeliveriesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-         {
-             var element = e.OriginalSource as DependencyObject;
-
-             while (element != null)
-             {
-                 if (element is FrameworkElement frameworkElement &&
-                     frameworkElement.DataContext is WeeklyDeliveryItem delivery)
-                 {
-                     OpenWeeklyDelivery(delivery);
-                     return;
-                 }
-
-                 element = System.Windows.Media.VisualTreeHelper.GetParent(element);
-             }
-         }
-        */
-
-        private void WeeklyDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is not FrameworkElement element)
-                return;
-
-            if (element.DataContext is not WeeklyDeliveryItem delivery)
-                return;
-
-            OpenWeeklyDelivery(delivery);
-        }
-
-        internal void UpcomingDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is not FrameworkElement element)
-                return;
-
-            if (element.DataContext is not WeeklyDeliveryItem delivery)
-                return;
-
-            OpenWeeklyDelivery(delivery);
-        }
-
-        internal void UpcomingDeliveriesMonthButton_Click(object sender, RoutedEventArgs e)
-        {
-            CalendarViewMode = "Mes";
-            CalendarReferenceDate = DateTime.Today;
-            LoadCalendarDeliveries();
-            UpdateCalendarViewButtons();
-        }
-
-        private void UpdateEmptyStateMessages()
-        {
-            var hasClient =
-                !string.IsNullOrWhiteSpace(ClientNameTextBox.Text) ||
-                !string.IsNullOrWhiteSpace(PhoneTextBox.Text);
-
-            var hasProducts = Products.Count > 0;
-
-            PresupuestoEmptyHintBorder.Visibility = hasClient
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-
-            if (!hasClient)
-            {
-                ProductsEmptyHintBorder.Visibility = Visibility.Visible;
-                ProductsEmptyHintTextBlock.Text = "Selecciona o crea un cliente antes de añadir productos.";
-            }
-            else if (!hasProducts)
-            {
-                ProductsEmptyHintBorder.Visibility = Visibility.Visible;
-                ProductsEmptyHintTextBlock.Text = "Añade productos para construir el presupuesto.";
-            }
-            else
-            {
-                ProductsEmptyHintBorder.Visibility = Visibility.Collapsed;
-            }
-
-            if (!hasClient)
-            {
-                DocumentsEmptyHintBorder.Visibility = Visibility.Visible;
-                DocumentsEmptyHintTextBlock.Text = "Selecciona o crea un cliente antes de exportar documentos.";
-            }
-            else if (!hasProducts)
-            {
-                DocumentsEmptyHintBorder.Visibility = Visibility.Visible;
-                DocumentsEmptyHintTextBlock.Text = "Añade al menos un producto antes de exportar documentos.";
-            }
-            else
-            {
-                DocumentsEmptyHintBorder.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void UpdateWorkflowState()
-        {
-            var hasSavedClient = CurrentClientId != null;
-            var hasProducts = Products.Count > 0;
-
-            QuoteTitleTextBox.IsEnabled = hasSavedClient;
-            QuoteStatusComboBox.IsEnabled = hasSavedClient;
-            DeliveryDatePicker.IsEnabled = hasSavedClient;
-            DepositTextBox.IsEnabled = hasSavedClient;
-            QuoteNotesTextBox.IsEnabled = hasSavedClient;
-            ClientNotesTextBox.IsEnabled = hasSavedClient;
-
-            NewQuoteButton.IsEnabled = hasSavedClient;
-            DuplicateQuoteButton.IsEnabled = hasSavedClient;
-
-            ProductsDataGrid.IsEnabled = hasSavedClient;
-            AddProductButton.IsEnabled = hasSavedClient;
-            SaveProductsButton.IsEnabled = hasSavedClient;
-
-            ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
-            ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
-            BudgetQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
-            BudgetQuickDocumentsButton.IsEnabled = hasSavedClient;
-
-            SaveButton.IsEnabled = hasSavedClient;
-        }
-
-        private void FocusSelectedClient()
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (ClientsListBox.SelectedItem != null)
-                {
-                    ClientsListBox.ScrollIntoView(ClientsListBox.SelectedItem);
-
-                    var item = ClientsListBox.ItemContainerGenerator
-                        .ContainerFromItem(ClientsListBox.SelectedItem) as ListBoxItem;
-
-                    item?.Focus();
-                }
-                else
-                {
-                    ClientsListBox.Focus();
-                }
-            }), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private void FocusSelectedQuote()
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (QuotesListBox.SelectedItem != null)
-                {
-                    QuotesListBox.ScrollIntoView(QuotesListBox.SelectedItem);
-
-                    var item = QuotesListBox.ItemContainerGenerator
-                        .ContainerFromItem(QuotesListBox.SelectedItem) as ListBoxItem;
-
-                    item?.Focus();
-                }
-                else
-                {
-                    QuotesListBox.Focus();
-                }
-            }), System.Windows.Threading.DispatcherPriority.Background);
-        }
-
-        private string MakeSafeFileName(string text)
-        {
-            foreach (var invalidChar in Path.GetInvalidFileNameChars())
-            {
-                text = text.Replace(invalidChar, '_');
-            }
-
-            return text.Trim();
-        }
-
-        private void PreviousCalendarButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (CalendarViewMode == "Mes")
-                CalendarReferenceDate = CalendarReferenceDate.AddMonths(-1);
-            else
-                CalendarReferenceDate = CalendarReferenceDate.AddDays(-7);
-
-            LoadCalendarDeliveries();
-            UpdateCalendarViewButtons();
-        }
-
-        private void NextCalendarButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (CalendarViewMode == "Mes")
-                CalendarReferenceDate = CalendarReferenceDate.AddMonths(1);
-            else
-                CalendarReferenceDate = CalendarReferenceDate.AddDays(7);
-
-            LoadCalendarDeliveries();
-            UpdateCalendarViewButtons();
-        }
-
-        private void TodayCalendarButton_Click(object sender, RoutedEventArgs e)
-        {
-            CalendarReferenceDate = DateTime.Today;
-
-            LoadCalendarDeliveries();
-            UpdateCalendarViewButtons();
-        }
-
-        private void WeekViewButton_Click(object sender, RoutedEventArgs e)
-        {
-            CalendarViewMode = "Semana";
-
-            LoadCalendarDeliveries();
-            UpdateCalendarViewButtons();
-        }
-
-        private void MonthViewButton_Click(object sender, RoutedEventArgs e)
-        {
-            CalendarViewMode = "Mes";
-
-            LoadCalendarDeliveries();
-            UpdateCalendarViewButtons();
-        }
-
-        private void UpdateCalendarViewButtons()
-        {
-            var isWeekView = CalendarViewMode == "Semana";
-
-            WeekViewButton.Style = (Style)FindResource(
-                isWeekView
-                    ? "ActiveFilterButtonStyle"
-                    : "SecondaryButtonStyle");
-
-            MonthViewButton.Style = (Style)FindResource(
-                CalendarViewMode == "Mes"
-                    ? "ActiveFilterButtonStyle"
-                    : "SecondaryButtonStyle");
-
-            WeeklyColumnsItemsControl.Visibility = isWeekView
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            CalendarGroupsListBox.Visibility = isWeekView
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-        }
-
-        private void DepositTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            if (sender is not TextBox textBox)
-                return;
-
-            var proposedText = GetProposedText(textBox, e.Text);
-
-            e.Handled = !IsValidNumericInput(proposedText, allowNegative: false);
-        }
-
-        private void DepositTextBox_Pasting(object sender, DataObjectPastingEventArgs e)
-        {
-            if (sender is not TextBox textBox)
-                return;
-
-            if (!e.DataObject.GetDataPresent(typeof(string)))
-            {
-                e.CancelCommand();
-                return;
-            }
-
-            var pasteText = e.DataObject.GetData(typeof(string)) as string ?? "";
-            var proposedText = GetProposedText(textBox, pasteText);
-
-            if (!IsValidNumericInput(proposedText, allowNegative: false))
-            {
-                e.CancelCommand();
-            }
-        }
-
-        private void DepositTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            DepositTextBox.Text = DepositTextBox.Text
-                .Replace("€", "")
-                .Trim();
-
-            DepositTextBox.SelectAll();
-        }
-
-        private void DepositTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            var deposit = GetDepositValue();
-
-            DepositTextBox.Text = $"{deposit:N2}";
-
-            UpdatePendingAmount();
-        }
-
-        private void UpdateSecondaryPlaceholders()
-        {
-            QuoteTitlePlaceholderTextBlock.Visibility =
-                string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-
-            QuoteNotesPlaceholderTextBlock.Visibility =
-                string.IsNullOrWhiteSpace(QuoteNotesTextBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-
-            ClientNotesPlaceholderTextBlock.Visibility =
-                string.IsNullOrWhiteSpace(ClientNotesTextBox.Text)
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-        }
-
-        internal void CalendarDelivery_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var element = e.OriginalSource as DependencyObject;
-
-            while (element != null)
-            {
-                if (element is FrameworkElement frameworkElement &&
-                    frameworkElement.DataContext is WeeklyDeliveryItem delivery)
-                {
-                    OpenWeeklyDelivery(delivery);
-                    e.Handled = true;
-                    return;
-                }
-
-                element = VisualTreeHelper.GetParent(element);
-            }
-        }
-
-
-        private enum GlobalSearchResultType
-        {
-            Client,
-            Quote
-        }
-
-        private sealed class GlobalSearchResult
-        {
-            public GlobalSearchResultType ResultType { get; init; }
-
-            public int? ClientId { get; init; }
-
-            public int? QuoteId { get; init; }
-
-            public string TypeLabel { get; init; } = string.Empty;
-
-            public string PrimaryText { get; init; } = string.Empty;
-
-            public string SecondaryText { get; init; } = string.Empty;
-        }
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using SastreriaPresupuestos.Export;
@@ -13,21 +12,17 @@ namespace SastreriaPresupuestos.Services
             string clientName,
             string clientPhone,
             DateTime deliveryDate,
-            DateTime? eventDate,
             string title,
             string status,
             decimal deposit,
             string clientNotes,
-            ObservableCollection<ProductLine> products,
-            int? quoteId = null)
+            ObservableCollection<ProductLine> products)
         {
             var exportQuote = new ExportQuote
             {
-                QuoteId = quoteId,
                 ClientName = clientName.Trim(),
                 ClientPhone = clientPhone.Trim(),
                 DeliveryDate = deliveryDate,
-                EventDate = eventDate,
                 Title = title.Trim(),
                 Status = status.Trim(),
                 ClientNotes = clientNotes.Trim(),
@@ -36,34 +31,13 @@ namespace SastreriaPresupuestos.Services
 
             foreach (var product in products)
             {
-                var productPrice = product.Total;
-
-                if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
-                {
-                    productPrice -= product.FabricPrice * product.Quantity;
-                }
-
                 exportQuote.Items.Add(new ExportQuoteItem
                 {
                     Product = BuildProductName(product),
                     Description = BuildDescription(product),
                     Quantity = product.Quantity,
-                    Price = productPrice
+                    Price = product.Total
                 });
-
-                if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
-                {
-                    exportQuote.Items.Add(new ExportQuoteItem
-                    {
-                        Product = $"Tejido {NormalizeText(product.ProductName)}",
-                        Description = string.IsNullOrWhiteSpace(product.Fabric)
-                            ? ""
-                            : product.Fabric,
-                        Quantity = product.Quantity,
-                        Price = product.FabricPrice * product.Quantity,
-                        IsFabricLine = true
-                    });
-                }
             }
 
             return exportQuote;
@@ -71,42 +45,18 @@ namespace SastreriaPresupuestos.Services
 
         private static string BuildProductName(ProductLine product)
         {
-            return NormalizeText(product.ProductName);
+            if (string.IsNullOrWhiteSpace(product.TailoringType))
+                return product.ProductName;
+
+            return $"{product.ProductName} {product.TailoringType}";
         }
 
         private static string BuildDescription(ProductLine product)
         {
-            var details = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(product.TailoringType))
-                details.Add(NormalizeText(product.TailoringType));
-
-            if (!string.IsNullOrWhiteSpace(product.Fabric) &&
-                !(ShouldShowFabricPrice(product) && product.FabricPrice > 0))
-            {
-                details.Add($"Tejido / referencia: {product.Fabric.Trim()}");
-            }
-
-            return string.Join(" · ", details);
-        }
-
-        private static bool ShouldShowFabricPrice(ProductLine product)
-        {
-            return product.ProductName == "Traje" ||
-                   product.ProductName == "Chaqué" ||
-                   product.ProductName == "Chaqueta" ||
-                   product.ProductName == "Chaleco" ||
-                   product.ProductName == "Pantalón" ||
-                   product.ProductName == "Camisa";
-        }
-
-        private static string NormalizeText(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(product.Fabric))
                 return "";
 
-            return value.Trim()
-                .Replace("Confeccion", "Confección");
+            return $"Tejido / referencia: {product.Fabric}";
         }
     }
 }

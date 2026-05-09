@@ -23,10 +23,6 @@ namespace SastreriaPresupuestos.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Dni")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -85,9 +81,6 @@ namespace SastreriaPresupuestos.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Deposit")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("EventDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")

@@ -24,13 +24,9 @@ namespace SastreriaPresupuestos.Data
 
         public static string GetDatabasePath()
         {
-            var folder = Path.Combine(
+            return Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "SastreriaPresupuestos");
-
-            Directory.CreateDirectory(folder);
-
-            return Path.Combine(folder, "sastreria.db");
+                "sastreria.db");
         }
     }
 }
