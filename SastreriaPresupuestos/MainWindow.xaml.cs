@@ -2102,6 +2102,37 @@ namespace SastreriaPresupuestos
             EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            UpdateDashboardSummary();
+        }
+
+        private void UpdateDashboardSummary()
+        {
+            using var db = new AppDbContext();
+
+            var today = DateTime.Today;
+            var next7Limit = today.AddDays(7);
+            var monthStart = new DateTime(today.Year, today.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+            var quotes = db.Quotes
+                .AsNoTracking()
+                .ToList();
+
+            var todayCount = quotes.Count(q => q.DeliveryDate.Date == today);
+            var next7Count = quotes.Count(q =>
+                q.DeliveryDate.Date >= today &&
+                q.DeliveryDate.Date <= next7Limit);
+            var pendingCount = quotes.Count(q =>
+                !string.Equals(q.Status, "Entregado", StringComparison.OrdinalIgnoreCase));
+            var monthCount = quotes.Count(q =>
+                q.DeliveryDate.Date >= monthStart &&
+                q.DeliveryDate.Date <= monthEnd);
+
+            DashboardTodayCountTextBlock.Text = todayCount.ToString("N0");
+            DashboardNext7CountTextBlock.Text = next7Count.ToString("N0");
+            DashboardPendingCountTextBlock.Text = pendingCount.ToString("N0");
+            DashboardMonthCountTextBlock.Text = monthCount.ToString("N0");
         }
 
         private bool IsWeekend(DateTime date)
