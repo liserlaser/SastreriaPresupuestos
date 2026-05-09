@@ -2717,17 +2717,17 @@ namespace SastreriaPresupuestos
             if (ShellSidebarColumn == null)
                 return;
 
-            ShellSidebarColumn.Width = new GridLength(IsSidebarCollapsed ? 72 : 260);
+            ShellSidebarColumn.Width = new GridLength(IsSidebarCollapsed ? 72 : 230);
 
             var compactVisibility = IsSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
-            ShellBrandPanel.Visibility = compactVisibility;
             ShellSearchPanel.Visibility = compactVisibility;
+            ActiveWorkspaceBorder.Visibility = compactVisibility;
             ShellFooterTextBlock.Visibility = compactVisibility;
 
             DashboardNavButton.Content = IsSidebarCollapsed ? "📅" : "📅  Dashboard";
             ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
-            QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Presupuestos";
+            QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Trabajos";
             ProductsNavButton.Content = IsSidebarCollapsed ? "📦" : "📦  Productos";
             DocumentsNavButton.Content = IsSidebarCollapsed ? "📄" : "📄  Documentos";
             SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";

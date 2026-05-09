@@ -367,7 +367,7 @@
     <Grid Margin="0" Background="{StaticResource AppBackgroundBrush}">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="ShellSidebarColumn" Width="260"/>
+            <ColumnDefinition x:Name="ShellSidebarColumn" Width="230"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -387,28 +387,17 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Margin="0,0,0,14">
+                <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Image
-                            x:Name="ShellLogoImage"
-                            Source="/Resources/logovectordefA.png"
-                            Width="46"
-                            Height="46"
-                            Stretch="Uniform"/>
-
-                        <StackPanel
-                            x:Name="ShellBrandPanel"
-                            Margin="10,0,0,0"
-                            VerticalAlignment="Center">
-                            <TextBlock Text="Martínez Mor" FontSize="18" FontWeight="Bold"/>
-                            <TextBlock Text="Presupuestos y entregas" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/>
-                        </StackPanel>
-                    </StackPanel>
+                    <TextBlock
+                        Text="Workspace"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="Bold"/>
 
                     <Button
                         x:Name="ToggleSidebarButton"
@@ -500,21 +489,70 @@
                 </Grid>
 
                 <StackPanel Grid.Row="2">
+
+                    <Border
+                        x:Name="ActiveWorkspaceBorder"
+                        Background="White"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="12"
+                        Margin="0,0,0,18">
+
+                        <StackPanel>
+                            <TextBlock
+                                x:Name="ActiveWorkspaceLabel"
+                                Text="TRABAJO ACTIVO"
+                                FontSize="10"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource MutedTextBrush}"/>
+
+                            <TextBlock
+                                x:Name="ActiveWorkspaceTitle"
+                                Text="Ningún presupuesto abierto"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Margin="0,8,0,0"
+                                TextWrapping="Wrap"/>
+
+                            <TextBlock
+                                x:Name="ActiveWorkspaceSubtitle"
+                                Text="Selecciona un trabajo para ver contexto"
+                                FontSize="11"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,4,0,0"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
                     <Button x:Name="DashboardNavButton" Content="📅  Dashboard" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="ClientsNavButton" Content="👥  Clientes" Tag="1" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="QuotesNavButton" Content="🧾  Presupuestos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="QuotesNavButton" Content="🧾  Trabajos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="ProductsNavButton" Content="📦  Productos" Tag="3" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="DocumentsNavButton" Content="📄  Documentos" Tag="4" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="SettingsNavButton" Content="⚙  Ajustes" Tag="5" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                 </StackPanel>
 
-                <TextBlock
-                    x:Name="ShellFooterTextBlock"
+                <StackPanel
+                    x:Name="ShellFooterPanel"
                     Grid.Row="3"
-                    Text="Sastrería · Rework UX"
-                    FontSize="11"
-                    Foreground="{StaticResource MutedTextBrush}"
-                    Margin="4,12,0,0"/>
+                    Margin="0,18,0,0">
+
+                    <Image
+                        x:Name="ShellLogoImage"
+                        Source="/Resources/logo_vector_notxt.png"
+                        Width="160"
+                        Height="160"
+                        Stretch="Uniform"
+                        />
+
+                    <TextBlock
+                        x:Name="ShellFooterTextBlock"
+                        Text="Martínez Mor"
+                        FontSize="11"
+                        Foreground="{StaticResource MutedTextBrush}"
+                        Margin="2,8,0,0"/>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -547,7 +585,7 @@
                         FontSize="14"
                         Foreground="{StaticResource MutedTextBrush}"
                         Margin="0,2,0,0"/>
-                    
+
                     <TextBlock
                         x:Name="ShellBreadcrumbTextBlock"
                         Text="Inicio &gt; Dashboard"
