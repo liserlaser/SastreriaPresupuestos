@@ -19,6 +19,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using MediaColor = System.Windows.Media.Color;
 
 namespace SastreriaPresupuestos
 {
@@ -448,7 +449,7 @@ namespace SastreriaPresupuestos
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
             UpdateGlobalSearchPlaceholder();
-            UpdateShellSectionTitle();
+            UpdateShellNavigationState();
         }
 
         private void ClientsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -2301,16 +2302,20 @@ namespace SastreriaPresupuestos
             UpdateSecondaryPlaceholders();
         }
         
-        private void GoToTab(int tabIndex)
+        private void NavigateToSection(int sectionIndex)
         {
             if (MainTabs == null)
                 return;
 
-            if (tabIndex < 0 || tabIndex >= MainTabs.Items.Count)
+            if (sectionIndex < 0 || sectionIndex >= MainTabs.Items.Count)
                 return;
 
-            MainTabs.SelectedIndex = tabIndex;
+            MainTabs.SelectedIndex = sectionIndex;
+            UpdateShellNavigationState();
         }
+
+        private void GoToTab(int tabIndex) => NavigateToSection(tabIndex);
+
         private void SidebarNavButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button)
@@ -2330,24 +2335,66 @@ namespace SastreriaPresupuestos
             if (sender != MainTabs)
                 return;
 
-            UpdateShellSectionTitle();
+            UpdateShellNavigationState();
         }
 
-        private void UpdateShellSectionTitle()
+        private (string Title, string Subtitle, string Breadcrumb) GetSectionInfo(int sectionIndex)
         {
-            if (ShellSectionTitleTextBlock == null || MainTabs == null)
+            return sectionIndex switch
+            {
+                0 => ("Dashboard / Calendario", "Próximas entregas, vista semanal y vista mensual", "Inicio > Dashboard"),
+                1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "Inicio > Clientes"),
+                2 => ("Presupuestos", "Creación, edición y seguimiento de presupuestos", "Inicio > Presupuestos"),
+                3 => ("Productos", "Catálogo de productos y líneas de trabajo", "Inicio > Productos"),
+                4 => ("Documentos", "Exportación y consulta de documentos", "Inicio > Documentos"),
+                5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "Inicio > Ajustes"),
+                _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "Inicio")
+            };
+        }
+
+        private void UpdateShellNavigationState()
+        {
+            if (MainTabs == null)
                 return;
 
-            ShellSectionTitleTextBlock.Text = MainTabs.SelectedIndex switch
+            var sectionInfo = GetSectionInfo(MainTabs.SelectedIndex);
+
+            if (ShellSectionTitleTextBlock != null)
+                ShellSectionTitleTextBlock.Text = sectionInfo.Title;
+
+            if (ShellSectionSubtitleTextBlock != null)
+                ShellSectionSubtitleTextBlock.Text = sectionInfo.Subtitle;
+
+            if (ShellBreadcrumbTextBlock != null)
+                ShellBreadcrumbTextBlock.Text = sectionInfo.Breadcrumb;
+
+            UpdateSidebarButtonState();
+        }
+
+        private void UpdateSidebarButtonState()
+        {
+            if (MainTabs == null)
+                return;
+
+            var buttons = new[]
             {
-                0 => "Dashboard / Calendario",
-                1 => "Clientes",
-                2 => "Presupuestos",
-                3 => "Productos",
-                4 => "Documentos",
-                5 => "Ajustes",
-                _ => "Sastrería Martínez Mor"
+                DashboardNavButton,
+                ClientsNavButton,
+                QuotesNavButton,
+                ProductsNavButton,
+                DocumentsNavButton,
+                SettingsNavButton
             };
+
+            for (var i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] == null)
+                    continue;
+
+                var isActive = MainTabs.SelectedIndex == i;
+                buttons[i].Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
+                buttons[i].BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
+            }
         }
 
         private void ToggleSidebarButton_Click(object sender, RoutedEventArgs e)
@@ -2402,7 +2449,7 @@ namespace SastreriaPresupuestos
             if (string.IsNullOrWhiteSpace(search))
                 return;
 
-            GoToTab(1);
+            NavigateToSection(1);
             ClientSearchTextBox.Text = search;
             ClientSearchTextBox.Focus();
             ClientSearchTextBox.CaretIndex = ClientSearchTextBox.Text.Length;

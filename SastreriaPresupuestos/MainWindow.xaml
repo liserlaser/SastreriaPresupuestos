@@ -473,12 +473,21 @@
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
+                        x:Name="ShellBreadcrumbTextBlock"
+                        Text="Inicio > Dashboard"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource MutedTextBrush}"
+                        Margin="0,0,0,4"/>
+
+                    <TextBlock
                         x:Name="ShellSectionTitleTextBlock"
                         Text="Dashboard / Calendario"
                         FontSize="28"
                         FontWeight="Bold"/>
 
                     <TextBlock
+                        x:Name="ShellSectionSubtitleTextBlock"
                         Text="Próximas entregas, vista semanal y vista mensual"
                         FontSize="14"
                         Foreground="{StaticResource MutedTextBrush}"
