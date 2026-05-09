@@ -1,111 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 
-namespace SastreriaPresupuestos.Models
+namespace SastreriaPresupuestos.ViewModels
 {
-    public class Quote
+    public class WeeklyDeliveryItem
     {
-        public int Id { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        public DateTime DeliveryDate { get; set; }
-
-        public DateTime? EventDate { get; set; }
-
-        public string Title { get; set; } = "";
-
-        public string Status { get; set; } = "Pendiente";
-
-        public string Notes { get; set; } = "";
-
-        public string ClientNotes { get; set; } = "";
-
-        public decimal Total { get; set; }
+        public int QuoteId { get; set; }
 
         public int ClientId { get; set; }
 
-        public Client? Client { get; set; }
+        public DateTime DeliveryDate { get; set; }
 
-        public List<QuoteItem> Items { get; set; } = new();
+        public string DayText => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(
+            DeliveryDate.ToString("dddd dd/MM"));
 
-        public decimal Deposit { get; set; }
+        public string ClientName { get; set; } = "";
 
-        public decimal PendingAmount
-        {
-            get
-            {
-                var pending = Total - Deposit;
-                return pending < 0 ? 0 : pending;
-            }
-        }
+        public string ClientPhone { get; set; } = "";
 
-        public string DisplayText
-        {
-            get
-            {
-                var titleText = string.IsNullOrWhiteSpace(Title)
-                    ? $"Presupuesto #{Id}"
-                    : Title;
+        public string QuoteTitle { get; set; } = "";
 
-                var statusText = string.IsNullOrWhiteSpace(Status)
-                    ? "Pendiente"
-                    : Status;
+        public string Status { get; set; } = "Pendiente";
 
-                return $"{DeliveryDate:dd/MM/yyyy} · {titleText} · {statusText} · {Total:N2} €";
-            }
-        }
+        public decimal Total { get; set; }
 
         public string DisplayTitle
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(Title))
-                    return $"Presupuesto #{Id}";
+                if (string.IsNullOrWhiteSpace(QuoteTitle))
+                    return $"Presupuesto #{QuoteId}";
 
-                return Title;
+                return QuoteTitle;
             }
         }
 
-        public string ProductSummary
-        {
-            get
-            {
-                if (Items == null || Items.Count == 0)
-                    return "Sin productos";
-
-                return string.Join(", ", Items.Select(item =>
-                {
-                    if (string.IsNullOrWhiteSpace(item.TailoringType))
-                        return item.ProductName;
-
-                    return $"{item.ProductName} {item.TailoringType}";
-                }));
-            }
-        }
+        public bool IsAccepted =>
+            string.Equals(NormalizedStatus, "Aceptado", StringComparison.OrdinalIgnoreCase);
 
         public string StatusLabelText
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(Status))
+                if (string.IsNullOrWhiteSpace(NormalizedStatus))
                     return "PENDIENTE";
 
-                return Status.Trim().ToUpperInvariant();
+                return NormalizedStatus.ToUpperInvariant();
             }
         }
-
-        public bool IsAccepted =>
-            string.Equals(Status?.Trim(), "Aceptado", StringComparison.OrdinalIgnoreCase);
 
         public Brush CardBackground
         {
             get
             {
-                return Status?.Trim() switch
+                return NormalizedStatus switch
                 {
                     "Aceptado" => new SolidColorBrush(Color.FromRgb(236, 245, 234)),
                     "Entregado" => new SolidColorBrush(Color.FromRgb(238, 240, 236)),
@@ -119,7 +69,7 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                return Status?.Trim() switch
+                return NormalizedStatus switch
                 {
                     "Aceptado" => new SolidColorBrush(Color.FromRgb(93, 135, 88)),
                     "Entregado" => new SolidColorBrush(Color.FromRgb(120, 130, 112)),
@@ -133,7 +83,7 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                return Status?.Trim() switch
+                return NormalizedStatus switch
                 {
                     "Aceptado" => new Thickness(4, 1, 1, 1),
                     "Entregado" => new Thickness(3, 1, 1, 1),
@@ -147,7 +97,7 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                return Status?.Trim() switch
+                return NormalizedStatus switch
                 {
                     "Aceptado" => new SolidColorBrush(Color.FromRgb(93, 135, 88)),
                     "Entregado" => new SolidColorBrush(Color.FromRgb(120, 130, 112)),
@@ -161,7 +111,7 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                return Status?.Trim() switch
+                return NormalizedStatus switch
                 {
                     "Aceptado" => Brushes.White,
                     "Entregado" => Brushes.White,
@@ -171,11 +121,22 @@ namespace SastreriaPresupuestos.Models
             }
         }
 
-        public FontWeight TitleWeight
+        public FontWeight ClientNameWeight
         {
             get
             {
                 return IsAccepted ? FontWeights.Bold : FontWeights.SemiBold;
+            }
+        }
+
+        private string NormalizedStatus
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Status))
+                    return "Pendiente";
+
+                return Status.Trim();
             }
         }
     }

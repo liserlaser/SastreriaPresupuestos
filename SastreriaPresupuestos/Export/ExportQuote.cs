@@ -6,11 +6,15 @@ namespace SastreriaPresupuestos.Export
 {
     public class ExportQuote
     {
+        public int? QuoteId { get; set; }
+
         public string ClientName { get; set; } = "";
 
         public string ClientPhone { get; set; } = "";
 
         public DateTime DeliveryDate { get; set; }
+
+        public DateTime? EventDate { get; set; }
 
         public string Title { get; set; } = "";
 
@@ -39,6 +43,17 @@ namespace SastreriaPresupuestos.Export
                     return "Presupuesto";
 
                 return Title;
+            }
+        }
+
+        public string DisplayQuoteNumber
+        {
+            get
+            {
+                if (QuoteId == null || QuoteId <= 0)
+                    return "";
+
+                return $"Presupuesto #{QuoteId.Value:0000}";
             }
         }
 
