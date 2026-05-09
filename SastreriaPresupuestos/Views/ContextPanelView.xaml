@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SastreriaPresupuestos.Views.ContextPanelView"
+<UserControl x:Class="SastreriaPresupuestos.Views.ContextPanelView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -29,7 +29,7 @@
 
                 <TextBlock
                     x:Name="ContextPanelSubtitleTextBlock"
-                    Text="Selecciona un cliente, presupuesto o entrega."
+                    Text="Selecciona un cliente, trabajo o entrega."
                     FontSize="13"
                     Foreground="{StaticResource MutedTextBrush}"
                     TextWrapping="Wrap"
@@ -46,7 +46,7 @@
                         <TextBlock Text="Resumen" FontSize="14" FontWeight="Bold" Margin="0,0,0,8"/>
 
                         <TextBlock x:Name="ContextClientTextBlock" Text="Cliente: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
-                        <TextBlock x:Name="ContextQuoteTextBlock" Text="Presupuesto: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                        <TextBlock x:Name="ContextQuoteTextBlock" Text="Trabajo: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
                         <TextBlock x:Name="ContextStatusTextBlock" Text="Estado: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
                         <TextBlock x:Name="ContextDeliveryTextBlock" Text="Entrega: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>
                         <TextBlock x:Name="ContextEventTextBlock" Text="Evento: —" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,5"/>

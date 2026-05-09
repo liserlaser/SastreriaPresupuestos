@@ -196,8 +196,8 @@
 											Click="DeliveryFilterButton_Click"/>
 
                                         <Button
-											Content="Sin presupuesto"
-											Tag="Sin presupuesto"
+											Content="Sin trabajo"
+											Tag="Sin trabajo"
 											Height="26"
 											Margin="0,0,6,6"
 											Padding="10,4"
@@ -441,7 +441,7 @@
 															TextWrapping="Wrap"
 															Margin="0,5,8,0"/>
 
-                                                        <!-- Eliminar presupuesto -->
+                                                        <!-- Eliminar trabajo -->
                                                         <Button
 															Grid.Column="1"
 															Grid.RowSpan="5"
@@ -450,7 +450,7 @@
 															Width="28"
 															Height="26"
 															VerticalAlignment="Top"
-															ToolTip="Eliminar presupuesto"
+															ToolTip="Eliminar trabajo"
 															Click="DeleteQuote_Click"
 															Style="{StaticResource DangerSmallButtonStyle}"/>
 

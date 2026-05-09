@@ -517,7 +517,7 @@
 
                             <TextBlock
                                 x:Name="ActiveWorkspaceTitle"
-                                Text="Ningún presupuesto abierto"
+                                Text="Ningún trabajo abierto"
                                 FontSize="14"
                                 FontWeight="Bold"
                                 Margin="0,8,0,0"

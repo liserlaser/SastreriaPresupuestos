@@ -234,8 +234,8 @@ namespace SastreriaPresupuestos
             if (CurrentClientId == null)
             {
                 MessageBox.Show(
-                    "Primero debes guardar el cliente antes de guardar un presupuesto.",
-                    "Guardar presupuesto",
+                    "Primero debes guardar el cliente antes de guardar un trabajo.",
+                    "Guardar trabajo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
 
@@ -434,7 +434,7 @@ namespace SastreriaPresupuestos
             UpdateSaveButtonText();
 
             MessageBox.Show(
-                "Presupuesto guardado correctamente",
+                "Trabajo guardado correctamente",
                 "Éxito",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -565,8 +565,8 @@ namespace SastreriaPresupuestos
 
             ClientDetailNameTextBlock.Text = client.Name;
             ClientDetailMetaTextBlock.Text = quoteList.Count == 1
-                ? "1 presupuesto asociado"
-                : $"{quoteList.Count} presupuestos asociados";
+                ? "1 trabajo asociado"
+                : $"{quoteList.Count} trabajos asociados";
 
             ClientDetailPhoneTextBlock.Text = string.IsNullOrWhiteSpace(client.DisplayPhone) ? "—" : client.DisplayPhone;
             ClientDetailDniTextBlock.Text = string.IsNullOrWhiteSpace(client.Dni) ? "—" : client.Dni;
@@ -587,8 +587,8 @@ namespace SastreriaPresupuestos
             if (ClientsListBox.SelectedItem == null)
             {
                 MessageBox.Show(
-                    "Selecciona un cliente para abrir sus presupuestos.",
-                    "Abrir presupuesto",
+                    "Selecciona un cliente para abrir sus trabajos.",
+                    "Abrir trabajo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 return;
@@ -614,8 +614,8 @@ namespace SastreriaPresupuestos
             if (ClientsListBox.SelectedItem == null)
             {
                 MessageBox.Show(
-                    "Selecciona un cliente antes de crear un presupuesto.",
-                    "Nuevo presupuesto",
+                    "Selecciona un cliente antes de crear un trabajo.",
+                    "Nuevo trabajo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 return;
@@ -785,7 +785,7 @@ namespace SastreriaPresupuestos
             {
                 MessageBox.Show(
                     "Primero debes guardar o seleccionar un cliente.",
-                    "Nuevo presupuesto",
+                    "Nuevo trabajo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
@@ -858,8 +858,8 @@ namespace SastreriaPresupuestos
                 return;
 
             var result = MessageBox.Show(
-                "¿Seguro que quieres eliminar este presupuesto?\n\nEsta acción no se puede deshacer.",
-                "Eliminar presupuesto",
+                "¿Seguro que quieres eliminar este trabajo?\n\nEsta acción no se puede deshacer.",
+                "Eliminar trabajo",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -925,7 +925,7 @@ namespace SastreriaPresupuestos
             UpdateWindowTitle();
 
             MessageBox.Show(
-                "Presupuesto eliminado correctamente.",
+                "Trabajo eliminado correctamente.",
                 "Eliminado",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -945,7 +945,7 @@ namespace SastreriaPresupuestos
                 PriceService.LoadPrices();
 
                 MessageBox.Show(
-                    "Los nuevos precios se aplicarán a los productos que añadas o cambies a partir de ahora. Los presupuestos ya abiertos conservarán sus precios actuales.",
+                    "Los nuevos precios se aplicarán a los productos que añadas o cambies a partir de ahora. Los trabajos ya abiertos conservarán sus precios actuales.",
                     "Precios actualizados",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -957,8 +957,8 @@ namespace SastreriaPresupuestos
             if (CurrentQuote == null)
             {
                 MessageBox.Show(
-                    "Primero selecciona un presupuesto para duplicarlo.",
-                    "Duplicar presupuesto",
+                    "Primero selecciona un trabajo para duplicarlo.",
+                    "Duplicar trabajo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
@@ -968,8 +968,8 @@ namespace SastreriaPresupuestos
             if (Products.Count == 0)
             {
                 MessageBox.Show(
-                    "El presupuesto seleccionado no tiene productos para duplicar.",
-                    "Duplicar presupuesto",
+                    "El trabajo seleccionado no tiene productos para duplicar.",
+                    "Duplicar trabajo",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
@@ -1006,7 +1006,7 @@ namespace SastreriaPresupuestos
             }
 
             var originalTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
-                ? $"Presupuesto #{CurrentQuote.Id}"
+                ? $"Trabajo #{CurrentQuote.Id}"
                 : QuoteTitleTextBox.Text;
 
             QuoteTitleTextBox.Text = $"Copia de {originalTitle}";
@@ -1022,8 +1022,8 @@ namespace SastreriaPresupuestos
             UpdateSaveButtonText();
 
             MessageBox.Show(
-                "Presupuesto duplicado. Revisa los datos y pulsa Guardar para crear la nueva versión.",
-                "Duplicar presupuesto",
+                "Trabajo duplicado. Revisa los datos y pulsa Guardar para crear la nueva versión.",
+                "Duplicar trabajo",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
@@ -1109,7 +1109,7 @@ namespace SastreriaPresupuestos
                         c.NextDeliveryDate.Value.Date >= today &&
                         c.NextDeliveryDate.Value.Date <= limit);
             }
-            else if (ActiveDeliveryFilter == "Sin presupuesto")
+            else if (ActiveDeliveryFilter == "Sin trabajo")
             {
                 filteredClients = filteredClients
                     .Where(c => c.Quotes == null || c.Quotes.Count == 0);
@@ -1176,8 +1176,8 @@ namespace SastreriaPresupuestos
             if (Products.Count == 0)
             {
                 MessageBox.Show(
-                    "Debes añadir al menos un producto al presupuesto.",
-                    "Presupuesto vacío",
+                    "Debes añadir al menos un producto al trabajo.",
+                    "Trabajo vacío",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
 
@@ -1494,7 +1494,7 @@ namespace SastreriaPresupuestos
             if (client == null || client.Quotes.Count == 0)
             {
                 MessageBox.Show(
-                    "El cliente seleccionado no tiene presupuestos para exportar.",
+                    "El cliente seleccionado no tiene trabajos para exportar.",
                     "Exportar opciones",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -1576,7 +1576,7 @@ namespace SastreriaPresupuestos
             if (CurrentQuote == null)
             {
                 MessageBox.Show(
-                    "Primero selecciona un presupuesto guardado.",
+                    "Primero selecciona un trabajo guardado.",
                     "Exportar ficha cliente",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -1588,7 +1588,7 @@ namespace SastreriaPresupuestos
             if (!string.Equals(status, "Aceptado", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show(
-                    "La ficha interna solo se puede generar cuando el presupuesto está aceptado.",
+                    "La ficha interna solo se puede generar cuando el trabajo está aceptado.",
                     "Exportar ficha cliente",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -1643,7 +1643,7 @@ namespace SastreriaPresupuestos
             var parts = new List<string>();
 
             if (CurrentQuote != null)
-                parts.Add($"Presupuesto #{CurrentQuote.Id:0000}");
+                parts.Add($"Trabajo #{CurrentQuote.Id:0000}");
 
             var firstProduct = Products.FirstOrDefault();
 
@@ -1792,7 +1792,7 @@ namespace SastreriaPresupuestos
 
             var result = MessageBox.Show(
                 $"¿Seguro que quieres eliminar el cliente \"{selectedClient.Name}\"?\n\n" +
-                "Se eliminarán también todos sus presupuestos y esta acción no se puede deshacer.",
+                "Se eliminarán también todos sus trabajos y esta acción no se puede deshacer.",
                 "Eliminar cliente",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -2385,7 +2385,7 @@ namespace SastreriaPresupuestos
             var deposit = GetDepositValue();
             decimal total = Products.Sum(p => p.Total);
 
-            ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo presupuesto" : quoteTitle;
+            ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
             ActiveWorkspaceSubtitle.Text = clientName == "—" ? "Selecciona un cliente o crea un trabajo" : clientName;
             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
             ActivePhoneTextBlock.Text = $"Teléfono: {phone}";
@@ -2395,7 +2395,7 @@ namespace SastreriaPresupuestos
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
 
             if (BudgetWorkspaceTitleTextBlock != null)
-                BudgetWorkspaceTitleTextBlock.Text = quoteTitle == "—" ? "Nuevo presupuesto" : quoteTitle;
+                BudgetWorkspaceTitleTextBlock.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
 
             if (BudgetWorkspaceClientTextBlock != null)
                 BudgetWorkspaceClientTextBlock.Text = $"Cliente: {clientName}";
@@ -2632,11 +2632,11 @@ namespace SastreriaPresupuestos
             {
                 0 => ("Inicio", "Próximas entregas, vista semanal y vista mensual", "🏠"),
                 1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "🏠 > Clientes"),
-                2 => ("Trabajos", "Resumen del presupuesto activo y datos principales", "🏠 > Trabajos"),
-                3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del presupuesto activo", "🏠 > Trabajos > Productos"),
+                2 => ("Trabajos", "Resumen del trabajo activo y datos principales", "🏠 > Trabajos"),
+                3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del trabajo activo", "🏠 > Trabajos > Productos"),
                 4 => ("Trabajos · PDF", "PDFs, ficha de cliente y exportaciones del trabajo activo", "🏠 > Trabajos > PDF"),
                 5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
-                _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "🏠")
+                _ => ("Sastrería Martínez Mor", "Gestión de trabajos, PDFs y entregas", "🏠")
             };
 
             return (baseInfo.Item1, baseInfo.Item2, BuildContextBreadcrumb(sectionIndex, baseInfo.Item3));
@@ -2859,7 +2859,7 @@ namespace SastreriaPresupuestos
                     ClientId = q.ClientId,
                     QuoteId = q.Id,
                     TypeLabel = "PRESUP.",
-                    PrimaryText = string.IsNullOrWhiteSpace(q.Title) ? $"Presupuesto #{q.Id}" : q.Title,
+                    PrimaryText = string.IsNullOrWhiteSpace(q.Title) ? $"Trabajo #{q.Id}" : q.Title,
                     SecondaryText = $"{q.Client?.Name ?? "Cliente"} · {q.Status} · Entrega {q.DeliveryDate:dd/MM/yyyy} · {q.Total:N2} €"
                 });
 
@@ -3214,7 +3214,7 @@ namespace SastreriaPresupuestos
             else if (!hasProducts)
             {
                 ProductsEmptyHintBorder.Visibility = Visibility.Visible;
-                ProductsEmptyHintTextBlock.Text = "Añade productos para construir el presupuesto.";
+                ProductsEmptyHintTextBlock.Text = "Añade productos para construir el trabajo.";
             }
             else
             {

@@ -478,7 +478,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Tarjetas compactas de presupuestos -->
+                                <!-- Tarjetas compactas de trabajos -->
                                 <ListBox
 									x:Name="BudgetQuotesListBox"
 									Grid.Column="0"
@@ -509,7 +509,7 @@
 					CornerRadius="10"
 					Padding="9"
 					Margin="0,0,8,0"
-					ToolTip="Presupuesto del cliente">
+					ToolTip="Trabajo del cliente">
 
                                                 <Grid>
                                                     <Grid.RowDefinitions>
