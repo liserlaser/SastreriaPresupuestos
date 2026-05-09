@@ -2752,7 +2752,8 @@ namespace SastreriaPresupuestos
                 return;
 
             button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
-            button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
+            button.BorderBrush = Brushes.Transparent;
+            button.BorderThickness = new Thickness(0);
         }
 
         private void UpdateWorkspaceButtonState()

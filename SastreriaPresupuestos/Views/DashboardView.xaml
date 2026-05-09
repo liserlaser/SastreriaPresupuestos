@@ -150,26 +150,12 @@
                         MouseDoubleClick="CalendarDelivery_MouseDoubleClick">
 
                         <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Margin" Value="0"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                            </Style>
+                            <StaticResource ResourceKey="DeliveryListBoxItemStyle"/>
                         </ListBox.ItemContainerStyle>
 
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Border
-                                    Background="{Binding CardBackground}"
-                                    BorderBrush="{Binding CardBorderBrush}"
-                                    BorderThickness="{Binding CardBorderThickness}"
-                                    CornerRadius="14"
-                                    Padding="12,10"
-                                    Margin="0,0,0,8"
-                                    Cursor="Hand"
-                                    ToolTip="Doble clic para abrir el trabajo">
+                                <Border Style="{StaticResource DeliveryCardBorderStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="2.2*" MinWidth="220"/>
@@ -262,7 +248,7 @@
                                         <ItemsControl ItemsSource="{Binding Deliveries}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="{Binding CardBackground}" BorderBrush="{Binding CardBorderBrush}" BorderThickness="{Binding CardBorderThickness}" CornerRadius="12" Padding="12" Margin="0,0,0,8" Cursor="Hand" ToolTip="Doble clic para abrir el trabajo">
+                                                    <Border Style="{StaticResource DeliveryCardBorderStyle}" Padding="12" CornerRadius="12">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="*"/>
@@ -313,6 +299,10 @@
                         Visibility="Collapsed"
                         MouseDoubleClick="CalendarDelivery_MouseDoubleClick">
 
+                        <ListBox.ItemContainerStyle>
+                            <StaticResource ResourceKey="DeliveryListBoxItemStyle"/>
+                        </ListBox.ItemContainerStyle>
+
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="14" Margin="0,0,0,12">
@@ -322,7 +312,7 @@
                                         <ItemsControl ItemsSource="{Binding Deliveries}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="{Binding CardBackground}" BorderBrush="{Binding CardBorderBrush}" BorderThickness="{Binding CardBorderThickness}" CornerRadius="10" Padding="12" Margin="0,0,0,8" Cursor="Hand" ToolTip="Doble clic para abrir el trabajo">
+                                                    <Border Style="{StaticResource DeliveryCardBorderStyle}" Padding="12" CornerRadius="10">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="*"/>
