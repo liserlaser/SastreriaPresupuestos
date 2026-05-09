@@ -97,6 +97,8 @@ namespace SastreriaPresupuestos
         private Button ExportPdfButton => DocumentosView.ExportPdfButton;
         private Button ExportClientSheetButton => DocumentosView.ExportClientSheetButton;
         private Button ExportAllQuotesPdfButton => DocumentosView.ExportAllQuotesPdfButton;
+        private Button PricesConfigButton => AjustesView.PricesConfigButton;
+        private Button BackupButton => AjustesView.BackupButton;
 
 
         private ObservableCollection<ProductLine> Products =
