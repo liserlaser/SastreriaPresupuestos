@@ -536,6 +536,7 @@ namespace SastreriaPresupuestos
             UpdateSecondaryPlaceholders();
             UpdateGlobalSearchPlaceholder();
             UpdateShellNavigationState();
+            UpdateWorkspaceButtonState();
         }
 
         private void UpdateClientDetailPanel(Models.Client? client, IEnumerable<Models.Quote>? quotes)
@@ -2706,6 +2707,7 @@ namespace SastreriaPresupuestos
             SetSidebarButtonActive(ClientsNavButton, MainTabs.SelectedIndex == TabClientes);
             SetSidebarButtonActive(QuotesNavButton, MainTabs.SelectedIndex == TabPresupuesto || MainTabs.SelectedIndex == TabProductos || MainTabs.SelectedIndex == TabDocumentos);
             SetSidebarButtonActive(SettingsNavButton, MainTabs.SelectedIndex == TabAjustes);
+            UpdateWorkspaceButtonState();
         }
 
         private void SetSidebarButtonActive(Button button, bool isActive)
@@ -2715,6 +2717,26 @@ namespace SastreriaPresupuestos
 
             button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(216, 226, 209)) : Brushes.Transparent;
             button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(139, 158, 129)) : Brushes.Transparent;
+        }
+
+        private void UpdateWorkspaceButtonState()
+        {
+            if (MainTabs == null)
+                return;
+
+            SetWorkspaceButtonActive(ActiveSummaryButton, MainTabs.SelectedIndex == TabPresupuesto);
+            SetWorkspaceButtonActive(ActiveProductsButton, MainTabs.SelectedIndex == TabProductos);
+            SetWorkspaceButtonActive(ActiveDocumentsButton, MainTabs.SelectedIndex == TabDocumentos);
+        }
+
+        private void SetWorkspaceButtonActive(Button button, bool isActive)
+        {
+            if (button == null)
+                return;
+
+            button.Background = isActive ? new SolidColorBrush(MediaColor.FromRgb(67, 87, 67)) : new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
+            button.Foreground = isActive ? Brushes.White : new SolidColorBrush(MediaColor.FromRgb(67, 87, 67));
+            button.BorderBrush = isActive ? new SolidColorBrush(MediaColor.FromRgb(67, 87, 67)) : new SolidColorBrush(MediaColor.FromRgb(200, 209, 194));
         }
 
         private void WorkspaceSectionButton_Click(object sender, RoutedEventArgs e)
@@ -2729,6 +2751,7 @@ namespace SastreriaPresupuestos
             {
                 ShellBreadcrumbOverride = null;
                 GoToTab(targetTab);
+                UpdateWorkspaceButtonState();
             }
         }
 

@@ -203,6 +203,14 @@
             <Setter Property="BorderBrush" Value="#C8D1C2"/>
         </Style>
 
+        <!-- BOTÓN DE TAB INTERNA DEL WORKSPACE -->
+        <Style x:Key="WorkspaceTabButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
         <!-- BOTÓN OSCURO -->
         <Style x:Key="DarkButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
@@ -587,44 +595,42 @@
                                 Background="{StaticResource BorderSoftBrush}"
                                 Margin="0,12,0,10"/>
 
-                            <TextBlock
-                                Text="Workspace"
-                                FontSize="10"
-                                FontWeight="Bold"
-                                Foreground="{StaticResource MutedTextBrush}"
-                                Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,6">
+                                <TextBlock
+                                    Text="Workspace"
+                                    FontSize="10"
+                                    FontWeight="Bold"
+                                    Foreground="{StaticResource MutedTextBrush}"/>
+
+                                <TextBlock
+                                    Text="tabs internas"
+                                    FontSize="10"
+                                    Foreground="{StaticResource MutedTextBrush}"
+                                    HorizontalAlignment="Right"/>
+                            </Grid>
 
                             <UniformGrid Columns="3">
                                 <Button
                                     x:Name="ActiveSummaryButton"
                                     Content="Resumen"
                                     Tag="2"
-                                    Height="30"
-                                    FontSize="11"
-                                    Padding="4,2"
                                     Margin="0,0,4,0"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Style="{StaticResource WorkspaceTabButtonStyle}"
                                     Click="WorkspaceSectionButton_Click"/>
 
                                 <Button
                                     x:Name="ActiveProductsButton"
                                     Content="Productos"
                                     Tag="3"
-                                    Height="30"
-                                    FontSize="11"
-                                    Padding="4,2"
                                     Margin="0,0,4,0"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Style="{StaticResource WorkspaceTabButtonStyle}"
                                     Click="WorkspaceSectionButton_Click"/>
 
                                 <Button
                                     x:Name="ActiveDocumentsButton"
-                                    Content="Docs"
+                                    Content="PDF"
                                     Tag="4"
-                                    Height="30"
-                                    FontSize="11"
-                                    Padding="4,2"
-                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Style="{StaticResource WorkspaceTabButtonStyle}"
                                     Click="WorkspaceSectionButton_Click"/>
                             </UniformGrid>
                         </StackPanel>
