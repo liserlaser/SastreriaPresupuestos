@@ -2242,6 +2242,26 @@ namespace SastreriaPresupuestos
             ActiveQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
 
+            if (BudgetWorkspaceTitleTextBlock != null)
+                BudgetWorkspaceTitleTextBlock.Text = quoteTitle == "—" ? "Nuevo presupuesto" : quoteTitle;
+
+            if (BudgetWorkspaceClientTextBlock != null)
+                BudgetWorkspaceClientTextBlock.Text = $"Cliente: {clientName}";
+
+            if (BudgetWorkspaceStatusTextBlock != null)
+                BudgetWorkspaceStatusTextBlock.Text = $"Estado: {QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente"}";
+
+            if (BudgetWorkspaceDeliveryTextBlock != null)
+            {
+                var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
+                    ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
+                    : "—";
+                BudgetWorkspaceDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
+            }
+
+            if (BudgetWorkspaceTotalTextBlock != null)
+                BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
+
             UpdateEmptyStateMessages();
             UpdateWorkflowState();
         }
@@ -2375,11 +2395,13 @@ namespace SastreriaPresupuestos
         {
             UpdatePendingAmount();
             MarkAsChanged();
+            UpdateActiveContext();
         }
 
         private void AnyEditableField_Changed(object? sender, EventArgs e)
         {
             MarkAsChanged();
+            UpdateActiveContext();
             UpdateSecondaryPlaceholders();
         }
         
@@ -2537,6 +2559,16 @@ namespace SastreriaPresupuestos
         }
 
 
+        private void BudgetQuickExportPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportPdfButton_Click(sender, e);
+        }
+
+        private void BudgetQuickDocumentsButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToSection(4);
+        }
+
         private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
         {
             if (!ConfirmDiscardChanges())
@@ -2675,6 +2707,8 @@ namespace SastreriaPresupuestos
 
             ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
             ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
+            BudgetQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+            BudgetQuickDocumentsButton.IsEnabled = hasSavedClient;
 
             SaveButton.IsEnabled = hasSavedClient;
         }
