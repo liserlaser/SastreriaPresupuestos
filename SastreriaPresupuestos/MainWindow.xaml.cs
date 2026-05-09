@@ -2815,10 +2815,12 @@ namespace SastreriaPresupuestos
             ShellLogoImage.Width = IsSidebarCollapsed ? 40 : 60;
             ShellLogoImage.Height = IsSidebarCollapsed ? 40 : 60;
 
-            DashboardNavButton.Content = IsSidebarCollapsed ? "\uE80F" : "\uE80F  Inicio";
-            ClientsNavButton.Content = IsSidebarCollapsed ? "\uE716" : "\uE716  Clientes";
-            QuotesNavButton.Content = IsSidebarCollapsed ? "\uE8A5" : "\uE8A5  Trabajos";
-            SettingsNavButton.Content = "\uE713";
+            // Use the same broadly supported glyphs in collapsed and expanded states.
+            // Previous MDL2-only glyphs rendered as square boxes on some machines when the sidebar collapsed.
+            DashboardNavButton.Content = IsSidebarCollapsed ? "⌂" : "⌂  Inicio";
+            ClientsNavButton.Content = IsSidebarCollapsed ? "👤" : "👤  Clientes";
+            QuotesNavButton.Content = IsSidebarCollapsed ? "📜" : "📜  Trabajos";
+            SettingsNavButton.Content = "⚙";
         }
 
 
