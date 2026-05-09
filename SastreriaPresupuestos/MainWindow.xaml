@@ -189,7 +189,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10"
+                            CornerRadius="14"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                             <ContentPresenter
@@ -670,7 +670,6 @@
                     <Button x:Name="DashboardNavButton" Content="🏠  Inicio" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="ClientsNavButton" Content="👥  Clientes" Tag="1" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="QuotesNavButton" Content="🧾  Trabajos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="SettingsNavButton" Content="⚙  Ajustes" Tag="5" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                 </StackPanel>
 
                 <StackPanel
@@ -740,6 +739,15 @@
                     Orientation="Horizontal"
                     VerticalAlignment="Top"
                     Margin="16,2,0,0">
+                    <Button
+                        x:Name="SettingsNavButton"
+                        Content="⚙"
+                        Tag="5"
+                        Style="{StaticResource ShellIconButtonStyle}"
+                        Margin="0,0,8,0"
+                        ToolTip="Ajustes"
+                        Click="SidebarNavButton_Click"/>
+
                     <Button
                         x:Name="BackNavigationButton"
                         Content="← Atrás"

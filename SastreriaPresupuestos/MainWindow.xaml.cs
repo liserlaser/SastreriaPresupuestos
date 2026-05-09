@@ -2801,7 +2801,7 @@ namespace SastreriaPresupuestos
             DashboardNavButton.Content = IsSidebarCollapsed ? "🏠" : "🏠  Inicio";
             ClientsNavButton.Content = IsSidebarCollapsed ? "👥" : "👥  Clientes";
             QuotesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Trabajos";
-            SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
+            SettingsNavButton.Content = "⚙";
         }
 
 
