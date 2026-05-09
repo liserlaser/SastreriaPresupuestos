@@ -282,11 +282,45 @@
             <Setter Property="Padding" Value="0"/>
             <Setter Property="FontSize" Value="16"/>
         </Style>
+
+        <Style x:Key="RoundedSearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            x:Name="SearchBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="12"
+                            SnapsToDevicePixels="True">
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Margin="{TemplateBinding Padding}"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="SearchBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="SearchBorder" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!-- LISTBOX -->
         <Style TargetType="ListBox">
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="White"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+            <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
         </Style>
 
         <!-- DATAGRID -->
@@ -303,6 +337,8 @@
             <Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="CanUserResizeRows" Value="False"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+            <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
@@ -456,7 +492,8 @@
                     <Grid>
                         <TextBox
                             x:Name="GlobalSearchTextBox"
-                            Height="34"
+                            Style="{StaticResource RoundedSearchTextBoxStyle}"
+                            Height="36"
                             FontSize="14"
                             ToolTip="Buscar cliente, teléfono, DNI, fecha, estado o título"
                             TextChanged="GlobalSearchTextBox_TextChanged"
