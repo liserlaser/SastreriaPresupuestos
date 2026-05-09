@@ -123,7 +123,6 @@ namespace SastreriaPresupuestos
         private string ActiveStatusFilter = "Todos";
 
         private bool IsSidebarCollapsed = false;
-        private bool IsContextPanelCollapsed = false;
         private string ActiveDeliveryFilter = "Todas";
 
         private DateTime CalendarReferenceDate = DateTime.Today;
@@ -2408,49 +2407,8 @@ namespace SastreriaPresupuestos
 
         private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
         {
-            if (ContextPanelView == null)
-                return;
-
-            var hasClient = clientName != "—";
-            var hasQuote = quoteTitle != "—";
-            var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
-            var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
-                ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
-                : "—";
-            var eventText = EventDatePicker.SelectedDate.HasValue
-                ? EventDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
-                : "—";
-
-            var deposit = GetDepositValue();
-            var pending = Math.Max(0, total - deposit);
-
-            ContextPanelView.TitleTextBlock.Text = hasQuote
-                ? quoteTitle
-                : hasClient ? clientName : "Sin selección";
-
-            ContextPanelView.SubtitleTextBlock.Text = hasQuote
-                ? "Presupuesto activo dentro del workspace."
-                : hasClient ? "Cliente activo sin presupuesto seleccionado." : "Selecciona un cliente, presupuesto o entrega.";
-
-            ContextPanelView.ClientTextBlock.Text = $"Cliente: {clientName}";
-            ContextPanelView.QuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
-            ContextPanelView.StatusTextBlock.Text = $"Estado: {status}";
-            ContextPanelView.DeliveryTextBlock.Text = $"Entrega: {deliveryText}";
-            ContextPanelView.EventTextBlock.Text = $"Evento: {eventText}";
-            ContextPanelView.TotalTextBlock.Text = $"Total: {total:N2} €";
-            ContextPanelView.PendingTextBlock.Text = $"Pendiente: {pending:N2} €";
-
-            var notes = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(QuoteNotesTextBox.Text))
-                notes.Add($"Presupuesto: {QuoteNotesTextBox.Text.Trim()}");
-
-            if (!string.IsNullOrWhiteSpace(ClientNotesTextBox.Text))
-                notes.Add($"Cliente: {ClientNotesTextBox.Text.Trim()}");
-
-            ContextPanelView.NotesTextBlock.Text = notes.Count == 0
-                ? "Sin notas visibles."
-                : string.Join(Environment.NewLine + Environment.NewLine, notes);
+            // 12B.1: el panel contextual derecho se ha eliminado.
+            // El contexto visible se concentra ahora en la cabecera y en el futuro panel "Trabajo activo" de la sidebar.
         }
 
         private void ContextSaveButton_Click(object sender, RoutedEventArgs e)
@@ -2525,7 +2483,6 @@ namespace SastreriaPresupuestos
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
             ToggleSidebarButton.Click += ToggleSidebarButton_Click;
-            ToggleContextPanelButton.Click += ToggleContextPanelButton_Click;
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
@@ -2568,7 +2525,6 @@ namespace SastreriaPresupuestos
             UpdateWorkflowState();
             UpdateCalendarViewButtons();
             UpdateSecondaryPlaceholders();
-            ApplyContextPanelState();
         }
 
         private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -2777,30 +2733,6 @@ namespace SastreriaPresupuestos
             SettingsNavButton.Content = IsSidebarCollapsed ? "⚙" : "⚙  Ajustes";
         }
 
-
-        private void ToggleContextPanelButton_Click(object sender, RoutedEventArgs e)
-        {
-            IsContextPanelCollapsed = !IsContextPanelCollapsed;
-            ApplyContextPanelState();
-        }
-
-        private void ApplyContextPanelState()
-        {
-            if (ContextPanelColumn == null)
-                return;
-
-            ContextPanelColumn.Width = IsContextPanelCollapsed
-                ? new GridLength(0)
-                : new GridLength(310);
-
-            if (ContextPanelView != null)
-                ContextPanelView.Visibility = IsContextPanelCollapsed ? Visibility.Collapsed : Visibility.Visible;
-
-            if (ToggleContextPanelButton != null)
-            {
-                ToggleContextPanelButton.Content = IsContextPanelCollapsed ? "‹" : "›";
-            }
-        }
 
         private void GlobalSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {

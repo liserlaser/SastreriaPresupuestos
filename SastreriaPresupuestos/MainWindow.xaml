@@ -526,29 +526,15 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition x:Name="ContextPanelColumn" Width="310"/>
-            </Grid.ColumnDefinitions>
-
             <!-- CABECERA FIJA CONTEXTUAL -->
-            <Grid Grid.ColumnSpan="2" Margin="0,0,0,16">
+            <Grid Margin="0,0,0,16">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="340"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock
-                        x:Name="ShellBreadcrumbTextBlock"
-                        Text="Inicio > Dashboard"
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource MutedTextBrush}"
-                        Margin="0,0,0,4"/>
-
                     <TextBlock
                         x:Name="ShellSectionTitleTextBlock"
                         Text="Dashboard / Calendario"
@@ -560,10 +546,18 @@
                         Text="Próximas entregas, vista semanal y vista mensual"
                         FontSize="14"
                         Foreground="{StaticResource MutedTextBrush}"
-                        Margin="0,4,0,0"/>
+                        Margin="0,2,0,0"/>
+                    
+                    <TextBlock
+                        x:Name="ShellBreadcrumbTextBlock"
+                        Text="Inicio &gt; Dashboard"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource MutedTextBrush}"
+                        Margin="0,12,0,0"/>
                 </StackPanel>
 
-                <!-- CONTEXTO ACTIVO -->
+                <!-- CONTEXTO ACTIVO TEMPORAL: se mantiene arriba hasta moverlo a la sidebar en 12B.3 -->
                 <Border
                     Grid.Column="1"
                     Background="{StaticResource CardBackgroundBrush}"
@@ -618,16 +612,6 @@
 
                 </Border>
 
-                <Button
-                    x:Name="ToggleContextPanelButton"
-                    Grid.Column="2"
-                    Content="›"
-                    Width="38"
-                    Height="38"
-                    Margin="10,0,0,0"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource ShellIconButtonStyle}"/>
-
             </Grid>
             <!-- PESTAÑAS -->
             <TabControl
@@ -671,17 +655,6 @@
                 </TabItem>
 
             </TabControl>
-
-            <!-- PANEL CONTEXTUAL DERECHO -->
-            <views:ContextPanelView
-                x:Name="ContextPanelView"
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="16,0,0,0"
-                SaveRequested="ContextSaveButton_Click"
-                MarkDeliveredRequested="ContextMarkDeliveredButton_Click"
-                ExportPdfRequested="ContextExportPdfButton_Click"
-                DocumentsRequested="ContextDocumentsButton_Click"/>
 
 
         </Grid>
