@@ -96,7 +96,7 @@
 
                                         <Button
 											x:Name="SaveProductsButton"
-											Content="Guardar Presupuesto"
+											Content="Guardar trabajo"
 											Width="170"
 											Height="40"
 											FontSize="15"

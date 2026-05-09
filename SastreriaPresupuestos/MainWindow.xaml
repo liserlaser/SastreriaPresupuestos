@@ -603,7 +603,7 @@
                                     Foreground="{StaticResource MutedTextBrush}"/>
 
                                 <TextBlock
-                                    Text="tabs internas"
+                                    Text="accesos rápidos"
                                     FontSize="10"
                                     Foreground="{StaticResource MutedTextBrush}"
                                     HorizontalAlignment="Right"/>
@@ -692,7 +692,7 @@
 
                     <TextBlock
                         x:Name="ShellBreadcrumbTextBlock"
-                        Text="🏠 &gt; Inicio"
+                        Text="🏠"
                         FontSize="12"
                         FontWeight="SemiBold"
                         Foreground="{StaticResource MutedTextBrush}"
@@ -725,7 +725,7 @@
                     <views:ClientesView x:Name="ClientesView"/>
                 </TabItem>
 
-                <TabItem Header="Presupuestos">
+                <TabItem Header="Trabajos">
                     <views:PresupuestoView x:Name="PresupuestoView"/>
                 </TabItem>
 
@@ -733,7 +733,7 @@
                     <views:ProductosView x:Name="ProductosView"/>
                 </TabItem>
 
-                <TabItem Header="Documentos">
+                <TabItem Header="PDF">
                     <views:DocumentosView x:Name="DocumentosView"/>
                 </TabItem>
 

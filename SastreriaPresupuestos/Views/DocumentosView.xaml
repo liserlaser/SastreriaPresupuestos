@@ -20,12 +20,12 @@
                                 <StackPanel Margin="0,0,0,24">
 
                                     <TextBlock
-										Text="EXPORTAR"
+										Text="PDF"
 										FontSize="24"
 										FontWeight="Bold"/>
 
                                     <TextBlock
-										Text="Genera documentos para enviar al cliente."
+										Text="Genera PDFs y fichas para enviar o imprimir."
 										FontSize="14"
 										Foreground="{StaticResource MutedTextBrush}"
 										Margin="0,4,0,0"/>
@@ -42,7 +42,7 @@
 
                                         <TextBlock
 											x:Name="DocumentsEmptyHintTextBlock"
-											Text="Selecciona o crea un presupuesto con productos antes de exportar documentos."
+											Text="Selecciona o crea un trabajo con productos antes de exportar PDFs."
 											FontSize="13"
 											Foreground="{StaticResource MutedTextBrush}"
 											TextWrapping="Wrap"/>
@@ -72,7 +72,7 @@
 												FontWeight="Bold"/>
 
                                             <TextBlock
-												Text="Exporta el presupuesto abierto."
+												Text="Exporta el trabajo abierto."
 												FontSize="13"
 												Foreground="{StaticResource MutedTextBrush}"
 												TextWrapping="Wrap"
@@ -113,7 +113,7 @@
 												FontWeight="Bold"/>
 
                                             <TextBlock
-												Text="Exporta todos los presupuestos del cliente."
+												Text="Exporta todos los trabajos del cliente."
 												FontSize="13"
                                                 HorizontalAlignment="Stretch"
 												Foreground="{StaticResource MutedTextBrush}"

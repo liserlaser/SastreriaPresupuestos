@@ -41,14 +41,14 @@
 
                                     <StackPanel>
                                         <TextBlock
-                                            Text="PRESUPUESTO ACTIVO"
+                                            Text="TRABAJO ACTIVO"
                                             FontSize="12"
                                             FontWeight="Bold"
                                             Foreground="{StaticResource AccentBrush}"/>
 
                                         <TextBlock
                                             x:Name="BudgetWorkspaceTitleTextBlock"
-                                            Text="Sin presupuesto seleccionado"
+                                            Text="Sin trabajo seleccionado"
                                             FontSize="24"
                                             FontWeight="Bold"
                                             Margin="0,4,0,0"
@@ -98,7 +98,7 @@
 
                                         <Button
                                             x:Name="BudgetQuickDocumentsButton"
-                                            Content="Documentos"
+                                            Content="PDF"
                                             Width="126"
                                             Height="38"
                                             Margin="0,0,8,0"
@@ -106,8 +106,8 @@
 
                                         <Button
                                             x:Name="BudgetQuickExportPdfButton"
-                                            Content="PDF"
-                                            Width="92"
+                                            Content="Exportar PDF"
+                                            Width="118"
                                             Height="38"
                                             Style="{StaticResource SecondaryButtonStyle}"/>
                                     </StackPanel>
@@ -126,7 +126,7 @@
 								Visibility="Collapsed">
 
                                 <TextBlock
-									Text="Selecciona un cliente en la pestaña Clientes o crea uno nuevo para empezar un presupuesto."
+									Text="Selecciona un cliente en la pestaña Clientes o crea uno nuevo para empezar un trabajo."
 									FontSize="14"
 									Foreground="{StaticResource MutedTextBrush}"
 									TextWrapping="Wrap"/>
@@ -313,7 +313,7 @@
                                     <TextBlock
 										Grid.Row="2"
 										Grid.Column="0"
-										Text="Presupuesto:"
+										Text="Trabajo:"
 										FontSize="14"
 										VerticalAlignment="Center"
 										FontWeight="SemiBold"
@@ -590,7 +590,7 @@
 
                                     <Button
 			x:Name="NewQuoteButton"
-			Content="Nuevo Presupuesto"
+			Content="Nuevo trabajo"
 			Width="180"
 			Height="45"
 			Margin="0,0,10,0"
@@ -599,7 +599,7 @@
 
                                     <Button
 			x:Name="DuplicateQuoteButton"
-			Content="Duplicar Presupuesto"
+			Content="Duplicar trabajo"
 			Width="180"
 			Height="45"
 			Margin="0,0,10,0"

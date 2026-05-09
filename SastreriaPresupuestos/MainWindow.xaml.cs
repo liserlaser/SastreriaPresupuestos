@@ -735,7 +735,7 @@ namespace SastreriaPresupuestos
             if (BudgetQuotesListBox.SelectedItem is not Models.Quote quote)
                 return;
 
-            OpenQuoteById(quote.Id, TabProductos, "Presupuestos");
+            OpenQuoteById(quote.Id, TabProductos, "Trabajos");
         }
 
         internal void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -2441,7 +2441,7 @@ namespace SastreriaPresupuestos
 
         private void ContextDocumentsButton_Click(object sender, RoutedEventArgs e)
         {
-            UpdateContextBreadcrumb("Presupuestos", TabDocumentos);
+            UpdateContextBreadcrumb("Trabajos", TabDocumentos);
             NavigateToSection(4);
         }
 
@@ -2630,11 +2630,11 @@ namespace SastreriaPresupuestos
         {
             var baseInfo = sectionIndex switch
             {
-                0 => ("Inicio / Calendario", "Próximas entregas, vista semanal y vista mensual", "🏠 > Inicio"),
+                0 => ("Inicio", "Próximas entregas, vista semanal y vista mensual", "🏠"),
                 1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "🏠 > Clientes"),
                 2 => ("Trabajos", "Resumen del presupuesto activo y datos principales", "🏠 > Trabajos"),
                 3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del presupuesto activo", "🏠 > Trabajos > Productos"),
-                4 => ("Trabajos · Documentos", "PDFs, ficha de cliente y exportaciones del trabajo activo", "🏠 > Trabajos > PDF"),
+                4 => ("Trabajos · PDF", "PDFs, ficha de cliente y exportaciones del trabajo activo", "🏠 > Trabajos > PDF"),
                 5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "🏠")
             };
@@ -2663,7 +2663,7 @@ namespace SastreriaPresupuestos
                 var childSection = sectionIndex switch
                 {
                     TabProductos => "Productos",
-                    TabDocumentos => "Documentos",
+                    TabDocumentos => "PDF",
                     _ => null
                 };
 
@@ -3113,7 +3113,7 @@ namespace SastreriaPresupuestos
             var target = targetTab switch
             {
                 TabProductos => "Productos",
-                TabDocumentos => "Documentos",
+                TabDocumentos => "PDF",
                 TabClientes => "Clientes",
                 _ => "Trabajos"
             };
