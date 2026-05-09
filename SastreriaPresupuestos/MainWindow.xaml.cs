@@ -2332,7 +2332,7 @@ namespace SastreriaPresupuestos
 
         private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
         {
-            if (ContextPanelTitleTextBlock == null)
+            if (ContextPanelView == null)
                 return;
 
             var hasClient = clientName != "—";
@@ -2348,21 +2348,21 @@ namespace SastreriaPresupuestos
             var deposit = GetDepositValue();
             var pending = Math.Max(0, total - deposit);
 
-            ContextPanelTitleTextBlock.Text = hasQuote
+            ContextPanelView.TitleTextBlock.Text = hasQuote
                 ? quoteTitle
                 : hasClient ? clientName : "Sin selección";
 
-            ContextPanelSubtitleTextBlock.Text = hasQuote
+            ContextPanelView.SubtitleTextBlock.Text = hasQuote
                 ? "Presupuesto activo dentro del workspace."
                 : hasClient ? "Cliente activo sin presupuesto seleccionado." : "Selecciona un cliente, presupuesto o entrega.";
 
-            ContextClientTextBlock.Text = $"Cliente: {clientName}";
-            ContextQuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
-            ContextStatusTextBlock.Text = $"Estado: {status}";
-            ContextDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
-            ContextEventTextBlock.Text = $"Evento: {eventText}";
-            ContextTotalTextBlock.Text = $"Total: {total:N2} €";
-            ContextPendingTextBlock.Text = $"Pendiente: {pending:N2} €";
+            ContextPanelView.ClientTextBlock.Text = $"Cliente: {clientName}";
+            ContextPanelView.QuoteTextBlock.Text = $"Presupuesto: {quoteTitle}";
+            ContextPanelView.StatusTextBlock.Text = $"Estado: {status}";
+            ContextPanelView.DeliveryTextBlock.Text = $"Entrega: {deliveryText}";
+            ContextPanelView.EventTextBlock.Text = $"Evento: {eventText}";
+            ContextPanelView.TotalTextBlock.Text = $"Total: {total:N2} €";
+            ContextPanelView.PendingTextBlock.Text = $"Pendiente: {pending:N2} €";
 
             var notes = new List<string>();
 
@@ -2372,7 +2372,7 @@ namespace SastreriaPresupuestos
             if (!string.IsNullOrWhiteSpace(ClientNotesTextBox.Text))
                 notes.Add($"Cliente: {ClientNotesTextBox.Text.Trim()}");
 
-            ContextNotesTextBlock.Text = notes.Count == 0
+            ContextPanelView.NotesTextBlock.Text = notes.Count == 0
                 ? "Sin notas visibles."
                 : string.Join(Environment.NewLine + Environment.NewLine, notes);
         }
@@ -2717,8 +2717,8 @@ namespace SastreriaPresupuestos
                 ? new GridLength(0)
                 : new GridLength(310);
 
-            if (ContextPanelBorder != null)
-                ContextPanelBorder.Visibility = IsContextPanelCollapsed ? Visibility.Collapsed : Visibility.Visible;
+            if (ContextPanelView != null)
+                ContextPanelView.Visibility = IsContextPanelCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
             if (ToggleContextPanelButton != null)
             {
