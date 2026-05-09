@@ -74,6 +74,8 @@ namespace SastreriaPresupuestos
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
+        private string? ShellBreadcrumbOverride = null;
+        private int? PendingNavigationTargetTab = null;
 
         private const int TabSemana = 0;
         private const int TabClientes = 1;
@@ -512,8 +514,17 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            if (QuotesListBox.SelectedItem == null && QuotesListBox.Items.Count > 0)
-                QuotesListBox.SelectedIndex = 0;
+            if (QuotesListBox.SelectedItem is Models.Quote selectedQuote)
+            {
+                OpenQuoteById(selectedQuote.Id, TabPresupuesto, "Clientes");
+                return;
+            }
+
+            if (QuotesListBox.Items.Count > 0 && QuotesListBox.Items[0] is Models.Quote firstQuote)
+            {
+                OpenQuoteById(firstQuote.Id, TabPresupuesto, "Clientes");
+                return;
+            }
 
             GoToTab(TabPresupuesto);
         }
@@ -538,7 +549,7 @@ namespace SastreriaPresupuestos
             if (ClientsListBox.SelectedItem == null)
                 return;
 
-            GoToTab(TabPresupuesto);
+            OpenSelectedClientQuoteButton_Click(sender, e);
         }
 
         private void QuotesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -625,7 +636,9 @@ namespace SastreriaPresupuestos
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
 
-            GoToTab(TabPresupuesto);
+            var targetTab = PendingNavigationTargetTab ?? TabPresupuesto;
+            PendingNavigationTargetTab = null;
+            GoToTab(targetTab);
         }
 
         private void BudgetQuotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -639,13 +652,10 @@ namespace SastreriaPresupuestos
 
         private void BudgetQuotesListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (BudgetQuotesListBox.SelectedItem == null)
+            if (BudgetQuotesListBox.SelectedItem is not Models.Quote quote)
                 return;
 
-            if (QuotesListBox.SelectedItem != BudgetQuotesListBox.SelectedItem)
-                QuotesListBox.SelectedItem = BudgetQuotesListBox.SelectedItem;
-
-            GoToTab(TabProductos);
+            OpenQuoteById(quote.Id, TabProductos, "Presupuestos");
         }
 
         private void DeleteProduct_Click(object sender, RoutedEventArgs e)
@@ -2383,6 +2393,7 @@ namespace SastreriaPresupuestos
 
         private void ContextDocumentsButton_Click(object sender, RoutedEventArgs e)
         {
+            UpdateContextBreadcrumb("Presupuestos", TabDocumentos);
             NavigateToSection(4);
         }
 
@@ -2552,6 +2563,7 @@ namespace SastreriaPresupuestos
 
             if (int.TryParse(button.Tag.ToString(), out var tabIndex))
             {
+                ShellBreadcrumbOverride = null;
                 GoToTab(tabIndex);
             }
         }
@@ -2566,7 +2578,7 @@ namespace SastreriaPresupuestos
 
         private (string Title, string Subtitle, string Breadcrumb) GetSectionInfo(int sectionIndex)
         {
-            return sectionIndex switch
+            var baseInfo = sectionIndex switch
             {
                 0 => ("Dashboard / Calendario", "Próximas entregas, vista semanal y vista mensual", "Inicio > Dashboard"),
                 1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "Inicio > Clientes"),
@@ -2576,6 +2588,41 @@ namespace SastreriaPresupuestos
                 5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "Inicio > Ajustes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de presupuestos, facturas y entregas", "Inicio")
             };
+
+            return (baseInfo.Item1, baseInfo.Item2, BuildContextBreadcrumb(sectionIndex, baseInfo.Item3));
+        }
+
+        private string BuildContextBreadcrumb(int sectionIndex, string fallback)
+        {
+            if (!string.IsNullOrWhiteSpace(ShellBreadcrumbOverride))
+                return ShellBreadcrumbOverride;
+
+            var clientName = string.IsNullOrWhiteSpace(ClientNameTextBox?.Text)
+                ? null
+                : ClientNameTextBox.Text.Trim();
+
+            var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox?.Text)
+                ? null
+                : QuoteTitleTextBox.Text.Trim();
+
+            if (sectionIndex == TabClientes && clientName != null)
+                return $"Inicio > Clientes > {clientName}";
+
+            if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
+            {
+                var section = sectionIndex switch
+                {
+                    TabProductos => "Productos",
+                    TabDocumentos => "Documentos",
+                    _ => "Presupuestos"
+                };
+
+                return quoteTitle == null
+                    ? $"Inicio > {section} > {clientName}"
+                    : $"Inicio > {section} > {clientName} > {quoteTitle}";
+            }
+
+            return fallback;
         }
 
         private void UpdateShellNavigationState()
@@ -2714,20 +2761,32 @@ namespace SastreriaPresupuestos
 
         private void BudgetQuickDocumentsButton_Click(object sender, RoutedEventArgs e)
         {
+            UpdateContextBreadcrumb("Presupuestos", TabDocumentos);
             NavigateToSection(4);
         }
 
-        private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
+        private void OpenQuoteById(int quoteId, int targetTab = TabPresupuesto, string? breadcrumbOrigin = null)
         {
             if (!ConfirmDiscardChanges())
                 return;
 
+            using var db = new AppDbContext();
+
+            var quoteSnapshot = db.Quotes
+                .AsNoTracking()
+                .FirstOrDefault(q => q.Id == quoteId);
+
+            if (quoteSnapshot == null)
+                return;
+
             SuppressSelectionConfirm = true;
+            PendingNavigationTargetTab = targetTab;
+            ShellBreadcrumbOverride = null;
 
             LoadClients();
 
             var client = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                .FirstOrDefault(c => c.Id == delivery.ClientId);
+                .FirstOrDefault(c => c.Id == quoteSnapshot.ClientId);
 
             if (client != null)
             {
@@ -2735,27 +2794,71 @@ namespace SastreriaPresupuestos
                 LastSelectedClientId = client.Id;
             }
 
-            using var db = new AppDbContext();
+            var selectedQuote = QuotesListBox.Items
+                .OfType<Models.Quote>()
+                .FirstOrDefault(q => q.Id == quoteId);
 
-            var quotes = db.Quotes
-                .Where(q => q.ClientId == delivery.ClientId)
-                .OrderBy(q => q.DeliveryDate)
-                .ThenBy(q => q.Id)
-                .ToList();
-
-            QuotesListBox.ItemsSource = quotes;
-
-            var quote = quotes.FirstOrDefault(q => q.Id == delivery.QuoteId);
-
-            if (quote != null)
+            if (selectedQuote != null)
             {
-                QuotesListBox.SelectedItem = quote;
-                LastSelectedQuoteId = quote.Id;
+                QuotesListBox.SelectedItem = selectedQuote;
+                LastSelectedQuoteId = selectedQuote.Id;
             }
 
             SuppressSelectionConfirm = false;
 
-            GoToTab(TabPresupuesto);
+            if (selectedQuote == null)
+            {
+                PendingNavigationTargetTab = null;
+                GoToTab(targetTab);
+            }
+
+            UpdateContextBreadcrumb(breadcrumbOrigin, targetTab);
+            UpdateShellNavigationState();
+        }
+
+        private void UpdateContextBreadcrumb(string? origin, int targetTab)
+        {
+            var clientName = string.IsNullOrWhiteSpace(ClientNameTextBox.Text)
+                ? null
+                : ClientNameTextBox.Text.Trim();
+
+            var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
+                ? null
+                : QuoteTitleTextBox.Text.Trim();
+
+            if (clientName == null)
+            {
+                ShellBreadcrumbOverride = null;
+                return;
+            }
+
+            var target = targetTab switch
+            {
+                TabProductos => "Productos",
+                TabDocumentos => "Documentos",
+                TabClientes => "Clientes",
+                _ => "Presupuestos"
+            };
+
+            var parts = new List<string> { "Inicio" };
+
+            if (!string.IsNullOrWhiteSpace(origin))
+                parts.Add(origin);
+
+            if (parts.Last() != target)
+                parts.Add(target);
+
+            parts.Add(clientName);
+
+            if (quoteTitle != null)
+                parts.Add(quoteTitle);
+
+            ShellBreadcrumbOverride = string.Join(" > ", parts);
+        }
+
+        private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
+        {
+            OpenQuoteById(delivery.QuoteId, TabPresupuesto, "Dashboard");
         }
 
         /*  DESACTIVADO
@@ -2779,9 +2882,6 @@ namespace SastreriaPresupuestos
 
         private void WeeklyDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ClickCount < 2)
-                return;
-
             if (sender is not FrameworkElement element)
                 return;
 
