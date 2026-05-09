@@ -92,6 +92,11 @@ namespace SastreriaPresupuestos
         private Button SaveProductsButton => ProductosView.SaveProductsButton;
         private DataGrid ProductsDataGrid => ProductosView.ProductsDataGrid;
         private TextBlock TotalTextBlock => ProductosView.TotalTextBlock;
+        private Border DocumentsEmptyHintBorder => DocumentosView.DocumentsEmptyHintBorder;
+        private TextBlock DocumentsEmptyHintTextBlock => DocumentosView.DocumentsEmptyHintTextBlock;
+        private Button ExportPdfButton => DocumentosView.ExportPdfButton;
+        private Button ExportClientSheetButton => DocumentosView.ExportClientSheetButton;
+        private Button ExportAllQuotesPdfButton => DocumentosView.ExportAllQuotesPdfButton;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -1563,7 +1568,7 @@ namespace SastreriaPresupuestos
             }
         }
 
-        private void ExportClientSheetButton_Click(object sender, RoutedEventArgs e)
+        public void ExportClientSheetButton_Click(object sender, RoutedEventArgs e)
         {
             if (CurrentQuote == null)
             {
