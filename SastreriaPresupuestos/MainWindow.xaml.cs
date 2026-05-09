@@ -25,6 +25,24 @@ namespace SastreriaPresupuestos
 {
     public partial class MainWindow : Window
     {
+
+        private TextBlock WeekTitleTextBlock => DashboardView.WeekTitleTextBlock;
+        private Button PreviousCalendarButton => DashboardView.PreviousCalendarButton;
+        private Button TodayCalendarButton => DashboardView.TodayCalendarButton;
+        private Button NextCalendarButton => DashboardView.NextCalendarButton;
+        private Button WeekViewButton => DashboardView.WeekViewButton;
+        private Button MonthViewButton => DashboardView.MonthViewButton;
+        private TextBlock DashboardTodayCountTextBlock => DashboardView.DashboardTodayCountTextBlock;
+        private TextBlock DashboardNext7CountTextBlock => DashboardView.DashboardNext7CountTextBlock;
+        private TextBlock DashboardPendingCountTextBlock => DashboardView.DashboardPendingCountTextBlock;
+        private TextBlock DashboardMonthCountTextBlock => DashboardView.DashboardMonthCountTextBlock;
+        private ItemsControl UpcomingDeliveriesItemsControl => DashboardView.UpcomingDeliveriesItemsControl;
+        private TextBlock UpcomingDeliveriesEmptyTextBlock => DashboardView.UpcomingDeliveriesEmptyTextBlock;
+        private TextBlock EmptyWeekTextBlock => DashboardView.EmptyWeekTextBlock;
+        private ItemsControl WeeklyColumnsItemsControl => DashboardView.WeeklyColumnsItemsControl;
+        private ListBox CalendarGroupsListBox => DashboardView.CalendarGroupsListBox;
+
+
         private ObservableCollection<ProductLine> Products =
             new ObservableCollection<ProductLine>();
 
@@ -3108,7 +3126,7 @@ namespace SastreriaPresupuestos
             OpenWeeklyDelivery(delivery);
         }
 
-        private void UpcomingDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        internal void UpcomingDeliveryCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is not FrameworkElement element)
                 return;
@@ -3119,7 +3137,7 @@ namespace SastreriaPresupuestos
             OpenWeeklyDelivery(delivery);
         }
 
-        private void UpcomingDeliveriesMonthButton_Click(object sender, RoutedEventArgs e)
+        internal void UpcomingDeliveriesMonthButton_Click(object sender, RoutedEventArgs e)
         {
             CalendarViewMode = "Mes";
             CalendarReferenceDate = DateTime.Today;
@@ -3382,7 +3400,7 @@ namespace SastreriaPresupuestos
                     : Visibility.Collapsed;
         }
 
-        private void CalendarDelivery_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        internal void CalendarDelivery_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var element = e.OriginalSource as DependencyObject;
 
