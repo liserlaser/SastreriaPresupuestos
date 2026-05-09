@@ -419,21 +419,83 @@
 
                 <!-- BÚSQUEDA GLOBAL SIEMPRE DISPONIBLE -->
                 <Grid x:Name="ShellSearchPanel" Grid.Row="1" Margin="0,0,0,18">
-                    <TextBox
-                        x:Name="GlobalSearchTextBox"
-                        Height="34"
-                        FontSize="14"
-                        ToolTip="Buscar cliente, teléfono, fecha, estado o título"
-                        TextChanged="GlobalSearchTextBox_TextChanged"
-                        KeyDown="GlobalSearchTextBox_KeyDown"/>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <TextBlock
-                        x:Name="GlobalSearchPlaceholderTextBlock"
-                        Text="Buscar..."
-                        Foreground="{StaticResource MutedTextBrush}"
-                        Margin="10,0,0,0"
-                        VerticalAlignment="Center"
-                        IsHitTestVisible="False"/>
+                    <Grid>
+                        <TextBox
+                            x:Name="GlobalSearchTextBox"
+                            Height="34"
+                            FontSize="14"
+                            ToolTip="Buscar cliente, teléfono, DNI, fecha, estado o título"
+                            TextChanged="GlobalSearchTextBox_TextChanged"
+                            KeyDown="GlobalSearchTextBox_KeyDown"/>
+
+                        <TextBlock
+                            x:Name="GlobalSearchPlaceholderTextBlock"
+                            Text="Buscar..."
+                            Foreground="{StaticResource MutedTextBrush}"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            IsHitTestVisible="False"/>
+                    </Grid>
+
+                    <Border
+                        x:Name="GlobalSearchResultsBorder"
+                        Grid.Row="1"
+                        Background="White"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="6"
+                        Margin="0,8,0,0"
+                        Visibility="Collapsed">
+
+                        <ListBox
+                            x:Name="GlobalSearchResultsListBox"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            MaxHeight="260"
+                            MouseDoubleClick="GlobalSearchResultsListBox_MouseDoubleClick">
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="4,5">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <DockPanel>
+                                            <TextBlock
+                                                Text="{Binding TypeLabel}"
+                                                DockPanel.Dock="Right"
+                                                FontSize="10"
+                                                FontWeight="Bold"
+                                                Foreground="{StaticResource MutedTextBrush}"
+                                                Margin="8,1,0,0"/>
+
+                                            <TextBlock
+                                                Text="{Binding PrimaryText}"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                TextTrimming="CharacterEllipsis"/>
+                                        </DockPanel>
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Text="{Binding SecondaryText}"
+                                            FontSize="11"
+                                            Foreground="{StaticResource MutedTextBrush}"
+                                            TextTrimming="CharacterEllipsis"
+                                            Margin="0,2,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
                 </Grid>
 
                 <StackPanel Grid.Row="2">

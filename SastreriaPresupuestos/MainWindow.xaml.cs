@@ -37,6 +37,9 @@ namespace SastreriaPresupuestos
         private ObservableCollection<WeeklyDeliveryItem> UpcomingDeliveries =
             new ObservableCollection<WeeklyDeliveryItem>();
 
+        private ObservableCollection<GlobalSearchResult> GlobalSearchResults =
+            new ObservableCollection<GlobalSearchResult>();
+
         private List<Models.Client> AllClients = new();
 
         private Models.Quote? CurrentQuote = null;
@@ -2410,6 +2413,7 @@ namespace SastreriaPresupuestos
             WeeklyColumnsItemsControl.ItemsSource = CalendarDayGroups;
             CalendarGroupsListBox.ItemsSource = CalendarDayGroups;
             UpcomingDeliveriesItemsControl.ItemsSource = UpcomingDeliveries;
+            GlobalSearchResultsListBox.ItemsSource = GlobalSearchResults;
             ProductsDataGrid.ItemsSource = Products;
         }
 
@@ -2725,6 +2729,7 @@ namespace SastreriaPresupuestos
         private void GlobalSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             UpdateGlobalSearchPlaceholder();
+            RefreshGlobalSearchResults();
         }
 
         private void UpdateGlobalSearchPlaceholder()
@@ -2738,21 +2743,233 @@ namespace SastreriaPresupuestos
                     : Visibility.Collapsed;
         }
 
+        private void RefreshGlobalSearchResults()
+        {
+            if (GlobalSearchResultsBorder == null || GlobalSearchResultsListBox == null)
+                return;
+
+            GlobalSearchResults.Clear();
+
+            var search = GlobalSearchTextBox.Text?.Trim() ?? string.Empty;
+            if (search.Length < 2)
+            {
+                GlobalSearchResultsBorder.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            var term = search.ToLowerInvariant();
+
+            using var db = new AppDbContext();
+
+            var clients = db.Clients
+                .Include(c => c.Quotes)
+                .AsNoTracking()
+                .ToList()
+                .Where(c =>
+                    ContainsSearch(c.Name, term) ||
+                    ContainsSearch(c.Phone, term) ||
+                    ContainsSearch(c.Dni, term))
+                .OrderBy(c => c.Name)
+                .Take(5)
+                .Select(c => new GlobalSearchResult
+                {
+                    ResultType = GlobalSearchResultType.Client,
+                    ClientId = c.Id,
+                    TypeLabel = "CLIENTE",
+                    PrimaryText = string.IsNullOrWhiteSpace(c.Name) ? "Cliente sin nombre" : c.Name,
+                    SecondaryText = BuildGlobalClientSummary(c)
+                });
+
+            foreach (var result in clients)
+                GlobalSearchResults.Add(result);
+
+            var quotes = db.Quotes
+                .Include(q => q.Client)
+                .AsNoTracking()
+                .ToList()
+                .Where(q =>
+                    ContainsSearch(q.Title, term) ||
+                    ContainsSearch(q.Status, term) ||
+                    ContainsSearch(q.Client?.Name, term) ||
+                    ContainsSearch(q.Client?.Phone, term) ||
+                    ContainsSearch(q.Client?.Dni, term) ||
+                    q.DeliveryDate.ToString("dd/MM/yyyy").Contains(term) ||
+                    q.DeliveryDate.ToString("dd-MM-yyyy").Contains(term) ||
+                    (q.EventDate.HasValue && q.EventDate.Value.ToString("dd/MM/yyyy").Contains(term)))
+                .OrderBy(q => q.DeliveryDate)
+                .Take(7)
+                .Select(q => new GlobalSearchResult
+                {
+                    ResultType = GlobalSearchResultType.Quote,
+                    ClientId = q.ClientId,
+                    QuoteId = q.Id,
+                    TypeLabel = "PRESUP.",
+                    PrimaryText = string.IsNullOrWhiteSpace(q.Title) ? $"Presupuesto #{q.Id}" : q.Title,
+                    SecondaryText = $"{q.Client?.Name ?? "Cliente"} · {q.Status} · Entrega {q.DeliveryDate:dd/MM/yyyy} · {q.Total:N2} €"
+                });
+
+            foreach (var result in quotes)
+            {
+                if (!GlobalSearchResults.Any(r => r.ResultType == result.ResultType && r.QuoteId == result.QuoteId))
+                    GlobalSearchResults.Add(result);
+            }
+
+            GlobalSearchResultsBorder.Visibility = GlobalSearchResults.Count > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            if (GlobalSearchResults.Count > 0)
+                GlobalSearchResultsListBox.SelectedIndex = 0;
+        }
+
+        private static bool ContainsSearch(string? value, string term)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            return value.ToLowerInvariant().Contains(term);
+        }
+
+        private static string BuildGlobalClientSummary(Models.Client client)
+        {
+            var parts = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(client.DisplayPhone))
+                parts.Add(client.DisplayPhone);
+
+            if (!string.IsNullOrWhiteSpace(client.Dni))
+                parts.Add(client.Dni);
+
+            var nextDelivery = client.Quotes?
+                .Where(q => q.DeliveryDate.Date >= DateTime.Today && q.Status != "Entregado")
+                .OrderBy(q => q.DeliveryDate)
+                .FirstOrDefault();
+
+            if (nextDelivery != null)
+                parts.Add($"Próxima entrega {nextDelivery.DeliveryDate:dd/MM/yyyy}");
+
+            return parts.Count == 0 ? "Sin teléfono ni entregas próximas" : string.Join(" · ", parts);
+        }
+
         private void GlobalSearchTextBox_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Key == Key.Down)
+            {
+                MoveGlobalSearchSelection(1);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Up)
+            {
+                MoveGlobalSearchSelection(-1);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Escape)
+            {
+                HideGlobalSearchResults();
+                e.Handled = true;
+                return;
+            }
+
             if (e.Key != Key.Enter)
                 return;
+
+            e.Handled = true;
+
+            if (GlobalSearchResultsListBox.SelectedItem is GlobalSearchResult selectedResult)
+            {
+                OpenGlobalSearchResult(selectedResult);
+                return;
+            }
 
             var search = GlobalSearchTextBox.Text?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(search))
                 return;
 
-            NavigateToSection(1);
+            NavigateToSection(TabClientes);
             ClientSearchTextBox.Text = search;
             ClientSearchTextBox.Focus();
             ClientSearchTextBox.CaretIndex = ClientSearchTextBox.Text.Length;
         }
 
+        private void MoveGlobalSearchSelection(int offset)
+        {
+            if (GlobalSearchResultsListBox == null || GlobalSearchResults.Count == 0)
+                return;
+
+            var nextIndex = GlobalSearchResultsListBox.SelectedIndex + offset;
+
+            if (nextIndex < 0)
+                nextIndex = GlobalSearchResults.Count - 1;
+
+            if (nextIndex >= GlobalSearchResults.Count)
+                nextIndex = 0;
+
+            GlobalSearchResultsListBox.SelectedIndex = nextIndex;
+            GlobalSearchResultsListBox.ScrollIntoView(GlobalSearchResultsListBox.SelectedItem);
+        }
+
+        private void GlobalSearchResultsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (GlobalSearchResultsListBox.SelectedItem is GlobalSearchResult result)
+                OpenGlobalSearchResult(result);
+        }
+
+        private void OpenGlobalSearchResult(GlobalSearchResult result)
+        {
+            HideGlobalSearchResults(clearText: true);
+
+            if (result.ResultType == GlobalSearchResultType.Quote && result.QuoteId.HasValue)
+            {
+                OpenQuoteById(result.QuoteId.Value, TabPresupuesto, "Búsqueda");
+                return;
+            }
+
+            if (result.ResultType == GlobalSearchResultType.Client && result.ClientId.HasValue)
+            {
+                OpenClientById(result.ClientId.Value);
+            }
+        }
+
+        private void OpenClientById(int clientId)
+        {
+            if (!ConfirmDiscardChanges())
+                return;
+
+            SuppressSelectionConfirm = true;
+            ShellBreadcrumbOverride = null;
+
+            LoadClients();
+
+            var client = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                .FirstOrDefault(c => c.Id == clientId);
+
+            if (client != null)
+            {
+                ClientsListBox.SelectedItem = client;
+                LastSelectedClientId = client.Id;
+            }
+
+            SuppressSelectionConfirm = false;
+
+            NavigateToSection(TabClientes);
+            UpdateContextBreadcrumb("Búsqueda", TabClientes);
+            UpdateShellNavigationState();
+        }
+
+        private void HideGlobalSearchResults(bool clearText = false)
+        {
+            if (clearText && GlobalSearchTextBox != null)
+                GlobalSearchTextBox.Text = string.Empty;
+
+            GlobalSearchResults.Clear();
+
+            if (GlobalSearchResultsBorder != null)
+                GlobalSearchResultsBorder.Visibility = Visibility.Collapsed;
+        }
 
         private void BudgetQuickExportPdfButton_Click(object sender, RoutedEventArgs e)
         {
@@ -3181,6 +3398,28 @@ namespace SastreriaPresupuestos
 
                 element = VisualTreeHelper.GetParent(element);
             }
+        }
+
+
+        private enum GlobalSearchResultType
+        {
+            Client,
+            Quote
+        }
+
+        private sealed class GlobalSearchResult
+        {
+            public GlobalSearchResultType ResultType { get; init; }
+
+            public int? ClientId { get; init; }
+
+            public int? QuoteId { get; init; }
+
+            public string TypeLabel { get; init; } = string.Empty;
+
+            public string PrimaryText { get; init; } = string.Empty;
+
+            public string SecondaryText { get; init; } = string.Empty;
         }
 
     }
