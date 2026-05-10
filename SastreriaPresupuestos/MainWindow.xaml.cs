@@ -1474,13 +1474,21 @@ namespace SastreriaPresupuestos
             if (!HasUnsavedChanges)
                 return true;
 
+            if (CanAutoSaveCurrentWorkspace())
+            {
+                TryAutoSaveCurrentWorkspace();
+
+                if (!HasUnsavedChanges)
+                    return true;
+            }
+
             if (IsConfirmingDiscard)
                 return false;
 
             IsConfirmingDiscard = true;
 
             var result = MessageBox.Show(
-                "Hay cambios sin guardar. ¿Quieres continuar sin guardar?",
+                "Hay cambios sin guardar que no se han podido guardar automáticamente. ¿Quieres continuar sin guardar?",
                 "Cambios sin guardar",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
