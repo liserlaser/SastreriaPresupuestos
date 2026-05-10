@@ -20,6 +20,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using MediaColor = System.Windows.Media.Color;
 
 namespace SastreriaPresupuestos
@@ -163,6 +164,11 @@ namespace SastreriaPresupuestos
         private WorkspaceSaveState CurrentSaveState = WorkspaceSaveState.Saved;
         private bool IsLoadingData = false;
         private bool IsConfirmingDiscard = false;
+        private bool IsAutoSaving = false;
+        private readonly DispatcherTimer AutoSaveTimer = new DispatcherTimer()
+        {
+            Interval = TimeSpan.FromMilliseconds(1400)
+        };
 
         private int? LastSelectedClientId = null;
         private int? LastSelectedQuoteId = null;
@@ -250,6 +256,8 @@ namespace SastreriaPresupuestos
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            AutoSaveTimer.Stop();
+
             if (CurrentClientId == null)
             {
                 MessageBox.Show(
@@ -1269,6 +1277,146 @@ namespace SastreriaPresupuestos
             HasUnsavedChanges = true;
 
             SetSaveWorkflowState(WorkspaceSaveState.Dirty);
+            ScheduleAutoSave();
+        }
+
+        private void ScheduleAutoSave()
+        {
+            if (IsLoadingData || IsAutoSaving)
+                return;
+
+            if (CurrentClientId == null || CurrentQuote == null)
+                return;
+
+            AutoSaveTimer.Stop();
+            AutoSaveTimer.Start();
+        }
+
+        private void AutoSaveTimer_Tick(object? sender, EventArgs e)
+        {
+            AutoSaveTimer.Stop();
+            TryAutoSaveCurrentWorkspace();
+        }
+
+        private bool CanAutoSaveCurrentWorkspace()
+        {
+            if (!HasUnsavedChanges)
+                return false;
+
+            if (CurrentClientId == null || CurrentQuote == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(ClientNameTextBox.Text) ||
+                string.IsNullOrWhiteSpace(PhoneTextBox.Text))
+            {
+                return false;
+            }
+
+            if (Products.Count == 0)
+                return false;
+
+            foreach (var product in Products)
+            {
+                if (string.IsNullOrWhiteSpace(product.ProductName))
+                    return false;
+
+                if (product.ProductName != "Concepto Libre" &&
+                    product.ProductName != "Corbata" &&
+                    product.ProductName != "Pañuelo" &&
+                    product.ProductName != "Gemelos" &&
+                    product.ProductName != "Tirantes" &&
+                    product.ProductName != "Zapatos" &&
+                    string.IsNullOrWhiteSpace(product.TailoringType))
+                {
+                    return false;
+                }
+
+                if (product.Quantity < 1)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private void TryAutoSaveCurrentWorkspace()
+        {
+            if (!CanAutoSaveCurrentWorkspace())
+                return;
+
+            try
+            {
+                IsAutoSaving = true;
+                SetSaveWorkflowState(WorkspaceSaveState.Saving);
+                Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+
+                using var db = new AppDbContext();
+
+                var client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value);
+                var quote = db.Quotes
+                    .Include(q => q.Items)
+                    .FirstOrDefault(q => q.Id == CurrentQuote.Id);
+
+                if (client == null || quote == null)
+                {
+                    SetSaveWorkflowState(WorkspaceSaveState.Dirty);
+                    return;
+                }
+
+                client.Name = ClientNameTextBox.Text.Trim();
+                client.Phone = PhoneTextBox.Text.Trim();
+                client.Dni = DniTextBox.Text.Trim();
+
+                quote.Title = QuoteTitleTextBox.Text.Trim();
+                quote.Notes = QuoteNotesTextBox.Text.Trim();
+                quote.ClientNotes = ClientNotesTextBox.Text.Trim();
+                quote.Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
+                quote.Deposit = GetDepositValue();
+                quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
+                quote.EventDate = EventDatePicker.SelectedDate;
+                quote.Total = Products.Sum(p => p.Total);
+
+                db.QuoteItems.RemoveRange(quote.Items);
+
+                foreach (var product in Products)
+                {
+                    db.QuoteItems.Add(new Models.QuoteItem()
+                    {
+                        QuoteId = quote.Id,
+                        Quantity = product.Quantity,
+                        ProductName = product.ProductName,
+                        TailoringType = product.TailoringType,
+                        Fabric = product.Fabric,
+                        BasePrice = product.BasePrice,
+                        FabricPrice = product.FabricPrice,
+                        ManualPrice = product.ManualPrice,
+                        Total = product.Total
+                    });
+                }
+
+                db.SaveChanges();
+
+                CurrentQuote.Title = quote.Title;
+                CurrentQuote.Notes = quote.Notes;
+                CurrentQuote.ClientNotes = quote.ClientNotes;
+                CurrentQuote.Status = quote.Status;
+                CurrentQuote.Deposit = quote.Deposit;
+                CurrentQuote.DeliveryDate = quote.DeliveryDate;
+                CurrentQuote.EventDate = quote.EventDate;
+                CurrentQuote.Total = quote.Total;
+
+                LoadCalendarDeliveries();
+                UpdateActiveContext();
+                UpdateWorkflowState();
+                MarkAsSaved();
+            }
+            catch
+            {
+                SetSaveWorkflowState(WorkspaceSaveState.Dirty);
+            }
+            finally
+            {
+                IsAutoSaving = false;
+            }
         }
 
         private bool ConfirmDiscardChanges()
@@ -1380,6 +1528,7 @@ namespace SastreriaPresupuestos
 
         private void MarkAsSaved()
         {
+            AutoSaveTimer.Stop();
             HasUnsavedChanges = false;
 
             SetSaveWorkflowState(WorkspaceSaveState.Saved);
@@ -2989,6 +3138,7 @@ namespace SastreriaPresupuestos
             WorkSearchTextBox.TextChanged += WorkSearchTextBox_TextChanged;
 
             ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
+            AutoSaveTimer.Tick += AutoSaveTimer_Tick;
 
             ClientNameTextBox.TextChanged += ClientNameTextBox_TextChanged;
             QuoteTitleTextBox.TextChanged += QuoteTitleTextBox_TextChanged;
