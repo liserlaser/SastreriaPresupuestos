@@ -787,18 +787,10 @@ namespace SastreriaPresupuestos
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             GoToTab(TabPresupuesto);
 
-            if (CurrentClientId == null)
-            {
-                if (!ShowClientEditDialog())
-                    return;
-
-                SaveClientFromContextFields();
-
-                if (CurrentClientId == null)
-                    return;
-            }
-
             if (!ConfirmDiscardChanges())
+                return;
+
+            if (!PrepareClientForNewQuote())
                 return;
 
             IsLoadingData = true;
@@ -1845,6 +1837,158 @@ namespace SastreriaPresupuestos
                 return;
 
             SaveClientFromContextFields();
+        }
+
+        private bool PrepareClientForNewQuote()
+        {
+            var result = MessageBox.Show(
+                "¿Quieres crear un cliente nuevo para este presupuesto?\n\n" +
+                "Sí: crear cliente nuevo.\n" +
+                "No: elegir un cliente existente.",
+                "Crear presupuesto",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel)
+                return false;
+
+            if (result == MessageBoxResult.Yes)
+            {
+                ClearScreenForNewClient();
+
+                if (!ShowClientEditDialog())
+                    return false;
+
+                SaveClientFromContextFields();
+                return CurrentClientId != null;
+            }
+
+            var selectedClientId = ShowClientSelectionDialog();
+            if (selectedClientId == null)
+                return false;
+
+            SelectClientForNewQuote(selectedClientId.Value);
+            return CurrentClientId != null;
+        }
+
+        private int? ShowClientSelectionDialog()
+        {
+            using var db = new AppDbContext();
+
+            var clients = db.Clients
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ThenBy(c => c.Phone)
+                .ToList();
+
+            if (clients.Count == 0)
+            {
+                MessageBox.Show(
+                    "Todavía no hay clientes guardados. Crea un cliente nuevo para continuar.",
+                    "Elegir cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return null;
+            }
+
+            var dialog = CreateContextEditDialog(
+                "Elegir cliente",
+                "Selecciona el cliente al que quieres asociar el nuevo presupuesto.");
+
+            var comboBox = new ComboBox
+            {
+                Height = 38,
+                FontSize = 14,
+                ItemsSource = clients,
+                DisplayMemberPath = "Name",
+                SelectedValuePath = "Id",
+                SelectedValue = CurrentClientId,
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+
+            if (comboBox.SelectedItem == null)
+                comboBox.SelectedIndex = 0;
+
+            var detailsTextBlock = new TextBlock
+            {
+                FontSize = 12,
+                Foreground = (Brush)FindResource("MutedTextBrush"),
+                Margin = new Thickness(0, 6, 0, 0),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            void UpdateDetails()
+            {
+                if (comboBox.SelectedItem is Models.Client client)
+                {
+                    var phone = string.IsNullOrWhiteSpace(client.Phone) ? "Sin teléfono" : client.DisplayPhone;
+                    var dni = string.IsNullOrWhiteSpace(client.Dni) ? "Sin DNI" : client.Dni;
+                    detailsTextBlock.Text = $"{phone} · {dni}";
+                }
+                else
+                {
+                    detailsTextBlock.Text = "Selecciona un cliente.";
+                }
+            }
+
+            comboBox.SelectionChanged += (_, _) => UpdateDetails();
+            UpdateDetails();
+
+            AddDialogField(dialog.ContentPanel, "Cliente existente", comboBox);
+            dialog.ContentPanel.Children.Add(detailsTextBlock);
+
+            int? selectedClientId = null;
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                if (comboBox.SelectedItem is not Models.Client client)
+                {
+                    MessageBox.Show(
+                        "Selecciona un cliente para continuar.",
+                        "Elegir cliente",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                selectedClientId = client.Id;
+                dialog.Window.DialogResult = true;
+            };
+
+            comboBox.Focus();
+
+            return dialog.Window.ShowDialog() == true ? selectedClientId : null;
+        }
+
+        private void SelectClientForNewQuote(int clientId)
+        {
+            SuppressSelectionConfirm = true;
+
+            LoadClients();
+
+            var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                .FirstOrDefault(c => c.Id == clientId);
+
+            if (reloadedClient != null)
+            {
+                ClientsListBox.SelectedItem = reloadedClient;
+                LastSelectedClientId = clientId;
+                CurrentClientId = clientId;
+            }
+
+            SuppressSelectionConfirm = false;
+
+            if (reloadedClient != null)
+            {
+                // Fuerza la carga visual de la ficha/lista asociada al cliente seleccionado.
+                ClientsListBox_SelectionChanged(ClientsListBox, new SelectionChangedEventArgs(System.Windows.Controls.Primitives.Selector.SelectionChangedEvent, new List<object>(), new List<object> { reloadedClient }));
+            }
+
+            UpdateActiveContext();
+            UpdateWorkflowState();
+            UpdateShellNavigationState();
         }
 
         private bool ShowClientEditDialog()
