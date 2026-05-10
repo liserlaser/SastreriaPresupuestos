@@ -2510,6 +2510,9 @@ namespace SastreriaPresupuestos
             ListViewButton.Click += ListViewButton_Click;
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
+            DeliveriesListBox.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
+            WeeklyColumnsItemsControl.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
+            CalendarGroupsListBox.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
             ToggleSidebarButton.Click += ToggleSidebarButton_Click;
             BudgetQuickProductsButton.Click += BudgetQuickProductsButton_Click;
             BudgetQuickDocumentsButton.Click += BudgetQuickDocumentsButton_Click;
@@ -3125,6 +3128,7 @@ namespace SastreriaPresupuestos
             if (selectedQuote != null)
             {
                 QuotesListBox.SelectedItem = selectedQuote;
+                BudgetQuotesListBox.SelectedItem = selectedQuote;
                 LastSelectedQuoteId = selectedQuote.Id;
             }
 
@@ -3188,7 +3192,28 @@ namespace SastreriaPresupuestos
 
         private void OpenWeeklyDelivery(WeeklyDeliveryItem delivery)
         {
+            if (delivery == null || delivery.QuoteId <= 0)
+                return;
+
             OpenQuoteById(delivery.QuoteId, TabPresupuesto, "Inicio");
+        }
+
+        private void CalendarDelivery_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var element = e.OriginalSource as DependencyObject;
+
+            while (element != null)
+            {
+                if (element is FrameworkElement frameworkElement &&
+                    frameworkElement.DataContext is WeeklyDeliveryItem delivery)
+                {
+                    OpenWeeklyDelivery(delivery);
+                    e.Handled = true;
+                    return;
+                }
+
+                element = VisualTreeHelper.GetParent(element);
+            }
         }
 
         /*  DESACTIVADO
