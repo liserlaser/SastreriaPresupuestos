@@ -24,6 +24,13 @@ using MediaColor = System.Windows.Media.Color;
 
 namespace SastreriaPresupuestos
 {
+    internal enum WorkspaceSaveState
+    {
+        Saved,
+        Saving,
+        Dirty
+    }
+
     public partial class MainWindow : Window
     {
 
@@ -153,6 +160,7 @@ namespace SastreriaPresupuestos
 
         //private bool MarkAsSaved();
         private bool HasUnsavedChanges = false;
+        private WorkspaceSaveState CurrentSaveState = WorkspaceSaveState.Saved;
         private bool IsLoadingData = false;
         private bool IsConfirmingDiscard = false;
 
@@ -258,6 +266,9 @@ namespace SastreriaPresupuestos
 
             if (!ValidateBeforeSave())
                 return;
+
+            SetSaveWorkflowState(WorkspaceSaveState.Saving);
+            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
 
             using var db = new AppDbContext();
 
@@ -1257,8 +1268,7 @@ namespace SastreriaPresupuestos
 
             HasUnsavedChanges = true;
 
-            UpdateUnsavedChangesIndicator();
-            UpdateWindowTitle();
+            SetSaveWorkflowState(WorkspaceSaveState.Dirty);
         }
 
         private bool ConfirmDiscardChanges()
@@ -1372,8 +1382,61 @@ namespace SastreriaPresupuestos
         {
             HasUnsavedChanges = false;
 
+            SetSaveWorkflowState(WorkspaceSaveState.Saved);
+        }
+
+        private void SetSaveWorkflowState(WorkspaceSaveState state)
+        {
+            CurrentSaveState = state;
+
+            if (state == WorkspaceSaveState.Dirty)
+                HasUnsavedChanges = true;
+            else if (state == WorkspaceSaveState.Saved)
+                HasUnsavedChanges = false;
+
             UpdateUnsavedChangesIndicator();
+            UpdateShellSaveStateIndicator();
             UpdateWindowTitle();
+        }
+
+        private void UpdateShellSaveStateIndicator()
+        {
+            if (ShellSaveStateTextBlock == null || ShellSaveStateDot == null || ShellSaveStateBadge == null)
+                return;
+
+            string text;
+            SolidColorBrush dotBrush;
+            SolidColorBrush foregroundBrush;
+            SolidColorBrush backgroundBrush;
+
+            switch (CurrentSaveState)
+            {
+                case WorkspaceSaveState.Saving:
+                    text = "Guardando…";
+                    dotBrush = new SolidColorBrush(MediaColor.FromRgb(168, 178, 161));
+                    foregroundBrush = new SolidColorBrush(MediaColor.FromRgb(47, 51, 45));
+                    backgroundBrush = new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
+                    break;
+
+                case WorkspaceSaveState.Dirty:
+                    text = "Cambios pendientes";
+                    dotBrush = new SolidColorBrush(MediaColor.FromRgb(180, 128, 74));
+                    foregroundBrush = new SolidColorBrush(MediaColor.FromRgb(95, 65, 32));
+                    backgroundBrush = new SolidColorBrush(MediaColor.FromRgb(250, 244, 235));
+                    break;
+
+                default:
+                    text = "Guardado";
+                    dotBrush = new SolidColorBrush(MediaColor.FromRgb(109, 116, 104));
+                    foregroundBrush = new SolidColorBrush(MediaColor.FromRgb(109, 116, 104));
+                    backgroundBrush = new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
+                    break;
+            }
+
+            ShellSaveStateTextBlock.Text = text;
+            ShellSaveStateTextBlock.Foreground = foregroundBrush;
+            ShellSaveStateDot.Fill = dotBrush;
+            ShellSaveStateBadge.Background = backgroundBrush;
         }
 
         private void UpdateWindowTitle()
@@ -2949,6 +3012,7 @@ namespace SastreriaPresupuestos
         {
             UpdateSaveButtonText();
             UpdateUnsavedChangesIndicator();
+            UpdateShellSaveStateIndicator();
             UpdateWindowTitle();
 
             ClientSearchPlaceholderTextBlock.Visibility =

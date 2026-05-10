@@ -818,6 +818,34 @@
                     Orientation="Horizontal"
                     VerticalAlignment="Top"
                     Margin="16,2,0,0">
+                    <Border
+                        x:Name="ShellSaveStateBadge"
+                        Background="#EEF2EA"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Padding="10,5"
+                        Margin="0,8,10,0"
+                        MinHeight="32"
+                        ToolTip="Estado de guardado del trabajo activo">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse
+                                x:Name="ShellSaveStateDot"
+                                Width="8"
+                                Height="8"
+                                Fill="{StaticResource MutedTextBrush}"
+                                VerticalAlignment="Center"
+                                Margin="0,0,7,0"/>
+                            <TextBlock
+                                x:Name="ShellSaveStateTextBlock"
+                                Text="Guardado"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
                     <Button
                         x:Name="SettingsNavButton"
                         Content="⚙"
