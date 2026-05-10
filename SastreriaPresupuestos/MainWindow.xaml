@@ -2,7 +2,6 @@
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-        xmlns:views="clr-namespace:SastreriaPresupuestos.Views"
 		Title="Sastrería Martínez Mor"
         Icon="Resources/AppIcon.ico"
 		Height="750"
@@ -914,27 +913,27 @@
                 </TabControl.ItemContainerStyle>
 
                 <TabItem Header="Semana">
-                    <views:DashboardView x:Name="DashboardView"/>
+                    <ContentControl x:Name="DashboardHost"/>
                 </TabItem>
 
                 <TabItem Header="Clientes">
-                    <views:ClientesView x:Name="ClientesView"/>
+                    <ContentControl x:Name="ClientesHost"/>
                 </TabItem>
 
                 <TabItem Header="Trabajos">
-                    <views:PresupuestoView x:Name="PresupuestoView"/>
+                    <ContentControl x:Name="PresupuestoHost"/>
                 </TabItem>
 
                 <TabItem Header="Productos">
-                    <views:ProductosView x:Name="ProductosView"/>
+                    <ContentControl x:Name="ProductosHost"/>
                 </TabItem>
 
                 <TabItem Header="PDF">
-                    <views:DocumentosView x:Name="DocumentosView"/>
+                    <ContentControl x:Name="DocumentosHost"/>
                 </TabItem>
 
                 <TabItem Header="Ajustes">
-                    <views:AjustesView x:Name="AjustesView"/>
+                    <ContentControl x:Name="AjustesHost"/>
                 </TabItem>
 
             </TabControl>

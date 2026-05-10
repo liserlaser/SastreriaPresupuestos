@@ -37,6 +37,13 @@ namespace SastreriaPresupuestos
     public partial class MainWindow : Window
     {
 
+        private readonly DashboardView DashboardView = new();
+        private readonly ClientesView ClientesView = new();
+        private readonly PresupuestoView PresupuestoView = new();
+        private readonly ProductosView ProductosView = new();
+        private readonly DocumentosView DocumentosView = new();
+        private readonly AjustesView AjustesView = new();
+
         private TextBlock WeekTitleTextBlock => DashboardView.WeekTitleTextBlock;
         private Button PreviousCalendarButton => DashboardView.PreviousCalendarButton;
         private Button TodayCalendarButton => DashboardView.TodayCalendarButton;
@@ -151,6 +158,16 @@ namespace SastreriaPresupuestos
         private DateTime CalendarReferenceDate = DateTime.Today;
         private string CalendarViewMode = "Lista";
 
+        private void MountWorkspaceViews()
+        {
+            DashboardHost.Content = DashboardView;
+            ClientesHost.Content = ClientesView;
+            PresupuestoHost.Content = PresupuestoView;
+            ProductosHost.Content = ProductosView;
+            DocumentosHost.Content = DocumentosView;
+            AjustesHost.Content = AjustesView;
+        }
+
         private string SanitizeFileName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -178,6 +195,7 @@ namespace SastreriaPresupuestos
         private int? LastSelectedClientId = null;
         private int? LastSelectedQuoteId = null;
         private int? CurrentClientId = null;
+        private string? LastGeneratedPdfPath = null;
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
@@ -198,6 +216,8 @@ namespace SastreriaPresupuestos
             ConfigureCulture();
 
             InitializeComponent();
+
+            MountWorkspaceViews();
 
             QuestPDF.Settings.License = LicenseType.Community;
 
@@ -1354,12 +1374,15 @@ namespace SastreriaPresupuestos
                 SetSaveWorkflowState(WorkspaceSaveState.Saving);
                 Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
 
+                if (CurrentClientId is not int clientId || CurrentQuote is not { } currentQuote)
+                    return;
+
                 using var db = new AppDbContext();
 
-                var client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value);
+                var client = db.Clients.FirstOrDefault(c => c.Id == clientId);
                 var quote = db.Quotes
                     .Include(q => q.Items)
-                    .FirstOrDefault(q => q.Id == CurrentQuote.Id);
+                    .FirstOrDefault(q => q.Id == currentQuote.Id);
 
                 if (client == null || quote == null)
                 {
@@ -1400,14 +1423,14 @@ namespace SastreriaPresupuestos
 
                 db.SaveChanges();
 
-                CurrentQuote.Title = quote.Title;
-                CurrentQuote.Notes = quote.Notes;
-                CurrentQuote.ClientNotes = quote.ClientNotes;
-                CurrentQuote.Status = quote.Status;
-                CurrentQuote.Deposit = quote.Deposit;
-                CurrentQuote.DeliveryDate = quote.DeliveryDate;
-                CurrentQuote.EventDate = quote.EventDate;
-                CurrentQuote.Total = quote.Total;
+                currentQuote.Title = quote.Title;
+                currentQuote.Notes = quote.Notes;
+                currentQuote.ClientNotes = quote.ClientNotes;
+                currentQuote.Status = quote.Status;
+                currentQuote.Deposit = quote.Deposit;
+                currentQuote.DeliveryDate = quote.DeliveryDate;
+                currentQuote.EventDate = quote.EventDate;
+                currentQuote.Total = quote.Total;
 
                 LoadCalendarDeliveries();
                 UpdateActiveContext();
