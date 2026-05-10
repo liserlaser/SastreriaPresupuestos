@@ -1419,6 +1419,52 @@ namespace SastreriaPresupuestos
             }
         }
 
+        private bool TryFlushPendingChangesBeforeWorkflowAction(string actionName)
+        {
+            if (!HasUnsavedChanges)
+                return true;
+
+            if (CanAutoSaveCurrentWorkspace())
+            {
+                TryAutoSaveCurrentWorkspace();
+
+                if (!HasUnsavedChanges)
+                    return true;
+            }
+
+            var result = MessageBox.Show(
+                $"Hay cambios pendientes antes de {actionName}.\n\n" +
+                "Sí: guardar ahora.\n" +
+                "No: continuar con los datos visibles sin guardar.\n" +
+                "Cancelar: volver al trabajo.",
+                "Cambios pendientes",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel)
+                return false;
+
+            if (result == MessageBoxResult.No)
+                return true;
+
+            SaveButton_Click(this, new RoutedEventArgs());
+
+            return !HasUnsavedChanges;
+        }
+
+        private void MarkCurrentQuoteAsDeliveredFromQuickAction()
+        {
+            if (CurrentQuote == null)
+                return;
+
+            QuoteStatusComboBox.SelectedItem = "Entregado";
+            MarkAsChanged();
+            UpdateActiveContext();
+
+            if (CanAutoSaveCurrentWorkspace())
+                TryAutoSaveCurrentWorkspace();
+        }
+
         private bool ConfirmDiscardChanges()
         {
             if (!HasUnsavedChanges)
@@ -1643,6 +1689,9 @@ namespace SastreriaPresupuestos
         private void ExportPdfButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateBeforeSave())
+                return;
+
+            if (!TryFlushPendingChangesBeforeWorkflowAction("generar el PDF"))
                 return;
 
             var exportQuote = ExportDataService.CreateExportQuote(
@@ -2997,9 +3046,7 @@ namespace SastreriaPresupuestos
 
         private void ContextMarkDeliveredButton_Click(object sender, RoutedEventArgs e)
         {
-            QuoteStatusComboBox.SelectedItem = "Entregado";
-            MarkAsChanged();
-            UpdateActiveContext();
+            MarkCurrentQuoteAsDeliveredFromQuickAction();
         }
 
         private void ContextExportPdfButton_Click(object sender, RoutedEventArgs e)
@@ -3009,8 +3056,11 @@ namespace SastreriaPresupuestos
 
         private void ContextDocumentsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
+                return;
+
             UpdateContextBreadcrumb("Trabajos", TabDocumentos);
-            NavigateToSection(4);
+            NavigateToSection(TabDocumentos);
         }
 
         private void ShellQuickProductsButton_Click(object sender, RoutedEventArgs e)
@@ -3026,9 +3076,7 @@ namespace SastreriaPresupuestos
 
         private void ShellQuickDeliveredButton_Click(object sender, RoutedEventArgs e)
         {
-            QuoteStatusComboBox.SelectedItem = "Entregado";
-            MarkAsChanged();
-            UpdateActiveContext();
+            MarkCurrentQuoteAsDeliveredFromQuickAction();
         }
 
 
@@ -3826,6 +3874,9 @@ namespace SastreriaPresupuestos
 
         private void BudgetQuickDocumentsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
+                return;
+
             UpdateContextBreadcrumb("Trabajos", TabDocumentos);
             NavigateToSection(TabDocumentos);
         }
