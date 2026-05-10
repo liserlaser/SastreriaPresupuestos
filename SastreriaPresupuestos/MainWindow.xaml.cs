@@ -608,13 +608,13 @@ namespace SastreriaPresupuestos
 
             if (QuotesListBox.SelectedItem is Models.Quote selectedQuote)
             {
-                OpenQuoteById(selectedQuote.Id, TabPresupuesto, "Clientes");
+                OpenQuoteById(selectedQuote.Id, TabPresupuesto, "Trabajos");
                 return;
             }
 
             if (QuotesListBox.Items.Count > 0 && QuotesListBox.Items[0] is Models.Quote firstQuote)
             {
-                OpenQuoteById(firstQuote.Id, TabPresupuesto, "Clientes");
+                OpenQuoteById(firstQuote.Id, TabPresupuesto, "Trabajos");
                 return;
             }
 
@@ -3074,7 +3074,7 @@ namespace SastreriaPresupuestos
             var baseInfo = sectionIndex switch
             {
                 0 => ("Inicio", "Próximas entregas, vista semanal y vista mensual", "🏠"),
-                1 => ("Clientes", "Búsqueda, alta y consulta de clientes", "🏠 > Clientes"),
+                1 => ("Trabajos", "Clientes y trabajos se gestionan desde el workspace contextual", "🏠 > Trabajos"),
                 2 => ("Trabajos", "Resumen del trabajo activo y datos principales", "🏠 > Trabajos"),
                 3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del trabajo activo", "🏠 > Trabajos > Productos"),
                 4 => ("Trabajos · PDF", "PDFs, ficha de cliente y exportaciones del trabajo activo", "🏠 > Trabajos > PDF"),
@@ -3099,7 +3099,7 @@ namespace SastreriaPresupuestos
                 : QuoteTitleTextBox.Text.Trim();
 
             if (sectionIndex == TabClientes && clientName != null)
-                return $"🏠 > Clientes > {clientName}";
+                return $"🏠 > Trabajos > {clientName}";
 
             if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
             {
@@ -3397,10 +3397,16 @@ namespace SastreriaPresupuestos
             if (string.IsNullOrWhiteSpace(search))
                 return;
 
-            NavigateToSection(TabClientes);
-            ClientSearchTextBox.Text = search;
-            ClientSearchTextBox.Focus();
-            ClientSearchTextBox.CaretIndex = ClientSearchTextBox.Text.Length;
+            if (GlobalSearchResults.Count > 0 && GlobalSearchResults[0] is GlobalSearchResult firstResult)
+            {
+                OpenGlobalSearchResult(firstResult);
+                return;
+            }
+
+            // Clientes ya no es una pantalla visible: ante una búsqueda sin resultado
+            // mantenemos al usuario en el workspace contextual de Trabajos.
+            NavigateToSection(TabPresupuesto);
+            BudgetQuotesListBox?.Focus();
         }
 
         private void MoveGlobalSearchSelection(int offset)
@@ -3664,24 +3670,19 @@ namespace SastreriaPresupuestos
             {
                 TabProductos => "Productos",
                 TabDocumentos => "PDF",
-                TabClientes => "Clientes",
+                TabClientes => "Trabajos",
                 _ => "Trabajos"
             };
 
             var parts = new List<string> { "🏠" };
 
-            if (targetTab == TabClientes)
-            {
-                parts.Add("Clientes");
-                parts.Add(clientName);
-            }
-            else
-            {
-                parts.Add("Trabajos");
-                parts.Add(clientName);
+            parts.Add("Trabajos");
+            parts.Add(clientName);
 
-                if (quoteTitle != null)
-                    parts.Add(quoteTitle);
+            if (targetTab != TabClientes && quoteTitle != null)
+                parts.Add(quoteTitle);
+
+            {
 
                 if (targetTab == TabProductos || targetTab == TabDocumentos)
                     parts.Add(target);
