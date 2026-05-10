@@ -1602,6 +1602,35 @@ namespace SastreriaPresupuestos
                     e.Handled = true;
                     FocusGlobalSearchFromShortcut();
                     break;
+
+                case Key.D:
+                    e.Handled = true;
+                    DuplicateCurrentQuoteFromShortcut();
+                    break;
+
+                case Key.D1:
+                case Key.NumPad1:
+                    e.Handled = true;
+                    NavigateToWorkspaceSectionFromShortcut(TabPresupuesto);
+                    break;
+
+                case Key.D2:
+                case Key.NumPad2:
+                    e.Handled = true;
+                    NavigateToWorkspaceSectionFromShortcut(TabProductos);
+                    break;
+
+                case Key.D3:
+                case Key.NumPad3:
+                    e.Handled = true;
+                    NavigateToWorkspaceSectionFromShortcut(TabDocumentos);
+                    break;
+
+                case Key.D4:
+                case Key.NumPad4:
+                    e.Handled = true;
+                    NavigateToWorkspaceSectionFromShortcut(TabClientes);
+                    break;
             }
         }
 
@@ -1618,6 +1647,24 @@ namespace SastreriaPresupuestos
         {
             GlobalSearchTextBox.Focus();
             GlobalSearchTextBox.SelectAll();
+        }
+
+        private void DuplicateCurrentQuoteFromShortcut()
+        {
+            if (DuplicateQuoteButton.IsEnabled)
+                DuplicateQuoteButton_Click(this, new RoutedEventArgs());
+        }
+
+        private void NavigateToWorkspaceSectionFromShortcut(int sectionIndex)
+        {
+            if (sectionIndex == TabProductos && !TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
+                return;
+
+            if (sectionIndex == TabDocumentos && !TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
+                return;
+
+            UpdateContextBreadcrumb("Trabajos", sectionIndex);
+            NavigateToSection(sectionIndex);
         }
 
         private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -3244,6 +3291,9 @@ namespace SastreriaPresupuestos
 
         private void ShellQuickProductsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
+                return;
+
             UpdateContextBreadcrumb("Trabajos", TabProductos);
             NavigateToSection(TabProductos);
         }
@@ -4048,6 +4098,9 @@ namespace SastreriaPresupuestos
 
         private void BudgetQuickProductsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
+                return;
+
             UpdateContextBreadcrumb("Trabajos", TabProductos);
             NavigateToSection(TabProductos);
         }
