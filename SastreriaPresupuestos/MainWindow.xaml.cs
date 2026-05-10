@@ -3516,7 +3516,7 @@ namespace SastreriaPresupuestos
                 : allQuotes.Where(q => MatchesWorkSearch(q, query));
 
             var ordered = filtered
-                .OrderBy(q => q.DeliveryDate ?? DateTime.MaxValue)
+                .OrderBy(q => q.DeliveryDate)
                 .ThenBy(q => q.Id)
                 .ToList();
 
