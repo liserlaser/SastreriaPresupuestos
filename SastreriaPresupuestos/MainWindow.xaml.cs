@@ -3452,9 +3452,12 @@ namespace SastreriaPresupuestos
 
             SuppressSelectionConfirm = false;
 
-            NavigateToSection(TabClientes);
-            UpdateContextBreadcrumb("Búsqueda", TabClientes);
+            // Clientes deja de ser una pantalla principal: una búsqueda de cliente
+            // abre directamente el workspace contextual de Trabajos con ese cliente cargado.
+            NavigateToSection(TabPresupuesto);
+            UpdateContextBreadcrumb("Búsqueda", TabPresupuesto);
             UpdateShellNavigationState();
+            BudgetQuotesListBox?.Focus();
         }
 
         private void HideGlobalSearchResults(bool clearText = false)
