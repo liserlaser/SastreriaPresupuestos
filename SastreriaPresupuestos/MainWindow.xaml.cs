@@ -30,7 +30,8 @@ namespace SastreriaPresupuestos
     {
         Saved,
         Saving,
-        Dirty
+        Dirty,
+        SaveFailed
     }
 
     public partial class MainWindow : Window
@@ -1415,7 +1416,7 @@ namespace SastreriaPresupuestos
             }
             catch
             {
-                SetSaveWorkflowState(WorkspaceSaveState.Dirty);
+                SetSaveWorkflowState(WorkspaceSaveState.SaveFailed);
             }
             finally
             {
@@ -1618,6 +1619,13 @@ namespace SastreriaPresupuestos
 
             switch (CurrentSaveState)
             {
+                case WorkspaceSaveState.SaveFailed:
+                    text = "Error al guardar";
+                    dotBrush = new SolidColorBrush(MediaColor.FromRgb(168, 64, 52));
+                    foregroundBrush = new SolidColorBrush(MediaColor.FromRgb(120, 44, 36));
+                    backgroundBrush = new SolidColorBrush(MediaColor.FromRgb(252, 238, 235));
+                    break;
+
                 case WorkspaceSaveState.Saving:
                     text = "Guardando…";
                     dotBrush = new SolidColorBrush(MediaColor.FromRgb(168, 178, 161));
