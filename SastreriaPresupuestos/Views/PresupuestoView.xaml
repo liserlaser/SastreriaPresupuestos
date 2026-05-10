@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SastreriaPresupuestos.Views.PresupuestoView"
+<UserControl x:Class="SastreriaPresupuestos.Views.PresupuestoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime">
@@ -109,7 +109,7 @@
                                     Width="78"
                                     Height="32"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    ToolTip="Guardar o actualizar los datos del cliente"/>
+                                    ToolTip="Editar los datos del cliente"/>
                             <Button x:Name="ClientSheetButton"
                                     Content="Ficha"
                                     Width="78"
@@ -129,17 +129,17 @@
 
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
                             <TextBlock Text="Nombre" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <TextBox x:Name="ClientNameTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                            <TextBox x:Name="ClientNameTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="0,0,10,0">
                             <TextBlock Text="Teléfono" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <TextBox x:Name="PhoneTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                            <TextBox x:Name="PhoneTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="DNI" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <TextBox x:Name="DniTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                            <TextBox x:Name="DniTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
                     </Grid>
                 </Grid>
@@ -198,7 +198,7 @@
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
                             <TextBlock Text="Título" Style="{StaticResource ContextLabelTextStyle}"/>
                             <Grid>
-                                <TextBox x:Name="QuoteTitleTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                                <TextBox x:Name="QuoteTitleTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                                 <TextBlock x:Name="QuoteTitlePlaceholderTextBlock"
                                            Text="Ej. Traje novio, chaqué..."
                                            Foreground="{StaticResource MutedTextBrush}"
@@ -214,14 +214,24 @@
                                       Height="34"
                                       FontSize="14"
                                       ItemsSource="{StaticResource QuoteStatusList}"
-                                      SelectedItem="Pendiente"/>
+                                      SelectedItem="Pendiente"
+                                      IsHitTestVisible="False"
+                                      Focusable="False"
+                                      BorderThickness="0"
+                                      Background="Transparent"
+                                      FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Entrega" Style="{StaticResource ContextLabelTextStyle}"/>
                             <DatePicker x:Name="DeliveryDatePicker"
                                         Style="{StaticResource ContextDatePickerStyle}"
-                                        SelectedDate="{x:Static sys:DateTime.Now}"/>
+                                        SelectedDate="{x:Static sys:DateTime.Now}"
+                                        IsHitTestVisible="False"
+                                        Focusable="False"
+                                        BorderThickness="0"
+                                        Background="Transparent"
+                                        FontWeight="SemiBold"/>
                         </StackPanel>
                     </Grid>
                 </Grid>
