@@ -2658,16 +2658,19 @@ namespace SastreriaPresupuestos
             var titleTextBox = CreateDialogTextBox(QuoteTitleTextBox.Text);
             var statusComboBox = CreateDialogComboBox(QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente");
             var deliveryDatePicker = CreateDialogDatePicker(DeliveryDatePicker.SelectedDate);
+            var eventDatePicker = CreateDialogDatePicker(EventDatePicker.SelectedDate);
 
             AddDialogField(dialog.ContentPanel, "Título", titleTextBox);
             AddDialogField(dialog.ContentPanel, "Estado", statusComboBox);
             AddDialogField(dialog.ContentPanel, "Entrega", deliveryDatePicker);
+            AddDialogField(dialog.ContentPanel, "Fecha del evento", eventDatePicker);
 
             dialog.AcceptButton.Click += (_, _) =>
             {
                 QuoteTitleTextBox.Text = titleTextBox.Text.Trim();
                 QuoteStatusComboBox.SelectedItem = statusComboBox.SelectedItem?.ToString() ?? "Pendiente";
                 DeliveryDatePicker.SelectedDate = deliveryDatePicker.SelectedDate;
+                EventDatePicker.SelectedDate = eventDatePicker.SelectedDate;
                 dialog.Window.DialogResult = true;
             };
 
