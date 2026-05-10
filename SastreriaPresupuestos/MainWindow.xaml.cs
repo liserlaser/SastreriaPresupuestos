@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -88,6 +89,8 @@ namespace SastreriaPresupuestos
         private TextBox ClientNotesTextBox => PresupuestoView.ClientNotesTextBox;
         private TextBlock ClientNotesPlaceholderTextBlock => PresupuestoView.ClientNotesPlaceholderTextBlock;
         private ListBox BudgetQuotesListBox => PresupuestoView.BudgetQuotesListBox;
+        private TextBox WorkSearchTextBox => PresupuestoView.WorkSearchTextBox;
+        private TextBlock WorkSearchPlaceholderTextBlock => PresupuestoView.WorkSearchPlaceholderTextBlock;
         private TextBlock UnsavedChangesTextBlock => PresupuestoView.UnsavedChangesTextBlock;
         private Button NewQuoteButton => PresupuestoView.NewQuoteButton;
         private Button DuplicateQuoteButton => PresupuestoView.DuplicateQuoteButton;
@@ -511,6 +514,7 @@ namespace SastreriaPresupuestos
 
             QuotesListBox.ItemsSource = quotes;
             BudgetQuotesListBox.ItemsSource = quotes;
+            ApplyBudgetQuoteFilter();
             UpdateClientDetailPanel(client, quotes);
 
             Products.Clear();
@@ -2919,6 +2923,7 @@ namespace SastreriaPresupuestos
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
+            WorkSearchTextBox.TextChanged += WorkSearchTextBox_TextChanged;
 
             ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
 
@@ -3475,6 +3480,81 @@ namespace SastreriaPresupuestos
 
             if (GlobalSearchResultsBorder != null)
                 GlobalSearchResultsBorder.Visibility = Visibility.Collapsed;
+        }
+
+
+        private void WorkSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateWorkSearchPlaceholder();
+            ApplyBudgetQuoteFilter();
+        }
+
+        private void UpdateWorkSearchPlaceholder()
+        {
+            if (WorkSearchPlaceholderTextBlock == null || WorkSearchTextBox == null)
+                return;
+
+            WorkSearchPlaceholderTextBlock.Visibility = string.IsNullOrWhiteSpace(WorkSearchTextBox.Text)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void ApplyBudgetQuoteFilter()
+        {
+            if (BudgetQuotesListBox == null || QuotesListBox == null)
+                return;
+
+            var allQuotes = QuotesListBox.ItemsSource as IEnumerable<Models.Quote>;
+            if (allQuotes == null)
+                return;
+
+            var selectedQuote = BudgetQuotesListBox.SelectedItem as Models.Quote;
+            var query = WorkSearchTextBox?.Text?.Trim() ?? string.Empty;
+
+            var filtered = string.IsNullOrWhiteSpace(query)
+                ? allQuotes
+                : allQuotes.Where(q => MatchesWorkSearch(q, query));
+
+            var ordered = filtered
+                .OrderBy(q => q.DeliveryDate ?? DateTime.MaxValue)
+                .ThenBy(q => q.Id)
+                .ToList();
+
+            BudgetQuotesListBox.ItemsSource = ordered;
+
+            if (selectedQuote != null)
+            {
+                var replacement = ordered.FirstOrDefault(q => q.Id == selectedQuote.Id);
+                if (replacement != null)
+                {
+                    BudgetQuotesListBox.SelectedItem = replacement;
+                }
+            }
+        }
+
+        private static bool MatchesWorkSearch(Models.Quote quote, string query)
+        {
+            var normalizedQuery = NormalizeSearchText(query);
+
+            bool Contains(string? value) => NormalizeSearchText(value ?? string.Empty).Contains(normalizedQuery);
+
+            return Contains(quote.Title)
+                || Contains(quote.DisplayTitle)
+                || Contains(quote.Status)
+                || Contains(quote.Client?.Name)
+                || Contains(quote.Client?.Phone)
+                || Contains(quote.Client?.Dni)
+                || Contains(quote.DeliveryDate.ToString("dd/MM/yyyy"));
+        }
+
+        private static string NormalizeSearchText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var normalized = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+            return new string(normalized.Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark).ToArray())
+                .Normalize(NormalizationForm.FormC);
         }
 
         private void BudgetQuickSummaryButton_Click(object sender, RoutedEventArgs e)
