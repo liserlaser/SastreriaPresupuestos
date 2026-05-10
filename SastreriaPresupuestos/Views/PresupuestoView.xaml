@@ -101,28 +101,12 @@
                                    FontWeight="Bold"
                                    Foreground="{StaticResource AccentBrush}"
                                    DockPanel.Dock="Left"/>
-                        <StackPanel Orientation="Vertical"
-                                    HorizontalAlignment="Right"
-                                    DockPanel.Dock="Right">
-                            <Button x:Name="SaveClientButton"
-                                    Content="Editar"
-                                    Width="86"
-                                    Height="30"
-                                    Margin="0,0,0,6"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    ToolTip="Editar los datos del cliente"/>
-                            <Button x:Name="ClientSheetButton"
-                                    Content="Ficha"
-                                    Width="86"
-                                    Height="30"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    ToolTip="Generar la ficha interna del cliente"/>
-                        </StackPanel>
+                        
                     </DockPanel>
 
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.65*"/>
+                            <ColumnDefinition Width="1.4*"/>
                             <ColumnDefinition Width="1*"/>
                         </Grid.ColumnDefinitions>
 
@@ -131,13 +115,33 @@
                             <TextBox x:Name="ClientNameTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1">
+                        <StackPanel Grid.Column="1" Margin="0,0,0,0">
                             <TextBlock Text="Teléfono" Style="{StaticResource ContextLabelTextStyle}"/>
                             <TextBox x:Name="PhoneTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
 
                         <!-- El DNI se mantiene oculto para la lógica de ficha/PDF, pero ya no se muestra en la Context Bar. -->
                         <TextBox x:Name="DniTextBox" Visibility="Collapsed"/>
+                        
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Vertical"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    DockPanel.Dock="Right">
+                            <Button x:Name="SaveClientButton"
+                                    Content="Editar"
+                                    Width="70"
+                                    Height="30"
+                                    Margin="0,0,0,6"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    ToolTip="Editar los datos del cliente"/>
+                            <Button x:Name="ClientSheetButton"
+                                    Content="Ficha"
+                                    Width="70"
+                                    Height="30"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    ToolTip="Generar la ficha interna del cliente"/>
+                        </StackPanel>
                     </Grid>
                 </Grid>
 
