@@ -73,7 +73,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- CONTEXT BAR CLIENTE + TRABAJO -->
+        <!-- CONTEXT BAR CLIENTE | TRABAJO -->
         <Border Grid.Row="0"
                 Background="{StaticResource CardBackgroundBrush}"
                 CornerRadius="18"
@@ -84,12 +84,12 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.02*"/>
-                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="1"/>
                     <ColumnDefinition Width="1.28*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Cliente -->
-                <Grid Grid.Column="0">
+                <Grid Grid.Column="0" Margin="0,0,18,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -105,13 +105,13 @@
                                     HorizontalAlignment="Right"
                                     DockPanel.Dock="Right">
                             <Button x:Name="SaveClientButton"
-                                    Content="Editar cliente"
-                                    Width="112"
+                                    Content="Editar"
+                                    Width="78"
                                     Height="32"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     ToolTip="Guardar o actualizar los datos del cliente"/>
-                            <Button Content="Ficha cliente"
-                                    Width="112"
+                            <Button Content="Ficha"
+                                    Width="78"
                                     Height="32"
                                     Margin="8,0,0,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
@@ -146,10 +146,11 @@
                 <Border Grid.Column="1"
                         Width="1"
                         Background="{StaticResource BorderSoftBrush}"
-                        Margin="8,0"/>
+                        Margin="0,2"
+                        Opacity="0.95"/>
 
                 <!-- Trabajo -->
-                <Grid Grid.Column="2">
+                <Grid Grid.Column="2" Margin="18,0,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -171,15 +172,15 @@
                                        Foreground="{StaticResource AccentBrush}"
                                        Margin="0,0,12,0"
                                        Visibility="Collapsed"/>
-                            <Button Content="Editar trabajo"
-                                    Width="112"
+                            <Button Content="Editar"
+                                    Width="78"
                                     Height="32"
                                     Margin="0,0,8,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     ToolTip="La edición en pop-up se conectará en la siguiente iteración"/>
                             <Button x:Name="SaveButton"
                                     Content="Guardar"
-                                    Width="92"
+                                    Width="86"
                                     Height="32"
                                     Style="{StaticResource PrimaryActionButtonStyle}"/>
                         </StackPanel>
@@ -251,7 +252,7 @@
                         <TextBlock Text="Trabajos"
                                    FontSize="22"
                                    FontWeight="Bold"/>
-                        <TextBlock Text="Ordenados por fecha de entrega"
+                        <TextBlock Text="Selecciona uno para cargar cliente, trabajo y documentos"
                                    FontSize="13"
                                    Foreground="{StaticResource MutedTextBrush}"
                                    Margin="0,2,0,0"/>
