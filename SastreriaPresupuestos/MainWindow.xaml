@@ -847,6 +847,30 @@
                     </Border>
 
                     <Button
+                        x:Name="ShellQuickProductsButton"
+                        Content="Productos"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,8,8,0"
+                        ToolTip="Abrir productos del trabajo activo"
+                        Click="ShellQuickProductsButton_Click"/>
+
+                    <Button
+                        x:Name="ShellQuickExportPdfButton"
+                        Content="PDF"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,8,8,0"
+                        ToolTip="Generar PDF del trabajo activo"
+                        Click="ShellQuickExportPdfButton_Click"/>
+
+                    <Button
+                        x:Name="ShellQuickDeliveredButton"
+                        Content="Entregado"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,8,8,0"
+                        ToolTip="Marcar el trabajo activo como entregado"
+                        Click="ShellQuickDeliveredButton_Click"/>
+
+                    <Button
                         x:Name="SettingsNavButton"
                         Content="⚙"
                         Tag="5"

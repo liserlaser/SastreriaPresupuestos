@@ -3013,6 +3013,24 @@ namespace SastreriaPresupuestos
             NavigateToSection(4);
         }
 
+        private void ShellQuickProductsButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateContextBreadcrumb("Trabajos", TabProductos);
+            NavigateToSection(TabProductos);
+        }
+
+        private void ShellQuickExportPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportPdfButton_Click(sender, e);
+        }
+
+        private void ShellQuickDeliveredButton_Click(object sender, RoutedEventArgs e)
+        {
+            QuoteStatusComboBox.SelectedItem = "Entregado";
+            MarkAsChanged();
+            UpdateActiveContext();
+        }
+
 
         private void ClientSheetButton_Click(object sender, RoutedEventArgs e)
         {
@@ -4049,6 +4067,10 @@ namespace SastreriaPresupuestos
             BudgetQuickHistoryButton.IsEnabled = hasSavedClient;
             BudgetQuickDocumentsButton.IsEnabled = hasSavedClient;
             BudgetQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+
+            ShellQuickProductsButton.IsEnabled = hasSavedClient;
+            ShellQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+            ShellQuickDeliveredButton.IsEnabled = hasSavedClient;
 
             SaveButton.IsEnabled = hasSavedClient;
         }
