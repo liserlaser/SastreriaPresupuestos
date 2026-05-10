@@ -158,6 +158,7 @@ namespace SastreriaPresupuestos
         private string? ShellBreadcrumbOverride = null;
         private int? PendingNavigationTargetTab = null;
         private int? PreviousNavigationTab = null;
+        private bool NavigateToProductsAfterJobEdit = false;
 
         private const int TabSemana = 0;
         private const int TabClientes = 1;
@@ -832,6 +833,7 @@ namespace SastreriaPresupuestos
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
+                NavigateToProductsAfterJobEdit = true;
                 EditJobButton_Click(sender, e);
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
@@ -2831,6 +2833,22 @@ namespace SastreriaPresupuestos
                 UpdateActiveContext();
                 UpdateSecondaryPlaceholders();
                 UpdateWorkflowState();
+
+                if (NavigateToProductsAfterJobEdit)
+                {
+                    NavigateToProductsAfterJobEdit = false;
+                    UpdateContextBreadcrumb("Trabajos", TabProductos);
+                    NavigateToSection(TabProductos);
+
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        ProductsDataGrid.Focus();
+                    }), System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }
+            else
+            {
+                NavigateToProductsAfterJobEdit = false;
             }
         }
 
