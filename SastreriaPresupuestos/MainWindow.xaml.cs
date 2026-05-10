@@ -2105,19 +2105,6 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(DniTextBox.Text))
-            {
-                MessageBox.Show(
-                    "Para generar la ficha interna, introduce el DNI del cliente.",
-                    "Falta DNI",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                GoToTab(TabPresupuesto);
-                DniTextBox.Focus();
-                return;
-            }
-
             var saveFileDialog = new SaveFileDialog
             {
                 Filter = "PDF (*.pdf)|*.pdf",

@@ -160,11 +160,7 @@ namespace SastreriaPresupuestos.Services
                                 text.Span(sheet.ClientName);
                             });
 
-                            left.Item().Text(text =>
-                            {
-                                text.Span("DNI: ").Bold();
-                                text.Span(sheet.ClientDni);
-                            });
+                            left.Item().Element(container => ComposeDniField(container, sheet.ClientDni));
                         });
 
                         row.RelativeItem().Column(right =>
@@ -207,11 +203,55 @@ namespace SastreriaPresupuestos.Services
                         text.Span(sheet.DisplayOrderTitle);
                     });
 
-                    column.Item().Text(text =>
-                    {
-                        text.Span("A cuenta: ").Bold();
-                        text.Span($"{sheet.Deposit:N2} €");
-                    });
+                    column.Item()
+                        .Element(container => ComposeDepositHighlight(container, sheet.Deposit));
+                });
+        }
+
+        private static void ComposeDniField(IContainer container, string dni)
+        {
+            container.Row(row =>
+            {
+                row.AutoItem()
+                    .Text("DNI: ")
+                    .Bold();
+
+                if (!string.IsNullOrWhiteSpace(dni))
+                {
+                    row.RelativeItem()
+                        .Text(dni.Trim());
+
+                    return;
+                }
+
+                row.RelativeItem()
+                    .PaddingTop(9)
+                    .LineHorizontal(1)
+                    .LineColor(MutedColor);
+            });
+        }
+
+        private static void ComposeDepositHighlight(IContainer container, decimal deposit)
+        {
+            container
+                .Background(SoftBackground)
+                .Border(1.25f)
+                .BorderColor(AccentColor)
+                .PaddingVertical(10)
+                .PaddingHorizontal(12)
+                .Row(row =>
+                {
+                    row.RelativeItem()
+                        .Text("SEÑAL / A CUENTA")
+                        .FontSize(10)
+                        .Bold()
+                        .FontColor(MutedColor);
+
+                    row.AutoItem()
+                        .Text($"{deposit:N2} €")
+                        .FontSize(18)
+                        .Bold()
+                        .FontColor(PrimaryColor);
                 });
         }
 
