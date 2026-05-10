@@ -1581,6 +1581,45 @@ namespace SastreriaPresupuestos
             FocusSelectedQuote();
         }
 
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != ModifierKeys.Control)
+                return;
+
+            switch (e.Key)
+            {
+                case Key.S:
+                    e.Handled = true;
+                    SaveCurrentWorkspaceFromShortcut();
+                    break;
+
+                case Key.P:
+                    e.Handled = true;
+                    ExportPdfButton_Click(sender, e);
+                    break;
+
+                case Key.F:
+                    e.Handled = true;
+                    FocusGlobalSearchFromShortcut();
+                    break;
+            }
+        }
+
+        private void SaveCurrentWorkspaceFromShortcut()
+        {
+            if (CurrentSaveState == WorkspaceSaveState.Saving)
+                return;
+
+            AutoSaveTimer.Stop();
+            SaveButton_Click(this, new RoutedEventArgs());
+        }
+
+        private void FocusGlobalSearchFromShortcut()
+        {
+            GlobalSearchTextBox.Focus();
+            GlobalSearchTextBox.SelectAll();
+        }
+
         private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             if (!ConfirmDiscardChanges())
