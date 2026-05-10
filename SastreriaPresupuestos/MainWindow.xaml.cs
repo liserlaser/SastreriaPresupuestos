@@ -184,6 +184,7 @@ namespace SastreriaPresupuestos
         //private bool MarkAsSaved();
         private bool HasUnsavedChanges = false;
         private WorkspaceSaveState CurrentSaveState = WorkspaceSaveState.Saved;
+        private DateTime? LastSavedAt = null;
         private bool IsLoadingData = false;
         private bool IsConfirmingDiscard = false;
         private bool IsAutoSaving = false;
@@ -1612,6 +1613,7 @@ namespace SastreriaPresupuestos
         {
             AutoSaveTimer.Stop();
             HasUnsavedChanges = false;
+            LastSavedAt = DateTime.Now;
 
             SetSaveWorkflowState(WorkspaceSaveState.Saved);
         }
@@ -1664,7 +1666,7 @@ namespace SastreriaPresupuestos
                     break;
 
                 default:
-                    text = "Guardado";
+                    text = GetSavedStateText();
                     dotBrush = new SolidColorBrush(MediaColor.FromRgb(109, 116, 104));
                     foregroundBrush = new SolidColorBrush(MediaColor.FromRgb(109, 116, 104));
                     backgroundBrush = new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
@@ -1675,6 +1677,7 @@ namespace SastreriaPresupuestos
             ShellSaveStateTextBlock.Foreground = foregroundBrush;
             ShellSaveStateDot.Fill = dotBrush;
             ShellSaveStateBadge.Background = backgroundBrush;
+            ShellSaveStateBadge.ToolTip = GetSaveStateTooltip();
 
             if (ShellRetrySaveButton != null)
             {
@@ -1682,6 +1685,35 @@ namespace SastreriaPresupuestos
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             }
+        }
+
+
+        private string GetSavedStateText()
+        {
+            if (LastSavedAt == null)
+                return "Guardado";
+
+            var elapsed = DateTime.Now - LastSavedAt.Value;
+
+            if (elapsed.TotalSeconds < 45)
+                return "Guardado ahora";
+
+            if (elapsed.TotalMinutes < 60)
+                return $"Guardado hace {(int)Math.Max(1, elapsed.TotalMinutes)} min";
+
+            return $"Guardado {LastSavedAt.Value:HH:mm}";
+        }
+
+        private string GetSaveStateTooltip()
+        {
+            return CurrentSaveState switch
+            {
+                WorkspaceSaveState.SaveFailed => "No se ha podido guardar automáticamente. Revisa los datos y pulsa Reintentar.",
+                WorkspaceSaveState.Saving => "Guardando los cambios del trabajo activo…",
+                WorkspaceSaveState.Dirty => "Hay cambios pendientes de guardar.",
+                _ when LastSavedAt != null => $"Último guardado: {LastSavedAt.Value:dd/MM/yyyy HH:mm:ss}",
+                _ => "Estado de guardado del trabajo activo"
+            };
         }
 
         private void UpdateWindowTitle()
