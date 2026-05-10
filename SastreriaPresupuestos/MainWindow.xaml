@@ -609,6 +609,7 @@
 
                     <Border
                         x:Name="ActiveWorkspaceBorder"
+                        Visibility="Collapsed"
                         Background="White"
                         BorderBrush="{StaticResource BorderSoftBrush}"
                         BorderThickness="1"
@@ -746,7 +747,7 @@
                     </Border>
 
                     <Button x:Name="DashboardNavButton" Content="⌂  Inicio" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="ClientsNavButton" Content="👤  Clientes" Tag="1" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="ClientsNavButton" Content="👤  Clientes" Tag="1" Visibility="Collapsed" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                     <Button x:Name="QuotesNavButton" Content="📜  Trabajos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
                 </StackPanel>
 

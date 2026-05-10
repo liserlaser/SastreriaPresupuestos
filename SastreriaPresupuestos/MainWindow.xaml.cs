@@ -2809,7 +2809,9 @@ namespace SastreriaPresupuestos
 
             ShellBrandTextBlock.Visibility = compactVisibility;
             ShellSearchPanel.Visibility = compactVisibility;
-            ActiveWorkspaceBorder.Visibility = compactVisibility;
+            // 13A: the Context Bar in the main workspace is now the single source of active client/job context.
+            // Keep the old sidebar card loaded for existing bindings/code-behind, but do not show it.
+            ActiveWorkspaceBorder.Visibility = Visibility.Collapsed;
             ShellFooterTextBlock.Visibility = compactVisibility;
 
             ShellLogoImage.Width = IsSidebarCollapsed ? 40 : 60;
@@ -2819,6 +2821,7 @@ namespace SastreriaPresupuestos
             // Previous MDL2-only glyphs rendered as square boxes on some machines when the sidebar collapsed.
             DashboardNavButton.Content = IsSidebarCollapsed ? "⌂" : "⌂  Inicio";
             ClientsNavButton.Content = IsSidebarCollapsed ? "👤" : "👤  Clientes";
+            ClientsNavButton.Visibility = Visibility.Collapsed;
             QuotesNavButton.Content = IsSidebarCollapsed ? "📜" : "📜  Trabajos";
             SettingsNavButton.Content = "⚙";
         }
