@@ -784,18 +784,18 @@ namespace SastreriaPresupuestos
 
         private void NewQuoteButton_Click(object sender, RoutedEventArgs e)
         {
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            GoToTab(TabPresupuesto);
+
             if (CurrentClientId == null)
             {
-                MessageBox.Show(
-                    "Primero debes guardar o seleccionar un cliente.",
-                    "Nuevo trabajo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                if (!ShowClientEditDialog())
+                    return;
 
-                GoToTab(TabProductos);
-                ClientNameTextBox.Focus();
+                SaveClientFromContextFields();
 
-                return;
+                if (CurrentClientId == null)
+                    return;
             }
 
             if (!ConfirmDiscardChanges())
@@ -836,8 +836,12 @@ namespace SastreriaPresupuestos
             UpdateSaveButtonText();
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
+            UpdateWorkflowState();
 
-            GoToTab(TabProductos);
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EditJobButton_Click(sender, e);
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void ProductsDataGrid_CellEditEnding(object? sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
@@ -3547,7 +3551,7 @@ namespace SastreriaPresupuestos
             QuoteNotesTextBox.IsEnabled = hasSavedClient;
             ClientNotesTextBox.IsEnabled = hasSavedClient;
 
-            NewQuoteButton.IsEnabled = hasSavedClient;
+            NewQuoteButton.IsEnabled = true;
             DuplicateQuoteButton.IsEnabled = hasSavedClient;
 
             ProductsDataGrid.IsEnabled = hasSavedClient;
