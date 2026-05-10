@@ -846,6 +846,15 @@
                     </Border>
 
                     <Button
+                        x:Name="ShellRetrySaveButton"
+                        Content="Reintentar"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,8,8,0"
+                        Visibility="Collapsed"
+                        ToolTip="Reintentar el guardado automático del trabajo activo"
+                        Click="ShellRetrySaveButton_Click"/>
+
+                    <Button
                         x:Name="ShellQuickProductsButton"
                         Content="Productos"
                         Style="{StaticResource SecondaryButtonStyle}"

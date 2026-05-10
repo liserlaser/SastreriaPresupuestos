@@ -1675,6 +1675,13 @@ namespace SastreriaPresupuestos
             ShellSaveStateTextBlock.Foreground = foregroundBrush;
             ShellSaveStateDot.Fill = dotBrush;
             ShellSaveStateBadge.Background = backgroundBrush;
+
+            if (ShellRetrySaveButton != null)
+            {
+                ShellRetrySaveButton.Visibility = CurrentSaveState == WorkspaceSaveState.SaveFailed
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
         }
 
         private void UpdateWindowTitle()
@@ -3151,6 +3158,17 @@ namespace SastreriaPresupuestos
 
             UpdateContextBreadcrumb("Trabajos", TabDocumentos);
             NavigateToSection(TabDocumentos);
+        }
+
+        private void ShellRetrySaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!CanAutoSaveCurrentWorkspace())
+            {
+                SaveButton_Click(this, new RoutedEventArgs());
+                return;
+            }
+
+            TryAutoSaveCurrentWorkspace();
         }
 
         private void ShellQuickProductsButton_Click(object sender, RoutedEventArgs e)
