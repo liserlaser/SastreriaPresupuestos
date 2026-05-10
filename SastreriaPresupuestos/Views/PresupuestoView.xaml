@@ -77,15 +77,15 @@
         <Border Grid.Row="0"
                 Background="{StaticResource CardBackgroundBrush}"
                 CornerRadius="18"
-                Padding="18"
+                Padding="14"
                 BorderBrush="{StaticResource BorderSoftBrush}"
                 BorderThickness="1"
-                Margin="0,0,0,16">
+                Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.05*"/>
-                    <ColumnDefinition Width="18"/>
-                    <ColumnDefinition Width="1.25*"/>
+                    <ColumnDefinition Width="1.02*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="1.28*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Cliente -->
@@ -105,13 +105,13 @@
                                     HorizontalAlignment="Right"
                                     DockPanel.Dock="Right">
                             <Button x:Name="SaveClientButton"
-                                    Content="Editar"
-                                    Width="86"
+                                    Content="Editar cliente"
+                                    Width="112"
                                     Height="32"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     ToolTip="Guardar o actualizar los datos del cliente"/>
-                            <Button Content="Ficha"
-                                    Width="82"
+                            <Button Content="Ficha cliente"
+                                    Width="112"
                                     Height="32"
                                     Margin="8,0,0,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
@@ -171,9 +171,15 @@
                                        Foreground="{StaticResource AccentBrush}"
                                        Margin="0,0,12,0"
                                        Visibility="Collapsed"/>
+                            <Button Content="Editar trabajo"
+                                    Width="112"
+                                    Height="32"
+                                    Margin="0,0,8,0"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    ToolTip="La edición en pop-up se conectará en la siguiente iteración"/>
                             <Button x:Name="SaveButton"
                                     Content="Guardar"
-                                    Width="98"
+                                    Width="92"
                                     Height="32"
                                     Style="{StaticResource PrimaryActionButtonStyle}"/>
                         </StackPanel>
@@ -222,7 +228,7 @@
         <!-- WORKSPACE CONTEXTUAL -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="380" MinWidth="320"/>
+                <ColumnDefinition Width="430" MinWidth="360"/>
                 <ColumnDefinition Width="18"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -267,54 +273,74 @@
                                         BorderBrush="{Binding CardBorderBrush}"
                                         BorderThickness="{Binding CardBorderThickness}"
                                         CornerRadius="14"
-                                        Padding="12"
+                                        Padding="12,10"
                                         ToolTip="Doble clic para abrir el trabajo">
                                     <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
 
-                                        <TextBlock Grid.Row="0"
-                                                   Grid.Column="0"
-                                                   Text="{Binding DisplayTitle}"
-                                                   FontSize="15"
-                                                   FontWeight="Bold"
-                                                   TextTrimming="CharacterEllipsis"/>
-
-                                        <Border Grid.Row="0"
-                                                Grid.Column="1"
-                                                Background="{Binding StatusBackground}"
-                                                CornerRadius="8"
-                                                Padding="8,3"
-                                                Margin="8,0,0,0">
-                                            <TextBlock Text="{Binding StatusLabelText}"
-                                                       FontSize="10"
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="0,0,12,0">
+                                            <TextBlock Text="{Binding Client.Name, TargetNullValue=Cliente sin asignar}"
+                                                       FontSize="14"
                                                        FontWeight="Bold"
-                                                       Foreground="{Binding StatusForeground}"/>
-                                        </Border>
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding DisplayTitle}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
 
-                                        <TextBlock Grid.Row="1"
-                                                   Grid.Column="0"
-                                                   Grid.ColumnSpan="2"
-                                                   Text="{Binding DeliveryDate, StringFormat=Entrega · {0:dd/MM/yyyy}}"
-                                                   FontSize="12"
-                                                   Foreground="{StaticResource MutedTextBrush}"
-                                                   Margin="0,7,0,0"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <StackPanel Margin="0,0,14,0">
+                                                <TextBlock Text="Entrega"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding DeliveryDate, StringFormat={}{0:dd/MM/yyyy}}"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           HorizontalAlignment="Right"/>
+                                            </StackPanel>
 
-                                        <TextBlock Grid.Row="2"
-                                                   Grid.Column="0"
-                                                   Grid.ColumnSpan="2"
-                                                   Text="{Binding Total, StringFormat=Total · {0:N2} €, ConverterCulture=es-ES}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource PrimaryBrush}"
-                                                   Margin="0,7,0,0"/>
+                                            <StackPanel Margin="0,0,14,0">
+                                                <TextBlock Text="Total"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                                           FontSize="13"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                           HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Deposit, StringFormat=A cuenta · {0:N2} €, ConverterCulture=es-ES}"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           HorizontalAlignment="Right"
+                                                           Margin="0,2,0,0"/>
+                                            </StackPanel>
+
+                                            <Border Background="{Binding StatusBackground}"
+                                                    CornerRadius="8"
+                                                    Padding="8,4"
+                                                    MinWidth="82"
+                                                    Height="26"
+                                                    VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding StatusLabelText}"
+                                                           FontSize="10"
+                                                           FontWeight="Bold"
+                                                           Foreground="{Binding StatusForeground}"
+                                                           HorizontalAlignment="Center"/>
+                                            </Border>
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
