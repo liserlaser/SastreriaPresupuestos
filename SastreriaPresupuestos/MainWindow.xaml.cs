@@ -9,6 +9,7 @@ using SastreriaPresupuestos.ViewModels;
 using SastreriaPresupuestos.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
@@ -112,6 +113,9 @@ namespace SastreriaPresupuestos
         private TextBlock TotalTextBlock => ProductosView.TotalTextBlock;
         private Border DocumentsEmptyHintBorder => DocumentosView.DocumentsEmptyHintBorder;
         private TextBlock DocumentsEmptyHintTextBlock => DocumentosView.DocumentsEmptyHintTextBlock;
+        private Border DocumentsLastPdfStatusBorder => DocumentosView.DocumentsLastPdfStatusBorder;
+        private TextBlock DocumentsLastPdfStatusTextBlock => DocumentosView.DocumentsLastPdfStatusTextBlock;
+        private Button OpenLastPdfButton => DocumentosView.OpenLastPdfButton;
         private Button ExportPdfButton => DocumentosView.ExportPdfButton;
         private Button ExportClientSheetButton => DocumentosView.ExportClientSheetButton;
         private Button ExportAllQuotesPdfButton => DocumentosView.ExportAllQuotesPdfButton;
@@ -1723,8 +1727,13 @@ namespace SastreriaPresupuestos
             {
                 PdfExportService.ExportQuoteToPdf(exportQuote, dialog.FileName);
 
+                LastGeneratedPdfPath = dialog.FileName;
+                UpdatePdfWorkflowStatus(dialog.FileName);
+                UpdateContextBreadcrumb("Trabajos", TabDocumentos);
+                NavigateToSection(TabDocumentos);
+
                 MessageBox.Show(
-                    "PDF generado correctamente.",
+                    "PDF generado correctamente y disponible en la zona PDF.",
                     "Exportar PDF",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -1734,6 +1743,48 @@ namespace SastreriaPresupuestos
                 MessageBox.Show(
                     $"No se pudo generar el PDF.\n\n{ex.Message}",
                     "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+
+        private void UpdatePdfWorkflowStatus(string filePath)
+        {
+            if (DocumentsLastPdfStatusBorder == null || DocumentsLastPdfStatusTextBlock == null)
+                return;
+
+            var fileName = Path.GetFileName(filePath);
+            DocumentsLastPdfStatusTextBlock.Text = $"{fileName} · generado ahora. Puedes abrirlo directamente desde aquí.";
+            DocumentsLastPdfStatusBorder.Visibility = Visibility.Visible;
+            OpenLastPdfButton.IsEnabled = File.Exists(filePath);
+        }
+
+        private void OpenLastPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(LastGeneratedPdfPath) || !File.Exists(LastGeneratedPdfPath))
+            {
+                MessageBox.Show(
+                    "No se encuentra el último PDF generado en esta sesión.",
+                    "Abrir PDF",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = LastGeneratedPdfPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo abrir el PDF.\n\n{ex.Message}",
+                    "Abrir PDF",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -3182,6 +3233,7 @@ namespace SastreriaPresupuestos
             PricesConfigButton.Click += PricesConfigButton_Click;
             BackupButton.Click += BackupButton_Click;
             ExportPdfButton.Click += ExportPdfButton_Click;
+            OpenLastPdfButton.Click += OpenLastPdfButton_Click;
             ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
             PreviousCalendarButton.Click += PreviousCalendarButton_Click;
             TodayCalendarButton.Click += TodayCalendarButton_Click;
@@ -4112,6 +4164,7 @@ namespace SastreriaPresupuestos
             SaveProductsButton.IsEnabled = hasSavedClient;
 
             ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+            OpenLastPdfButton.IsEnabled = !string.IsNullOrWhiteSpace(LastGeneratedPdfPath) && File.Exists(LastGeneratedPdfPath);
             ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
             BudgetQuickSummaryButton.IsEnabled = hasSavedClient;
             BudgetQuickProductsButton.IsEnabled = hasSavedClient;

@@ -11,6 +11,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -56,7 +57,45 @@
                                TextWrapping="Wrap"/>
                 </Border>
 
-                <Grid Grid.Row="2">
+                <Border x:Name="DocumentsLastPdfStatusBorder"
+                        Grid.Row="2"
+                        Background="#F8FAF6"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="13"
+                        Margin="0,0,0,16"
+                        Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                            <TextBlock Text="Último PDF generado"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentBrush}"/>
+                            <TextBlock x:Name="DocumentsLastPdfStatusTextBlock"
+                                       Text="Todavía no se ha generado ningún PDF en esta sesión."
+                                       FontSize="13"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <Button x:Name="OpenLastPdfButton"
+                                Grid.Column="1"
+                                Content="Abrir PDF"
+                                Height="34"
+                                MinWidth="104"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource SecondaryButtonStyle}"/>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="12"/>
