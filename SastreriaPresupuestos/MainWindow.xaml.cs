@@ -67,6 +67,8 @@ namespace SastreriaPresupuestos
         private Button BudgetQuickHistoryButton => PresupuestoView.BudgetQuickHistoryButton;
         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
         private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
+        private ScrollViewer WorkspaceScrollViewer => PresupuestoView.WorkspaceScrollViewer;
+        private Border ActivityTimelineBorder => PresupuestoView.ActivityTimelineBorder;
         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
@@ -3483,7 +3485,14 @@ namespace SastreriaPresupuestos
 
         private void BudgetQuickHistoryButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("El historial de actividad se añadirá en una próxima fase.", "Historial", MessageBoxButton.OK, MessageBoxImage.Information);
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            NavigateToSection(TabPresupuesto);
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ActivityTimelineBorder.BringIntoView();
+                WorkspaceScrollViewer.ScrollToVerticalOffset(ActivityTimelineBorder.TranslatePoint(new Point(0, 0), WorkspaceScrollViewer).Y + WorkspaceScrollViewer.VerticalOffset - 16);
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void BudgetQuickExportPdfButton_Click(object sender, RoutedEventArgs e)

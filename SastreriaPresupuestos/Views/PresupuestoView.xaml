@@ -138,7 +138,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="DNIx" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <TextBlock Text="DNI" Style="{StaticResource ContextLabelTextStyle}"/>
                             <TextBox x:Name="DniTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
                     </Grid>
@@ -395,7 +395,8 @@
             </Border>
 
             <!-- Detalle del trabajo -->
-            <ScrollViewer Grid.Column="2"
+            <ScrollViewer x:Name="WorkspaceScrollViewer"
+                          Grid.Column="2"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled">
                 <Grid>
@@ -467,7 +468,7 @@
                                     <Button x:Name="BudgetQuickHistoryButton"
                                             Content="Historial"
                                             Height="34"
-                                            ToolTip="Historial de actividad, preparado para una próxima fase"
+                                            ToolTip="Ir a Actividad reciente"
                                             Style="{StaticResource SecondaryButtonStyle}"/>
                                 </StackPanel>
 
@@ -554,7 +555,8 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="2"
+                    <Border x:Name="ActivityTimelineBorder"
+                            Grid.Row="2"
                             Background="{StaticResource CardBackgroundBrush}"
                             CornerRadius="18"
                             Padding="18"
