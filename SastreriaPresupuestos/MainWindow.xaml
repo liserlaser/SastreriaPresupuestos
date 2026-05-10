@@ -536,7 +536,7 @@
                             Style="{StaticResource RoundedSearchTextBoxStyle}"
                             Height="36"
                             FontSize="14"
-                            ToolTip="Buscar cliente, teléfono, DNI, fecha, estado o título"
+                            ToolTip="Buscar cliente, teléfono, DNI, fecha, estado o título (Ctrl+F)"
                             TextChanged="GlobalSearchTextBox_TextChanged"
                             KeyDown="GlobalSearchTextBox_KeyDown"/>
 
@@ -757,6 +757,43 @@
                     Margin="0,18,0,0"
                     HorizontalAlignment="Center">
 
+                    <Border
+                        x:Name="ShellShortcutHintsBorder"
+                        Background="#F7F9F5"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="8,7"
+                        Margin="0,0,0,12"
+                        ToolTip="Atajos de workflow disponibles">
+                        <StackPanel>
+                            <TextBlock
+                                Text="Atajos"
+                                FontSize="10"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="Ctrl+S guardar"
+                                FontSize="10"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="Ctrl+P PDF"
+                                FontSize="10"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,2,0,0"
+                                HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="Ctrl+F buscar"
+                                FontSize="10"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                Margin="0,2,0,0"
+                                HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
                     <Image
                         x:Name="ShellLogoImage"
                         Source="pack://application:,,,/Resources/logo_vector_notxt.png"
@@ -860,7 +897,7 @@
                         Content="Productos"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Margin="0,8,8,0"
-                        ToolTip="Abrir productos del trabajo activo"
+                        ToolTip="Abrir productos del trabajo activo (Ctrl+2)"
                         Click="ShellQuickProductsButton_Click"/>
 
                     <Button
@@ -868,7 +905,7 @@
                         Content="PDF"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Margin="0,8,8,0"
-                        ToolTip="Generar PDF del trabajo activo"
+                        ToolTip="Generar PDF del trabajo activo (Ctrl+P)"
                         Click="ShellQuickExportPdfButton_Click"/>
 
                     <Button
