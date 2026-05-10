@@ -38,33 +38,39 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <DockPanel Margin="0,0,0,20">
+                                <Grid Margin="0,0,0,18">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                    <StackPanel DockPanel.Dock="Left">
+                                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
                                         <TextBlock
-											Text="PRODUCTOS"
-											FontSize="22"
-											FontWeight="Bold"/>
+											Text="PRODUCTOS DEL TRABAJO"
+											FontSize="12"
+											FontWeight="Bold"
+                                            Foreground="{StaticResource AccentBrush}"/>
 
                                         <TextBlock
-											Text="Añade prendas, complementos y conceptos personalizados"
-											FontSize="13"
-											Foreground="{StaticResource MutedTextBrush}"
-											Margin="0,2,0,0"/>
+											Text="Prendas, complementos y conceptos del presupuesto"
+											FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource PrimaryBrush}"
+											Margin="0,3,0,0"/>
 
                                         <Border
 											x:Name="ProductsEmptyHintBorder"
 											Background="#F8FAF6"
 											BorderBrush="{StaticResource BorderSoftBrush}"
 											BorderThickness="1"
-											CornerRadius="10"
+											CornerRadius="12"
 											Padding="12"
 											Margin="0,12,0,0"
 											Visibility="Collapsed">
 
                                             <TextBlock
 												x:Name="ProductsEmptyHintTextBlock"
-												Text="Selecciona o crea un cliente antes de añadir productos."
+												Text="Crea o selecciona un trabajo antes de añadir productos."
 												FontSize="13"
 												Foreground="{StaticResource MutedTextBrush}"
 												TextWrapping="Wrap"/>
@@ -73,9 +79,10 @@
                                     </StackPanel>
 
                                     <StackPanel
-										DockPanel.Dock="Right"
+										Grid.Column="1"
 										Orientation="Horizontal"
-										HorizontalAlignment="Right">
+										HorizontalAlignment="Right"
+                                        VerticalAlignment="Top">
 
                                         <TextBlock
 											x:Name="ProductsUnsavedChangesTextBlock"
@@ -87,24 +94,24 @@
 											Visibility="Collapsed"/>
 
                                         <Button
-											Content="+ Añadir Producto"
-											Width="180"
-											Height="40"
-											Margin="0,0,10,0"
+											Content="+ Producto"
+											Width="130"
+											Height="38"
+											Margin="0,0,8,0"
 											x:Name="AddProductButton"
 											Style="{StaticResource PrimaryActionButtonStyle}"/>
 
                                         <Button
 											x:Name="SaveProductsButton"
-											Content="Guardar trabajo"
-											Width="170"
-											Height="40"
-											FontSize="15"
+											Content="Guardar"
+											Width="110"
+											Height="38"
+											FontSize="14"
 											Style="{StaticResource SecondaryButtonStyle}"/>
 
                                     </StackPanel>
 
-                                </DockPanel>
+                                </Grid>
 
                                 <!-- TABLA -->
                                 <DataGrid
@@ -120,7 +127,16 @@
 									IsSynchronizedWithCurrentItem="True"
 									AlternationCount="2"
 									SelectionMode="Single"
-									SelectionUnit="FullRow">
+									SelectionUnit="FullRow"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    GridLinesVisibility="None"
+                                    RowBackground="#FFFDFB"
+                                    AlternatingRowBackground="#FAF6F1"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    VerticalScrollBarVisibility="Auto"
+                                    EnableRowVirtualization="True"
+                                    EnableColumnVirtualization="True">
 
                                     <DataGrid.Columns>
 
@@ -264,7 +280,7 @@
                                     <StackPanel Orientation="Horizontal">
 
                                         <TextBlock
-											Text="TOTAL:"
+											Text="Total"
 											FontSize="22"
 											FontWeight="Bold"
 											Foreground="{StaticResource AccentBrush}"
