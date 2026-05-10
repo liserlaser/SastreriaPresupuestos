@@ -10,614 +10,538 @@
             <sys:String>Rechazado</sys:String>
             <sys:String>Entregado</sys:String>
         </x:Array>
+
+        <Style x:Key="ContextLabelTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="ContextTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FBFCFA"/>
+        </Style>
+
+        <Style x:Key="ContextDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FBFCFA"/>
+        </Style>
+
+        <Style x:Key="JobListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="Transparent"
+                                CornerRadius="14"
+                                Padding="0">
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EEF2EA"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#E7EDE2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
-                    <ScrollViewer
-						VerticalScrollBarVisibility="Auto"
-						HorizontalScrollBarVisibility="Disabled">
 
-                        <Grid Margin="0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <!-- CONTEXT BAR CLIENTE + TRABAJO -->
+        <Border Grid.Row="0"
+                Background="{StaticResource CardBackgroundBrush}"
+                CornerRadius="18"
+                Padding="18"
+                BorderBrush="{StaticResource BorderSoftBrush}"
+                BorderThickness="1"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*"/>
+                    <ColumnDefinition Width="18"/>
+                    <ColumnDefinition Width="1.25*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Cliente -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="CLIENTE"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   DockPanel.Dock="Left"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    DockPanel.Dock="Right">
+                            <Button x:Name="SaveClientButton"
+                                    Content="Editar"
+                                    Width="86"
+                                    Height="32"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    ToolTip="Guardar o actualizar los datos del cliente"/>
+                            <Button Content="Ficha"
+                                    Width="82"
+                                    Height="32"
+                                    Margin="8,0,0,0"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    ToolTip="La generación de ficha se conectará en la siguiente iteración"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.6*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="0.9*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="Nombre" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <TextBox x:Name="ClientNameTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                            <TextBlock Text="Teléfono" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <TextBox x:Name="PhoneTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="DNI" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <TextBox x:Name="DniTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <Border Grid.Column="1"
+                        Width="1"
+                        Background="{StaticResource BorderSoftBrush}"
+                        Margin="8,0"/>
+
+                <!-- Trabajo -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="TRABAJO"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   DockPanel.Dock="Left"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    DockPanel.Dock="Right">
+                            <TextBlock x:Name="UnsavedChangesTextBlock"
+                                       Text="Cambios sin guardar"
+                                       VerticalAlignment="Center"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,12,0"
+                                       Visibility="Collapsed"/>
+                            <Button x:Name="SaveButton"
+                                    Content="Guardar"
+                                    Width="98"
+                                    Height="32"
+                                    Style="{StaticResource PrimaryActionButtonStyle}"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.6*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="Título" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <Grid>
+                                <TextBox x:Name="QuoteTitleTextBox" Style="{StaticResource ContextTextBoxStyle}"/>
+                                <TextBlock x:Name="QuoteTitlePlaceholderTextBlock"
+                                           Text="Ej. Traje novio, chaqué..."
+                                           Foreground="{StaticResource MutedTextBrush}"
+                                           Margin="10,0,0,0"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                            <TextBlock Text="Estado" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <ComboBox x:Name="QuoteStatusComboBox"
+                                      Height="34"
+                                      FontSize="14"
+                                      ItemsSource="{StaticResource QuoteStatusList}"
+                                      SelectedItem="Pendiente"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Entrega" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <DatePicker x:Name="DeliveryDatePicker"
+                                        Style="{StaticResource ContextDatePickerStyle}"
+                                        SelectedDate="{x:Static sys:DateTime.Now}"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- WORKSPACE CONTEXTUAL -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" MinWidth="320"/>
+                <ColumnDefinition Width="18"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Lista de trabajos -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="18"
+                    Padding="16"
+                    BorderBrush="{StaticResource BorderSoftBrush}"
+                    BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                        <TextBlock Text="Trabajos"
+                                   FontSize="22"
+                                   FontWeight="Bold"/>
+                        <TextBlock Text="Ordenados por fecha de entrega"
+                                   FontSize="13"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <ListBox x:Name="BudgetQuotesListBox"
+                             Grid.Row="1"
+                             HorizontalContentAlignment="Stretch"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             SelectionChanged="BudgetQuotesListBox_SelectionChanged"
+                             MouseDoubleClick="BudgetQuotesListBox_MouseDoubleClick"
+                             ItemContainerStyle="{StaticResource JobListBoxItemStyle}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding CardBackground}"
+                                        BorderBrush="{Binding CardBorderBrush}"
+                                        BorderThickness="{Binding CardBorderThickness}"
+                                        CornerRadius="14"
+                                        Padding="12"
+                                        ToolTip="Doble clic para abrir el trabajo">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Row="0"
+                                                   Grid.Column="0"
+                                                   Text="{Binding DisplayTitle}"
+                                                   FontSize="15"
+                                                   FontWeight="Bold"
+                                                   TextTrimming="CharacterEllipsis"/>
+
+                                        <Border Grid.Row="0"
+                                                Grid.Column="1"
+                                                Background="{Binding StatusBackground}"
+                                                CornerRadius="8"
+                                                Padding="8,3"
+                                                Margin="8,0,0,0">
+                                            <TextBlock Text="{Binding StatusLabelText}"
+                                                       FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding StatusForeground}"/>
+                                        </Border>
+
+                                        <TextBlock Grid.Row="1"
+                                                   Grid.Column="0"
+                                                   Grid.ColumnSpan="2"
+                                                   Text="{Binding DeliveryDate, StringFormat=Entrega · {0:dd/MM/yyyy}}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   Margin="0,7,0,0"/>
+
+                                        <TextBlock Grid.Row="2"
+                                                   Grid.Column="0"
+                                                   Grid.ColumnSpan="2"
+                                                   Text="{Binding Total, StringFormat=Total · {0:N2} €, ConverterCulture=es-ES}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PrimaryBrush}"
+                                                   Margin="0,7,0,0"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="2" Margin="0,14,0,0">
+                        <Button x:Name="NewQuoteButton"
+                                Content="＋ Nuevo trabajo"
+                                Height="42"
+                                FontSize="15"
+                                Style="{StaticResource PrimaryActionButtonStyle}"/>
+                        <Button x:Name="DuplicateQuoteButton"
+                                Content="Duplicar trabajo"
+                                Height="38"
+                                FontSize="14"
+                                Margin="0,8,0,0"
+                                Style="{StaticResource SecondaryButtonStyle}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Detalle del trabajo -->
+            <ScrollViewer Grid.Column="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            CornerRadius="18"
+                            Padding="18"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel>
+                                <TextBlock Text="RESUMEN"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock x:Name="BudgetWorkspaceTitleTextBlock"
+                                           Text="Sin trabajo seleccionado"
+                                           FontSize="26"
+                                           FontWeight="Bold"
+                                           Margin="0,4,0,0"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <WrapPanel Margin="0,10,0,0">
+                                    <TextBlock x:Name="BudgetWorkspaceClientTextBlock"
+                                               Text="Cliente: —"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,0,18,0"/>
+                                    <TextBlock x:Name="BudgetWorkspaceStatusTextBlock"
+                                               Text="Estado: —"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,0,18,0"/>
+                                    <TextBlock x:Name="BudgetWorkspaceDeliveryTextBlock"
+                                               Text="Entrega: —"
+                                               FontSize="13"
+                                               Foreground="{StaticResource MutedTextBrush}"
+                                               Margin="0,0,18,0"/>
+                                    <TextBlock x:Name="BudgetWorkspaceTotalTextBlock"
+                                               Text="Total: 0,00 €"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="24,0,0,0">
+                                <Button x:Name="BudgetQuickProductsButton"
+                                        Content="Productos"
+                                        Width="112"
+                                        Height="38"
+                                        Margin="0,0,8,0"
+                                        Style="{StaticResource SecondaryButtonStyle}"/>
+                                <Button x:Name="BudgetQuickDocumentsButton"
+                                        Content="PDF"
+                                        Width="96"
+                                        Height="38"
+                                        Margin="0,0,8,0"
+                                        Style="{StaticResource SecondaryButtonStyle}"/>
+                                <Button x:Name="BudgetQuickExportPdfButton"
+                                        Content="Exportar PDF"
+                                        Width="118"
+                                        Height="38"
+                                        Style="{StaticResource SecondaryButtonStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="PresupuestoEmptyHintBorder"
+                            Grid.Row="0"
+                            Background="#F8FAF6"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="14"
+                            Margin="0,112,0,14"
+                            Visibility="Collapsed">
+                        <TextBlock Text="Selecciona un trabajo o crea uno nuevo para empezar."
+                                   FontSize="14"
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+
+                    <Border Grid.Row="1"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            CornerRadius="18"
+                            Padding="18"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                       Text="IMPORTES Y FECHAS"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,0,12"/>
+
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Fecha evento" Style="{StaticResource ContextLabelTextStyle}"/>
+                                <DatePicker x:Name="EventDatePicker" Style="{StaticResource ContextDatePickerStyle}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
+                                <TextBox x:Name="DepositTextBox"
+                                         Style="{StaticResource ContextTextBoxStyle}"
+                                         Text="0"
+                                         HorizontalContentAlignment="Right"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1" Grid.Column="2">
+                                <TextBlock Text="Pendiente" Style="{StaticResource ContextLabelTextStyle}"/>
+                                <TextBlock x:Name="PendingAmountTextBlock"
+                                           Text="0,00 €"
+                                           Height="34"
+                                           VerticalAlignment="Center"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource PrimaryBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            CornerRadius="18"
+                            Padding="18"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <Border
-                                Grid.Row="0"
-                                Background="{StaticResource CardBackgroundBrush}"
-                                CornerRadius="16"
-                                Padding="18"
-                                BorderBrush="{StaticResource BorderSoftBrush}"
-                                BorderThickness="1"
-                                Margin="0,0,0,14">
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel>
-                                        <TextBlock
-                                            Text="TRABAJO ACTIVO"
-                                            FontSize="12"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource AccentBrush}"/>
-
-                                        <TextBlock
-                                            x:Name="BudgetWorkspaceTitleTextBlock"
-                                            Text="Sin trabajo seleccionado"
-                                            FontSize="24"
-                                            FontWeight="Bold"
-                                            Margin="0,4,0,0"
-                                            TextTrimming="CharacterEllipsis"/>
-
-                                        <WrapPanel Margin="0,10,0,0">
-                                            <TextBlock
-                                                x:Name="BudgetWorkspaceClientTextBlock"
-                                                Text="Cliente: —"
-                                                FontSize="13"
-                                                Foreground="{StaticResource MutedTextBrush}"
-                                                Margin="0,0,18,0"/>
-                                            <TextBlock
-                                                x:Name="BudgetWorkspaceStatusTextBlock"
-                                                Text="Estado: —"
-                                                FontSize="13"
-                                                Foreground="{StaticResource MutedTextBrush}"
-                                                Margin="0,0,18,0"/>
-                                            <TextBlock
-                                                x:Name="BudgetWorkspaceDeliveryTextBlock"
-                                                Text="Entrega: —"
-                                                FontSize="13"
-                                                Foreground="{StaticResource MutedTextBrush}"
-                                                Margin="0,0,18,0"/>
-                                            <TextBlock
-                                                x:Name="BudgetWorkspaceTotalTextBlock"
-                                                Text="Total: 0,00 €"
-                                                FontSize="13"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource PrimaryBrush}"/>
-                                        </WrapPanel>
-                                    </StackPanel>
-
-                                    <StackPanel
-                                        Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        VerticalAlignment="Center"
-                                        Margin="24,0,0,0">
-
-                                        <Button
-                                            x:Name="BudgetQuickProductsButton"
-                                            Content="Productos"
-                                            Width="112"
-                                            Height="38"
-                                            Margin="0,0,8,0"
-                                            Style="{StaticResource SecondaryButtonStyle}"/>
-
-                                        <Button
-                                            x:Name="BudgetQuickDocumentsButton"
-                                            Content="PDF"
-                                            Width="126"
-                                            Height="38"
-                                            Margin="0,0,8,0"
-                                            Style="{StaticResource SecondaryButtonStyle}"/>
-
-                                        <Button
-                                            x:Name="BudgetQuickExportPdfButton"
-                                            Content="Exportar PDF"
-                                            Width="118"
-                                            Height="38"
-                                            Style="{StaticResource SecondaryButtonStyle}"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-
-                            <Border
-								x:Name="PresupuestoEmptyHintBorder"
-								Grid.Row="0"
-								Background="#F8FAF6"
-								BorderBrush="{StaticResource BorderSoftBrush}"
-								BorderThickness="1"
-								CornerRadius="10"
-								Padding="14"
-								Margin="0,112,0,14"
-								Visibility="Collapsed">
-
-                                <TextBlock
-									Text="Selecciona un cliente en la pestaña Clientes o crea uno nuevo para empezar un trabajo."
-									FontSize="14"
-									Foreground="{StaticResource MutedTextBrush}"
-									TextWrapping="Wrap"/>
-
-                            </Border>
-
-                            <!-- DATOS DEL CLIENTE -->
-                            <Border
-								Grid.Row="1"
-								Background="{StaticResource CardBackgroundBrush}"
-								CornerRadius="14"
-								Padding="22"
-								BorderBrush="{StaticResource BorderSoftBrush}"
-								BorderThickness="1"
-								Margin="0,0,0,18">
-
-                                <Grid>
-
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock
-										Grid.Row="0"
-										Grid.Column="0"
-										Grid.ColumnSpan="4"
-										Text="DATOS DEL CLIENTE"
-										FontSize="13"
-										FontWeight="Bold"
-										Foreground="{StaticResource AccentBrush}"
-										Margin="0,0,0,12"/>
-
-                                    <!-- Nombre -->
-                                    <TextBlock
-										Grid.Row="1"
-										Grid.Column="0"
-										Text="Cliente:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <TextBox
-										Grid.Row="1"
-										Grid.Column="1"
-										Margin="10,10,10,10"
-										Height="35"
-										FontSize="16"
-										x:Name="ClientNameTextBox"/>
-
-                                    <!-- Teléfono -->
-                                    <TextBlock
-										Grid.Row="1"
-										Grid.Column="2"
-										Text="Teléfono:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <TextBox
-										Grid.Row="1"
-										Grid.Column="3"
-										Margin="10,10,10,10"
-										Height="35"
-										FontSize="16"
-										x:Name="PhoneTextBox"/>
-
-                                    <!-- DNI -->
-                                    <TextBlock
-										Grid.Row="2"
-										Grid.Column="0"
-										Text="DNI:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <TextBox
-										Grid.Row="2"
-										Grid.Column="1"
-										Margin="10,10,10,10"
-										Height="35"
-										FontSize="16"
-										x:Name="DniTextBox"/>
-
-                                    <Button
-										x:Name="SaveClientButton"
-										Grid.Row="2"
-										Grid.Column="3"
-										Content="Guardar Cliente"
-										Height="38"
-										Margin="10,10,10,10"
-										FontSize="14"
-										ToolTip="Guardar nombre, teléfono y DNI del cliente"
-										Style="{StaticResource SecondaryButtonStyle}"/>
-
-                                </Grid>
-                            </Border>
-
-                            <!-- DATOS DEL PRESUPUESTO -->
-                            <Border
-								Grid.Row="2"
-								Background="{StaticResource CardBackgroundBrush}"
-								CornerRadius="14"
-								Padding="22"
-								BorderBrush="{StaticResource BorderSoftBrush}"
-								BorderThickness="1"
-								Margin="0,0,0,18">
-
-                                <Grid>
-
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <TextBlock
-										Grid.Row="0"
-										Grid.Column="0"
-										Grid.ColumnSpan="4"
-										Text="DATOS DEL PRESUPUESTO"
-										FontSize="13"
-										FontWeight="Bold"
-										Foreground="{StaticResource AccentBrush}"
-										Margin="0,0,0,12"/>
-
-                                    <!-- Fechas -->
-                                    <TextBlock
-										Grid.Row="1"
-										Grid.Column="0"
-										Text="Entrega:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <DatePicker
-										x:Name="DeliveryDatePicker"
-										Grid.Row="1"
-										Grid.Column="1"
-										Margin="10,10,10,10"
-										Height="35"
-										SelectedDate="{x:Static sys:DateTime.Now}"/>
-
-                                    <TextBlock
-										Grid.Row="1"
-										Grid.Column="2"
-										Text="Fecha evento:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <DatePicker
-										Grid.Row="1"
-										Grid.Column="3"
-										x:Name="EventDatePicker"
-										Height="35"
-										FontSize="15"
-										Margin="10,10,10,10"/>
-
-                                    <!-- Título y estado -->
-                                    <TextBlock
-										Grid.Row="2"
-										Grid.Column="0"
-										Text="Trabajo:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <Grid
-										Grid.Row="2"
-										Grid.Column="1"
-										Margin="10,10,10,10">
-
-                                        <TextBox
-											x:Name="QuoteTitleTextBox"
-											Height="35"
-											FontSize="16"/>
-
-                                        <TextBlock
-											x:Name="QuoteTitlePlaceholderTextBlock"
-											Text="Ej. Traje novio, Chaqué medida..."
-											Foreground="{StaticResource MutedTextBrush}"
-											Margin="10,0,0,0"
-											VerticalAlignment="Center"
-											IsHitTestVisible="False"/>
-
-                                    </Grid>
-
-                                    <TextBlock
-										Grid.Row="2"
-										Grid.Column="2"
-										Text="Estado:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <ComboBox
-										x:Name="QuoteStatusComboBox"
-										Grid.Row="2"
-										Grid.Column="3"
-										Margin="10,10,10,10"
-										Height="35"
-										FontSize="14"
-										ItemsSource="{StaticResource QuoteStatusList}"
-										SelectedItem="Pendiente"/>
-
-                                    <!-- Importes -->
-                                    <TextBlock
-										Grid.Row="3"
-										Grid.Column="0"
-										Text="A Cuenta:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <TextBox
-										x:Name="DepositTextBox"
-										Grid.Row="3"
-										Grid.Column="1"
-										Margin="10,10,10,10"
-										Height="35"
-										FontSize="14"
-										Text="0"
-										HorizontalContentAlignment="Right"/>
-
-                                    <TextBlock
-										Grid.Row="3"
-										Grid.Column="2"
-										Text="Pendiente:"
-										FontSize="14"
-										VerticalAlignment="Center"
-										FontWeight="SemiBold"
-										Margin="20,0,0,0"/>
-
-                                    <TextBlock
-										x:Name="PendingAmountTextBlock"
-										Grid.Row="3"
-										Grid.Column="3"
-										Margin="10,0,10,0"
-										VerticalAlignment="Center"
-										FontSize="18"
-										FontWeight="Bold"
-										Text="0,00 €"/>
-
-                                    <!-- Notas internas -->
-                                    <TextBlock
-										Grid.Row="4"
-										Grid.Column="0"
-										Text="Notas internas:"
-										FontSize="14"
-										VerticalAlignment="Top"
-										FontWeight="SemiBold"
-										Margin="20,20,0,0"/>
-
-                                    <Grid
-										Grid.Row="4"
-										Grid.Column="1"
-										Grid.ColumnSpan="3"
-										Margin="10">
-
-                                        <TextBox
-											x:Name="QuoteNotesTextBox"
-											Height="70"
-											FontSize="14"
-											TextWrapping="Wrap"
-											AcceptsReturn="True"
-											VerticalScrollBarVisibility="Auto"/>
-
-                                        <TextBlock
-											x:Name="QuoteNotesPlaceholderTextBlock"
-											Text="Notas internas, ajustes, preferencias del cliente..."
-											Foreground="{StaticResource MutedTextBrush}"
-											Margin="10,8,10,0"
-											VerticalAlignment="Top"
-											IsHitTestVisible="False"/>
-
-                                    </Grid>
-
-                                    <!-- Notas cliente -->
-                                    <TextBlock
-										Grid.Row="5"
-										Grid.Column="0"
-										Text="Notas cliente:"
-										FontSize="14"
-										VerticalAlignment="Top"
-										FontWeight="SemiBold"
-										Margin="20,20,0,0"/>
-
-                                    <Grid
-										Grid.Row="5"
-										Grid.Column="1"
-										Grid.ColumnSpan="3"
-										Margin="10">
-
-                                        <TextBox
-											x:Name="ClientNotesTextBox"
-											Height="60"
-											FontSize="14"
-											TextWrapping="Wrap"
-											AcceptsReturn="True"
-											VerticalScrollBarVisibility="Auto"/>
-
-                                        <TextBlock
-											x:Name="ClientNotesPlaceholderTextBlock"
-											Text="Texto visible para el cliente en el PDF..."
-											Foreground="{StaticResource MutedTextBrush}"
-											Margin="10,8,10,0"
-											VerticalAlignment="Top"
-											IsHitTestVisible="False"/>
-
-                                    </Grid>
-
-                                </Grid>
-                            </Border>
-
-                            <!-- PRESUPUESTOS Y ACCIONES -->
-                            <Grid
-								Grid.Row="3"
-								Margin="0,4,0,0">
-
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Tarjetas compactas de trabajos -->
-                                <ListBox
-									x:Name="BudgetQuotesListBox"
-									Grid.Column="0"
-									HorizontalContentAlignment="Stretch"
-									BorderThickness="0"
-									Background="Transparent"
-									MaxHeight="78"
-									ScrollViewer.HorizontalScrollBarVisibility="Auto"
-									ScrollViewer.VerticalScrollBarVisibility="Disabled"
-									SelectionChanged="BudgetQuotesListBox_SelectionChanged"
-									MouseDoubleClick="BudgetQuotesListBox_MouseDoubleClick"
-									ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
-
-                                    <ListBox.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ListBox.ItemsPanel>
-
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border
-					Width="210"
-					Height="70"
-					Background="{Binding CardBackground}"
-					BorderBrush="{Binding CardBorderBrush}"
-					BorderThickness="{Binding CardBorderThickness}"
-					CornerRadius="10"
-					Padding="9"
-					Margin="0,0,8,0"
-					ToolTip="Trabajo del cliente">
-
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
-
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <TextBlock
-							Grid.Row="0"
-							Grid.Column="0"
-							Text="{Binding DisplayTitle}"
-							FontSize="12"
-							FontWeight="{Binding TitleWeight}"
-							TextTrimming="CharacterEllipsis"/>
-
-                                                    <Border
-							Grid.Row="0"
-							Grid.Column="1"
-							Background="{Binding StatusBackground}"
-							CornerRadius="7"
-							Padding="6,2"
-							Margin="6,0,0,0">
-
-                                                        <TextBlock
-								Text="{Binding StatusLabelText}"
-								FontSize="8"
-								FontWeight="Bold"
-								Foreground="{Binding StatusForeground}"/>
-                                                    </Border>
-
-                                                    <TextBlock
-							Grid.Row="1"
-							Grid.Column="0"
-							Grid.ColumnSpan="2"
-							Text="{Binding DeliveryDate, StringFormat=Entrega: {0:dd/MM/yyyy}}"
-							FontSize="10"
-							Foreground="{StaticResource MutedTextBrush}"
-							Margin="0,3,0,0"/>
-
-                                                    <TextBlock
-							Grid.Row="2"
-							Grid.Column="0"
-							Grid.ColumnSpan="2"
-							Text="{Binding Total, StringFormat=Total: {0:N2} €, ConverterCulture=es-ES}"
-							FontSize="11"
-							FontWeight="SemiBold"
-							Foreground="{StaticResource PrimaryBrush}"
-							Margin="0,3,0,0"/>
-
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-
-                                <!-- Botones -->
-                                <StackPanel
-		Grid.Column="1"
-		Orientation="Horizontal"
-		HorizontalAlignment="Right"
-		VerticalAlignment="Bottom"
-		Margin="14,0,0,0">
-
-                                    <TextBlock
-			x:Name="UnsavedChangesTextBlock"
-			Text="Cambios sin guardar"
-			VerticalAlignment="Center"
-			FontWeight="SemiBold"
-			Foreground="{StaticResource AccentBrush}"
-			Margin="0,0,18,0"
-			Visibility="Collapsed"/>
-
-                                    <Button
-			x:Name="NewQuoteButton"
-			Content="Nuevo trabajo"
-			Width="180"
-			Height="45"
-			Margin="0,0,10,0"
-			FontSize="16"
-			Style="{StaticResource SecondaryButtonStyle}"/>
-
-                                    <Button
-			x:Name="DuplicateQuoteButton"
-			Content="Duplicar trabajo"
-			Width="180"
-			Height="45"
-			Margin="0,0,10,0"
-			FontSize="16"
-			Style="{StaticResource SecondaryButtonStyle}"/>
-
-                                    <Button
-										x:Name="SaveButton"
-										Content="Guardar"
-										Width="140"
-										Height="45"
-										FontSize="16"
-										Style="{StaticResource PrimaryActionButtonStyle}"/>
-
-                                </StackPanel>
-
+                            <TextBlock Grid.Row="0"
+                                       Text="NOTAS"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,0,12"/>
+
+                            <Grid Grid.Row="1" Margin="0,0,0,12">
+                                <TextBox x:Name="QuoteNotesTextBox"
+                                         Height="86"
+                                         FontSize="14"
+                                         Padding="10,8"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"/>
+                                <TextBlock x:Name="QuoteNotesPlaceholderTextBlock"
+                                           Text="Notas internas, ajustes, preferencias del cliente..."
+                                           Foreground="{StaticResource MutedTextBrush}"
+                                           Margin="10,8,10,0"
+                                           VerticalAlignment="Top"
+                                           IsHitTestVisible="False"/>
                             </Grid>
 
+                            <Grid Grid.Row="2">
+                                <TextBox x:Name="ClientNotesTextBox"
+                                         Height="72"
+                                         FontSize="14"
+                                         Padding="10,8"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"/>
+                                <TextBlock x:Name="ClientNotesPlaceholderTextBlock"
+                                           Text="Texto visible para el cliente en el PDF..."
+                                           Foreground="{StaticResource MutedTextBrush}"
+                                           Margin="10,8,10,0"
+                                           VerticalAlignment="Top"
+                                           IsHitTestVisible="False"/>
+                            </Grid>
                         </Grid>
-                    </ScrollViewer>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>
