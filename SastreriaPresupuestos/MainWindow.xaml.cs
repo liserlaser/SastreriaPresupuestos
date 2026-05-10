@@ -62,9 +62,11 @@ namespace SastreriaPresupuestos
         private TextBlock BudgetWorkspaceStatusTextBlock => PresupuestoView.BudgetWorkspaceStatusTextBlock;
         private TextBlock BudgetWorkspaceDeliveryTextBlock => PresupuestoView.BudgetWorkspaceDeliveryTextBlock;
         private TextBlock BudgetWorkspaceTotalTextBlock => PresupuestoView.BudgetWorkspaceTotalTextBlock;
-        private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
+        private Button BudgetQuickSummaryButton => PresupuestoView.BudgetQuickSummaryButton;
         private Button BudgetQuickProductsButton => PresupuestoView.BudgetQuickProductsButton;
+        private Button BudgetQuickHistoryButton => PresupuestoView.BudgetQuickHistoryButton;
         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
+        private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
@@ -2907,7 +2909,9 @@ namespace SastreriaPresupuestos
             WeeklyColumnsItemsControl.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
             CalendarGroupsListBox.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
             ToggleSidebarButton.Click += ToggleSidebarButton_Click;
+            BudgetQuickSummaryButton.Click += BudgetQuickSummaryButton_Click;
             BudgetQuickProductsButton.Click += BudgetQuickProductsButton_Click;
+            BudgetQuickHistoryButton.Click += BudgetQuickHistoryButton_Click;
             BudgetQuickDocumentsButton.Click += BudgetQuickDocumentsButton_Click;
             BudgetQuickExportPdfButton.Click += BudgetQuickExportPdfButton_Click;
 
@@ -3471,6 +3475,17 @@ namespace SastreriaPresupuestos
                 GlobalSearchResultsBorder.Visibility = Visibility.Collapsed;
         }
 
+        private void BudgetQuickSummaryButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            NavigateToSection(TabPresupuesto);
+        }
+
+        private void BudgetQuickHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("El historial de actividad se añadirá en una próxima fase.", "Historial", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
         private void BudgetQuickExportPdfButton_Click(object sender, RoutedEventArgs e)
         {
             ExportPdfButton_Click(sender, e);
@@ -3725,9 +3740,11 @@ namespace SastreriaPresupuestos
 
             ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
             ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
+            BudgetQuickSummaryButton.IsEnabled = hasSavedClient;
             BudgetQuickProductsButton.IsEnabled = hasSavedClient;
-            BudgetQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+            BudgetQuickHistoryButton.IsEnabled = hasSavedClient;
             BudgetQuickDocumentsButton.IsEnabled = hasSavedClient;
+            BudgetQuickExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
 
             SaveButton.IsEnabled = hasSavedClient;
         }

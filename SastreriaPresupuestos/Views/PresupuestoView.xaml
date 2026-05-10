@@ -360,7 +360,7 @@
                                             </StackPanel>
 
                                             <Border Background="{Binding StatusBackground}"
-                                                    CornerRadius="8"
+                                                    CornerRadius="12"
                                                     Padding="8,4"
                                                     MinWidth="82"
                                                     Height="26"
@@ -425,7 +425,7 @@
                                            Foreground="{StaticResource AccentBrush}"/>
                                 <TextBlock x:Name="BudgetWorkspaceTitleTextBlock"
                                            Text="Sin trabajo seleccionado"
-                                           FontSize="26"
+                                           FontSize="20"
                                            FontWeight="Bold"
                                            Margin="0,4,0,0"
                                            TextTrimming="CharacterEllipsis"/>
@@ -442,28 +442,48 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1"
-                                        Orientation="Horizontal"
-                                        VerticalAlignment="Center"
-                                        Margin="24,0,0,0">
-                                <Button x:Name="BudgetQuickProductsButton"
-                                        Content="Productos"
-                                        Width="112"
-                                        Height="38"
-                                        Margin="0,0,8,0"
-                                        Style="{StaticResource SecondaryButtonStyle}"/>
-                                <Button x:Name="BudgetQuickDocumentsButton"
-                                        Content="PDF"
-                                        Width="96"
-                                        Height="38"
-                                        Margin="0,0,8,0"
-                                        Style="{StaticResource SecondaryButtonStyle}"/>
-                                <Button x:Name="BudgetQuickExportPdfButton"
-                                        Content="Exportar PDF"
-                                        Width="126"
-                                        Height="38"
-                                        Style="{StaticResource PrimaryActionButtonStyle}"/>
-                            </StackPanel>
+                            <Grid Grid.Column="1"
+                                  VerticalAlignment="Center"
+                                  Margin="24,0,0,0"
+                                  MaxWidth="300">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="140"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <Button x:Name="BudgetQuickSummaryButton"
+                                            Content="Resumen"
+                                            Height="34"
+                                            Margin="0,0,0,7"
+                                            Style="{StaticResource PrimaryActionButtonStyle}"/>
+                                    <Button x:Name="BudgetQuickProductsButton"
+                                            Content="Productos"
+                                            Height="34"
+                                            Margin="0,0,0,7"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+                                    <Button x:Name="BudgetQuickHistoryButton"
+                                            Content="Historial"
+                                            Height="34"
+                                            ToolTip="Historial de actividad, preparado para una próxima fase"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <Button x:Name="BudgetQuickDocumentsButton"
+                                            Content="Ver PDF"
+                                            Height="34"
+                                            Margin="0,0,0,7"
+                                            ToolTip="Abrir la zona de PDF y documentos"
+                                            Style="{StaticResource SecondaryButtonStyle}"/>
+                                    <Button x:Name="BudgetQuickExportPdfButton"
+                                            Content="Exportar PDF"
+                                            Height="34"
+                                            ToolTip="Generar el PDF del trabajo actual"
+                                            Style="{StaticResource PrimaryActionButtonStyle}"/>
+                                </StackPanel>
+                            </Grid>
                         </Grid>
                     </Border>
 
