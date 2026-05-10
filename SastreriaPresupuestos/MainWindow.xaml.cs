@@ -1837,6 +1837,42 @@ namespace SastreriaPresupuestos
 
         private void SaveClientButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!ShowClientEditDialog())
+                return;
+
+            SaveClientFromContextFields();
+        }
+
+        private bool ShowClientEditDialog()
+        {
+            var dialog = CreateContextEditDialog(
+                "Editar cliente",
+                "Actualiza los datos básicos del cliente sin salir del trabajo actual.");
+
+            var nameTextBox = CreateDialogTextBox(ClientNameTextBox.Text);
+            var phoneTextBox = CreateDialogTextBox(PhoneTextBox.Text);
+            var dniTextBox = CreateDialogTextBox(DniTextBox.Text);
+
+            AddDialogField(dialog.ContentPanel, "Nombre", nameTextBox);
+            AddDialogField(dialog.ContentPanel, "Teléfono", phoneTextBox);
+            AddDialogField(dialog.ContentPanel, "DNI", dniTextBox);
+
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                ClientNameTextBox.Text = nameTextBox.Text.Trim();
+                PhoneTextBox.Text = phoneTextBox.Text.Trim();
+                DniTextBox.Text = dniTextBox.Text.Trim();
+                dialog.Window.DialogResult = true;
+            };
+
+            nameTextBox.Focus();
+            nameTextBox.SelectAll();
+
+            return dialog.Window.ShowDialog() == true;
+        }
+
+        private void SaveClientFromContextFields()
+        {
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
             var clientDni = DniTextBox.Text.Trim();
@@ -1950,6 +1986,150 @@ namespace SastreriaPresupuestos
                 "Guardar cliente",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private (Window Window, StackPanel ContentPanel, Button AcceptButton) CreateContextEditDialog(string title, string subtitle)
+        {
+            var window = new Window
+            {
+                Title = title,
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ResizeMode = ResizeMode.NoResize,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                Background = (Brush)FindResource("AppBackgroundBrush")
+            };
+
+            var root = new Border
+            {
+                Width = 430,
+                Background = (Brush)FindResource("CardBackgroundBrush"),
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(18),
+                Padding = new Thickness(20)
+            };
+
+            var layout = new Grid();
+            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var header = new StackPanel { Margin = new Thickness(0, 0, 0, 18) };
+            header.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                Foreground = (Brush)FindResource("PrimaryBrush")
+            });
+            header.Children.Add(new TextBlock
+            {
+                Text = subtitle,
+                FontSize = 13,
+                Foreground = (Brush)FindResource("MutedTextBrush"),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 4, 0, 0)
+            });
+            Grid.SetRow(header, 0);
+            layout.Children.Add(header);
+
+            var contentPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 18) };
+            Grid.SetRow(contentPanel, 1);
+            layout.Children.Add(contentPanel);
+
+            var actions = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Right
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancelar",
+                Width = 96,
+                Height = 36,
+                Margin = new Thickness(0, 0, 8, 0),
+                Style = (Style)FindResource("SecondaryButtonStyle")
+            };
+            cancelButton.Click += (_, _) => window.DialogResult = false;
+
+            var acceptButton = new Button
+            {
+                Content = "Guardar",
+                Width = 102,
+                Height = 36,
+                Style = (Style)FindResource("PrimaryActionButtonStyle")
+            };
+
+            actions.Children.Add(cancelButton);
+            actions.Children.Add(acceptButton);
+            Grid.SetRow(actions, 2);
+            layout.Children.Add(actions);
+
+            root.Child = layout;
+            window.Content = root;
+
+            return (window, contentPanel, acceptButton);
+        }
+
+        private TextBox CreateDialogTextBox(string value)
+        {
+            return new TextBox
+            {
+                Text = value,
+                Height = 36,
+                FontSize = 14,
+                Padding = new Thickness(10, 0, 10, 0),
+                VerticalContentAlignment = System.Windows.VerticalAlignment.Center,
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+        }
+
+        private DatePicker CreateDialogDatePicker(DateTime? selectedDate)
+        {
+            return new DatePicker
+            {
+                SelectedDate = selectedDate,
+                Height = 36,
+                FontSize = 14,
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+        }
+
+        private ComboBox CreateDialogComboBox(string selectedValue)
+        {
+            var comboBox = new ComboBox
+            {
+                Height = 36,
+                FontSize = 14,
+                ItemsSource = new[] { "Pendiente", "Aceptado", "Rechazado", "Entregado" },
+                SelectedItem = string.IsNullOrWhiteSpace(selectedValue) ? "Pendiente" : selectedValue,
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+
+            return comboBox;
+        }
+
+        private void AddDialogField(Panel parent, string label, Control control)
+        {
+            var field = new StackPanel { Margin = new Thickness(0, 0, 0, 12) };
+            field.Children.Add(new TextBlock
+            {
+                Text = label,
+                FontSize = 11,
+                FontWeight = FontWeights.Bold,
+                Foreground = (Brush)FindResource("MutedTextBrush"),
+                Margin = new Thickness(0, 0, 0, 4)
+            });
+            field.Children.Add(control);
+            parent.Children.Add(field);
         }
 
         internal void DeliveryFilterButton_Click(object sender, RoutedEventArgs e)
@@ -2471,9 +2651,36 @@ namespace SastreriaPresupuestos
 
         private void EditJobButton_Click(object sender, RoutedEventArgs e)
         {
-            GoToTab(TabPresupuesto);
-            QuoteTitleTextBox.Focus();
-            QuoteTitleTextBox.SelectAll();
+            var dialog = CreateContextEditDialog(
+                "Editar trabajo",
+                "Modifica los datos principales del trabajo sin perder el contexto actual.");
+
+            var titleTextBox = CreateDialogTextBox(QuoteTitleTextBox.Text);
+            var statusComboBox = CreateDialogComboBox(QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente");
+            var deliveryDatePicker = CreateDialogDatePicker(DeliveryDatePicker.SelectedDate);
+
+            AddDialogField(dialog.ContentPanel, "Título", titleTextBox);
+            AddDialogField(dialog.ContentPanel, "Estado", statusComboBox);
+            AddDialogField(dialog.ContentPanel, "Entrega", deliveryDatePicker);
+
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                QuoteTitleTextBox.Text = titleTextBox.Text.Trim();
+                QuoteStatusComboBox.SelectedItem = statusComboBox.SelectedItem?.ToString() ?? "Pendiente";
+                DeliveryDatePicker.SelectedDate = deliveryDatePicker.SelectedDate;
+                dialog.Window.DialogResult = true;
+            };
+
+            titleTextBox.Focus();
+            titleTextBox.SelectAll();
+
+            if (dialog.Window.ShowDialog() == true)
+            {
+                MarkAsChanged();
+                UpdateActiveContext();
+                UpdateSecondaryPlaceholders();
+                UpdateWorkflowState();
+            }
         }
 
         private void ConfigureCulture()
