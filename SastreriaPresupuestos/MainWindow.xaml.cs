@@ -70,6 +70,8 @@ namespace SastreriaPresupuestos
         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
         private TextBox DniTextBox => PresupuestoView.DniTextBox;
         private Button SaveClientButton => PresupuestoView.SaveClientButton;
+        private Button ClientSheetButton => PresupuestoView.ClientSheetButton;
+        private Button EditJobButton => PresupuestoView.EditJobButton;
         private DatePicker DeliveryDatePicker => PresupuestoView.DeliveryDatePicker;
         private DatePicker EventDatePicker => PresupuestoView.EventDatePicker;
         private TextBox QuoteTitleTextBox => PresupuestoView.QuoteTitleTextBox;
@@ -2461,6 +2463,19 @@ namespace SastreriaPresupuestos
             NavigateToSection(4);
         }
 
+
+        private void ClientSheetButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportClientSheetButton_Click(sender, e);
+        }
+
+        private void EditJobButton_Click(object sender, RoutedEventArgs e)
+        {
+            GoToTab(TabPresupuesto);
+            QuoteTitleTextBox.Focus();
+            QuoteTitleTextBox.SelectAll();
+        }
+
         private void ConfigureCulture()
         {
             var culture = new CultureInfo("es-ES");
@@ -2498,6 +2513,8 @@ namespace SastreriaPresupuestos
             OpenSelectedClientQuoteButton.Click += OpenSelectedClientQuoteButton_Click;
             NewClientButton.Click += NewClientButton_Click;
             SaveClientButton.Click += SaveClientButton_Click;
+            ClientSheetButton.Click += ClientSheetButton_Click;
+            EditJobButton.Click += EditJobButton_Click;
             DeleteClientButton.Click += DeleteClientButton_Click;
             DuplicateQuoteButton.Click += DuplicateQuoteButton_Click;
             PricesConfigButton.Click += PricesConfigButton_Click;

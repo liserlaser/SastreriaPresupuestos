@@ -1,4 +1,4 @@
-<UserControl x:Class="SastreriaPresupuestos.Views.PresupuestoView"
+﻿<UserControl x:Class="SastreriaPresupuestos.Views.PresupuestoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime">
@@ -110,12 +110,13 @@
                                     Height="32"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     ToolTip="Guardar o actualizar los datos del cliente"/>
-                            <Button Content="Ficha"
+                            <Button x:Name="ClientSheetButton"
+                                    Content="Ficha"
                                     Width="78"
                                     Height="32"
                                     Margin="8,0,0,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    ToolTip="La generación de ficha se conectará en la siguiente iteración"/>
+                                    ToolTip="Generar la ficha interna del cliente"/>
                         </StackPanel>
                     </DockPanel>
 
@@ -172,12 +173,13 @@
                                        Foreground="{StaticResource AccentBrush}"
                                        Margin="0,0,12,0"
                                        Visibility="Collapsed"/>
-                            <Button Content="Editar"
+                            <Button x:Name="EditJobButton"
+                                    Content="Editar"
                                     Width="78"
                                     Height="32"
                                     Margin="0,0,8,0"
                                     Style="{StaticResource SecondaryButtonStyle}"
-                                    ToolTip="La edición en pop-up se conectará en la siguiente iteración"/>
+                                    ToolTip="Editar los datos principales del trabajo"/>
                             <Button x:Name="SaveButton"
                                     Content="Guardar"
                                     Width="86"
