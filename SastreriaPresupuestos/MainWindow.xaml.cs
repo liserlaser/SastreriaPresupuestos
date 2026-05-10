@@ -193,6 +193,11 @@ namespace SastreriaPresupuestos
             Interval = TimeSpan.FromMilliseconds(1400)
         };
 
+        private readonly DispatcherTimer SaveStatusRefreshTimer = new DispatcherTimer()
+        {
+            Interval = TimeSpan.FromMinutes(1)
+        };
+
         private int? LastSelectedClientId = null;
         private int? LastSelectedQuoteId = null;
         private int? CurrentClientId = null;
@@ -1324,6 +1329,17 @@ namespace SastreriaPresupuestos
             TryAutoSaveCurrentWorkspace();
         }
 
+        private void SaveStatusRefreshTimer_Tick(object? sender, EventArgs e)
+        {
+            if (CurrentSaveState != WorkspaceSaveState.Saved)
+            {
+                SaveStatusRefreshTimer.Stop();
+                return;
+            }
+
+            UpdateShellSaveStateIndicator();
+        }
+
         private bool CanAutoSaveCurrentWorkspace()
         {
             if (!HasUnsavedChanges)
@@ -1713,9 +1729,18 @@ namespace SastreriaPresupuestos
             else if (state == WorkspaceSaveState.Saved)
                 HasUnsavedChanges = false;
 
+            UpdateSaveStatusRefreshTimer();
             UpdateUnsavedChangesIndicator();
             UpdateShellSaveStateIndicator();
             UpdateWindowTitle();
+        }
+
+        private void UpdateSaveStatusRefreshTimer()
+        {
+            if (CurrentSaveState == WorkspaceSaveState.Saved && LastSavedAt != null)
+                SaveStatusRefreshTimer.Start();
+            else
+                SaveStatusRefreshTimer.Stop();
         }
 
         private void UpdateShellSaveStateIndicator()
@@ -3435,6 +3460,7 @@ namespace SastreriaPresupuestos
 
             ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
             AutoSaveTimer.Tick += AutoSaveTimer_Tick;
+            SaveStatusRefreshTimer.Tick += SaveStatusRefreshTimer_Tick;
 
             ClientNameTextBox.TextChanged += ClientNameTextBox_TextChanged;
             QuoteTitleTextBox.TextChanged += QuoteTitleTextBox_TextChanged;
