@@ -138,7 +138,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="DNI" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <TextBlock Text="DNIx" Style="{StaticResource ContextLabelTextStyle}"/>
                             <TextBox x:Name="DniTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
                         </StackPanel>
                     </Grid>
