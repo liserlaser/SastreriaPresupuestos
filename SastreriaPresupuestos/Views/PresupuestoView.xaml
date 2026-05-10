@@ -308,6 +308,18 @@
                                                        Foreground="{StaticResource MutedTextBrush}"
                                                        Margin="0,2,0,0"
                                                        TextTrimming="CharacterEllipsis"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                <Border Background="{Binding DeliveryBadgeBackground}"
+                                                        CornerRadius="7"
+                                                        Padding="7,3"
+                                                        Visibility="{Binding OverdueBadgeVisibility}">
+                                                    <TextBlock Text="{Binding DeliveryBadgeText}"
+                                                               FontSize="9"
+                                                               FontWeight="Bold"
+                                                               Foreground="{Binding DeliveryBadgeForeground}"/>
+                                                </Border>
+                                                
+                                            </StackPanel>
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -339,6 +351,12 @@
                                                            Foreground="{StaticResource MutedTextBrush}"
                                                            HorizontalAlignment="Right"
                                                            Margin="0,2,0,0"/>
+                                                <TextBlock Text="{Binding PendingPaymentText}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding PendingPaymentForeground}"
+                                                           HorizontalAlignment="Right"
+                                                           Margin="0,1,0,0"/>
                                             </StackPanel>
 
                                             <Border Background="{Binding StatusBackground}"

@@ -171,6 +171,62 @@ namespace SastreriaPresupuestos.Models
             }
         }
 
+
+        public bool IsOverdue
+        {
+            get
+            {
+                var statusText = Status?.Trim() ?? "";
+                var isClosed =
+                    string.Equals(statusText, "Entregado", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(statusText, "Rechazado", StringComparison.OrdinalIgnoreCase);
+
+                return !isClosed && DeliveryDate.Date < DateTime.Today;
+            }
+        }
+
+        public Visibility OverdueBadgeVisibility => IsOverdue ? Visibility.Visible : Visibility.Collapsed;
+
+        public string DeliveryBadgeText => IsOverdue ? "ATRASADO" : $"{DeliveryDate:dd/MM}";
+
+        public Brush DeliveryBadgeBackground
+        {
+            get
+            {
+                return IsOverdue
+                    ? new SolidColorBrush(Color.FromRgb(142, 63, 51))
+                    : new SolidColorBrush(Color.FromRgb(238, 242, 234));
+            }
+        }
+
+        public Brush DeliveryBadgeForeground
+        {
+            get
+            {
+                return IsOverdue
+                    ? Brushes.White
+                    : new SolidColorBrush(Color.FromRgb(47, 51, 45));
+            }
+        }
+
+        public bool HasPendingPayment => PendingAmount > 0;
+
+        public Visibility PendingPaymentVisibility => HasPendingPayment ? Visibility.Visible : Visibility.Collapsed;
+
+        public string PendingPaymentText => HasPendingPayment
+            ? $"Pendiente · {PendingAmount:N2} €"
+            : "Pagado";
+
+        public Brush PendingPaymentForeground
+        {
+            get
+            {
+                return HasPendingPayment
+                    ? new SolidColorBrush(Color.FromRgb(142, 63, 51))
+                    : new SolidColorBrush(Color.FromRgb(93, 135, 88));
+            }
+        }
+
         public FontWeight TitleWeight
         {
             get
