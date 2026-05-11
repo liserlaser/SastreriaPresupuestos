@@ -591,6 +591,16 @@ namespace SastreriaPresupuestos
             UpdateWorkflowState();
 
             IsLoadingData = false;
+
+            if (quotes.Count == 1)
+            {
+                SuppressSelectionConfirm = true;
+                QuotesListBox.SelectedItem = quotes[0];
+                BudgetQuotesListBox.SelectedItem = quotes[0];
+                SuppressSelectionConfirm = false;
+                return;
+            }
+
             MarkAsSaved();
 
             UpdateSaveButtonText();
