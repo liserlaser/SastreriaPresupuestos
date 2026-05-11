@@ -243,8 +243,8 @@
         <!-- WORKSPACE CONTEXTUAL -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="380" MinWidth="320"/>
-                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="400" MinWidth="360"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -304,10 +304,10 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <!-- 1. Fecha + título -->
-                                            <ColumnDefinition Width="1.6*"/>
+                                            <ColumnDefinition Width="1.4*"/>
 
                                             <!-- 2. Total / A cuenta / Pendiente -->
-                                            <ColumnDefinition Width="1.05*"/>
+                                            <ColumnDefinition Width="1.4*"/>
 
                                             <!-- 3. Estado -->
                                             <ColumnDefinition Width="Auto"/>
@@ -317,7 +317,7 @@
                                         <StackPanel
                 Grid.Column="0"
                 VerticalAlignment="Center"
-                Margin="0,0,14,0">
+                Margin="0,0,10,0">
 
                                             <TextBlock
                     Text="{Binding DeliveryDate, StringFormat=Entrega · {0:dd/MM/yyyy}}"
@@ -327,7 +327,7 @@
 
                                             <TextBlock
                     Text="{Binding DisplayTitle}"
-                    FontSize="15"
+                    FontSize="12"
                     FontWeight="{Binding TitleWeight}"
                     Foreground="{StaticResource PrimaryBrush}"
                     TextWrapping="Wrap"
@@ -340,7 +340,7 @@
                                         <StackPanel
                 Grid.Column="1"
                 VerticalAlignment="Center"
-                Margin="0,0,16,0">
+                Margin="0,0,4,0">
 
                                             <TextBlock
                     Text="{Binding Total, StringFormat=Total: {0:N2} €, ConverterCulture=es-ES}"
@@ -368,12 +368,12 @@
                 Background="{Binding StatusBackground}"
                 CornerRadius="10"
                 Padding="10,5"
-                MinWidth="86"
+                MinWidth="70"
                 VerticalAlignment="Center">
 
                                             <TextBlock
                     Text="{Binding StatusLabelText}"
-                    FontSize="12"
+                    FontSize="10"
                     FontWeight="Bold"
                     Foreground="{Binding StatusForeground}"
                     TextAlignment="Center"
