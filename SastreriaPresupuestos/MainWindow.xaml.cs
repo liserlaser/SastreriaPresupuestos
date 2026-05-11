@@ -1801,7 +1801,7 @@ namespace SastreriaPresupuestos
 
                 default:
                     text = GetSavedStateText();
-                    dotBrush = new SolidColorBrush(MediaColor.FromRgb(109, 116, 104));
+                    dotBrush = new SolidColorBrush(MediaColor.FromRgb(100, 191, 35));
                     foregroundBrush = new SolidColorBrush(MediaColor.FromRgb(109, 116, 104));
                     backgroundBrush = new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
                     break;
