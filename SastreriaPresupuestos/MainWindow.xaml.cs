@@ -904,8 +904,21 @@ namespace SastreriaPresupuestos
                 {
                     line.RefreshPrice();
                     UpdateGrandTotal();
+                    MarkAsChanged();
                 }), System.Windows.Threading.DispatcherPriority.Background);
             }
+        }
+
+        private void ProductsDataGrid_CurrentCellChanged(object? sender, EventArgs e)
+        {
+            if (IsLoadingData)
+                return;
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                UpdateGrandTotal();
+                MarkAsChanged();
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         internal void DeleteQuote_Click(object sender, RoutedEventArgs e)
@@ -3446,6 +3459,7 @@ namespace SastreriaPresupuestos
             WorkSearchTextBox.TextChanged += WorkSearchTextBox_TextChanged;
 
             ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
+            ProductsDataGrid.CurrentCellChanged += ProductsDataGrid_CurrentCellChanged;
             AutoSaveTimer.Tick += AutoSaveTimer_Tick;
             SaveStatusRefreshTimer.Tick += SaveStatusRefreshTimer_Tick;
 
@@ -3947,6 +3961,15 @@ namespace SastreriaPresupuestos
 
             GlobalSearchResultsListBox.SelectedIndex = nextIndex;
             GlobalSearchResultsListBox.ScrollIntoView(GlobalSearchResultsListBox.SelectedItem);
+        }
+
+        private void GlobalSearchResultsListBox_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (GlobalSearchResultsListBox.SelectedItem is GlobalSearchResult result)
+            {
+                e.Handled = true;
+                OpenGlobalSearchResult(result);
+            }
         }
 
         private void GlobalSearchResultsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)

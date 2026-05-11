@@ -286,8 +286,9 @@
 
         <Style x:Key="RoundedSearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Padding" Value="12,7"/>
             <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -301,7 +302,7 @@
                             <ScrollViewer
                                 x:Name="PART_ContentHost"
                                 Margin="{TemplateBinding Padding}"
-                                VerticalAlignment="Center"/>
+                                VerticalAlignment="Stretch"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
@@ -544,7 +545,7 @@
                             x:Name="GlobalSearchPlaceholderTextBlock"
                             Text="Buscar..."
                             Foreground="{StaticResource MutedTextBrush}"
-                            Margin="10,0,0,0"
+                            Margin="12,0,0,0"
                             VerticalAlignment="Center"
                             IsHitTestVisible="False"/>
                     </Grid>
@@ -565,6 +566,7 @@
                             BorderThickness="0"
                             Background="Transparent"
                             MaxHeight="260"
+                            MouseLeftButtonUp="GlobalSearchResultsListBox_MouseLeftButtonUp"
                             MouseDoubleClick="GlobalSearchResultsListBox_MouseDoubleClick">
 
                             <ListBox.ItemTemplate>
