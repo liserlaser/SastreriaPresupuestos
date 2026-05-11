@@ -317,11 +317,11 @@
                                         <StackPanel
                 Grid.Column="0"
                 VerticalAlignment="Center"
-                Margin="0,0,10,0">
+                Margin="0,0,0,0">
 
                                             <TextBlock
                     Text="{Binding DeliveryDate, StringFormat=Entrega · {0:dd/MM/yyyy}}"
-                    FontSize="12"
+                    FontSize="13"
                     FontWeight="SemiBold"
                     Foreground="{StaticResource MutedTextBrush}"/>
 
@@ -337,29 +337,30 @@
                                         </StackPanel>
 
                                         <!-- Importes -->
-                                        <StackPanel
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Margin="0,0,4,0">
-
-                                            <TextBlock
-                    Text="{Binding Total, StringFormat=Total: {0:N2} €, ConverterCulture=es-ES}"
-                    FontSize="13"
-                    FontWeight="SemiBold"
-                    Foreground="{StaticResource PrimaryBrush}"/>
-
-                                            <TextBlock
-                    Text="{Binding Deposit, StringFormat=A cuenta: {0:N2} €, ConverterCulture=es-ES}"
-                    FontSize="12"
-                    Foreground="{StaticResource MutedTextBrush}"
-                    Margin="0,3,0,0"/>
-
-                                            <TextBlock
-                    Text="{Binding PendingAmount, StringFormat=Pendiente: {0:N2} €, ConverterCulture=es-ES}"
-                    FontSize="12"
-                    FontWeight="SemiBold"
-                    Foreground="{StaticResource MutedTextBrush}"
-                    Margin="0,3,0,0"/>
+                                        <StackPanel Grid.Column="1"
+												VerticalAlignment="Center"
+												Margin="0,0,18,0">
+                                            <TextBlock Text="Total"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
+                                                           FontSize="13"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                           HorizontalAlignment="Right"/>
+                                            <TextBlock Text="{Binding Deposit, StringFormat=A cuenta · {0:N2} €, ConverterCulture=es-ES}"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           HorizontalAlignment="Right"
+                                                           Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding PendingPaymentText}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding PendingPaymentForeground}"
+                                                           HorizontalAlignment="Right"
+                                                           Margin="0,1,0,0"/>
                                         </StackPanel>
 
                                         <!-- Estado -->
