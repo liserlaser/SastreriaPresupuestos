@@ -1,0 +1,207 @@
+diff --git a/SastreriaPresupuestos/MainWindow.xaml.cs b/SastreriaPresupuestos/MainWindow.xaml.cs
+index 16dd5f9..010d998 100644
+--- a/SastreriaPresupuestos/MainWindow.xaml.cs
++++ b/SastreriaPresupuestos/MainWindow.xaml.cs
+@@ -92,6 +92,7 @@ namespace SastreriaPresupuestos
+         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
+         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
+         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
++        private TextBlock PhoneDisplayTextBlock => PresupuestoView.PhoneDisplayTextBlock;
+         private TextBox DniTextBox => PresupuestoView.DniTextBox;
+         private Button SaveClientButton => PresupuestoView.SaveClientButton;
+         private Button ClientSheetButton => PresupuestoView.ClientSheetButton;
+@@ -101,6 +102,9 @@ namespace SastreriaPresupuestos
+         private TextBox QuoteTitleTextBox => PresupuestoView.QuoteTitleTextBox;
+         private TextBlock QuoteTitlePlaceholderTextBlock => PresupuestoView.QuoteTitlePlaceholderTextBlock;
+         private ComboBox QuoteStatusComboBox => PresupuestoView.QuoteStatusComboBox;
++        private Border QuoteStatusBadgeBorder => PresupuestoView.QuoteStatusBadgeBorder;
++        private TextBlock QuoteStatusBadgeTextBlock => PresupuestoView.QuoteStatusBadgeTextBlock;
++        private TextBlock EventDateDisplayTextBlock => PresupuestoView.EventDateDisplayTextBlock;
+         private TextBox DepositTextBox => PresupuestoView.DepositTextBox;
+         private TextBlock PendingAmountTextBlock => PresupuestoView.PendingAmountTextBlock;
+         private TextBox QuoteNotesTextBox => PresupuestoView.QuoteNotesTextBox;
+@@ -3230,15 +3234,16 @@ namespace SastreriaPresupuestos
+                 ? "—"
+                 : ClientNameTextBox.Text.Trim();
+ 
+-            var phone = string.IsNullOrWhiteSpace(PhoneTextBox.Text)
+-                ? "—"
+-                : PhoneTextBox.Text.Trim();
++            var phone = FormatPhoneForDisplay(PhoneTextBox.Text);
+ 
+             var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
+                 ? "—"
+                 : QuoteTitleTextBox.Text.Trim();
+ 
+             var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
++            var eventText = EventDatePicker.SelectedDate.HasValue
++                ? EventDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
++                : "—";
+             var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
+                 ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
+                 : "—";
+@@ -3248,9 +3253,13 @@ namespace SastreriaPresupuestos
+             ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
+             ActiveWorkspaceSubtitle.Text = clientName == "—" ? "Selecciona un cliente o crea un trabajo" : clientName;
+             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
++            PhoneDisplayTextBlock.Text = phone;
++            UpdateQuoteStatusBadge(status);
++            EventDateDisplayTextBlock.Text = eventText;
++
+             ActivePhoneTextBlock.Text = $"Teléfono: {phone}";
+             ActiveQuoteTextBlock.Text = $"Estado: {status}";
+-            ActiveDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
++            ActiveDeliveryTextBlock.Text = $"Evento: {eventText}";
+             ActiveDepositTextBlock.Text = $"Señal: {deposit:N2} €";
+             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
+ 
+@@ -3264,7 +3273,7 @@ namespace SastreriaPresupuestos
+                 BudgetWorkspaceStatusTextBlock.Text = $"Estado: {status}";
+ 
+             if (BudgetWorkspaceDeliveryTextBlock != null)
+-                BudgetWorkspaceDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
++                BudgetWorkspaceDeliveryTextBlock.Text = $"Evento: {eventText}";
+ 
+             if (BudgetWorkspaceTotalTextBlock != null)
+                 BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
+@@ -3276,6 +3285,47 @@ namespace SastreriaPresupuestos
+         }
+ 
+ 
++
++        private string FormatPhoneForDisplay(string? phone)
++        {
++            if (string.IsNullOrWhiteSpace(phone))
++                return "—";
++
++            var digits = new string(phone.Where(char.IsDigit).ToArray());
++
++            if (digits.Length == 9)
++                return $"{digits[..3]} {digits.Substring(3, 2)} {digits.Substring(5, 2)} {digits.Substring(7, 2)}";
++
++            return phone.Trim();
++        }
++
++        private void UpdateQuoteStatusBadge(string? status)
++        {
++            var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "Pendiente" : status.Trim();
++
++            QuoteStatusBadgeTextBlock.Text = normalizedStatus.ToUpperInvariant();
++
++            switch (normalizedStatus)
++            {
++                case "Aceptado":
++                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(93, 135, 88));
++                    QuoteStatusBadgeTextBlock.Foreground = Brushes.White;
++                    break;
++                case "Entregado":
++                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(120, 130, 112));
++                    QuoteStatusBadgeTextBlock.Foreground = Brushes.White;
++                    break;
++                case "Rechazado":
++                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(170, 100, 90));
++                    QuoteStatusBadgeTextBlock.Foreground = Brushes.White;
++                    break;
++                default:
++                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
++                    QuoteStatusBadgeTextBlock.Foreground = new SolidColorBrush(MediaColor.FromRgb(47, 51, 45));
++                    break;
++            }
++        }
++
+         private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
+         {
+             // 12B.3: el panel contextual derecho se ha eliminado.
+diff --git a/SastreriaPresupuestos/Views/PresupuestoView.xaml b/SastreriaPresupuestos/Views/PresupuestoView.xaml
+index 817da2c..114e74c 100644
+--- a/SastreriaPresupuestos/Views/PresupuestoView.xaml
++++ b/SastreriaPresupuestos/Views/PresupuestoView.xaml
+@@ -121,7 +121,18 @@
+ 
+                         <StackPanel Grid.Column="1" Margin="0,0,0,0">
+                             <TextBlock Text="Teléfono" Style="{StaticResource ContextLabelTextStyle}"/>
+-                            <TextBox x:Name="PhoneTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
++                            <Grid>
++                                <TextBox x:Name="PhoneTextBox"
++                                         Visibility="Collapsed"/>
++                                <TextBlock x:Name="PhoneDisplayTextBlock"
++                                           Text="—"
++                                           Height="34"
++                                           VerticalAlignment="Center"
++                                           FontSize="14"
++                                           FontWeight="SemiBold"
++                                           Foreground="#2B2520"
++                                           TextTrimming="CharacterEllipsis"/>
++                            </Grid>
+                         </StackPanel>
+ 
+                         <!-- El DNI se mantiene oculto para la lógica de ficha/PDF, pero ya no se muestra en la Context Bar. -->
+@@ -189,6 +200,7 @@
+                                     Content="Guardar"
+                                     Width="86"
+                                     Height="32"
++                                    Visibility="Collapsed"
+                                     Style="{StaticResource PrimaryActionButtonStyle}"/>
+                         </StackPanel>
+                     </DockPanel>
+@@ -215,28 +227,41 @@
+ 
+                         <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                             <TextBlock Text="Estado" Style="{StaticResource ContextLabelTextStyle}"/>
+-                            <ComboBox x:Name="QuoteStatusComboBox"
+-                                      Height="34"
+-                                      FontSize="14"
+-                                      ItemsSource="{StaticResource QuoteStatusList}"
+-                                      SelectedItem="Pendiente"
+-                                      IsHitTestVisible="False"
+-                                      Focusable="False"
+-                                      BorderThickness="0"
+-                                      Background="Transparent"
+-                                      FontWeight="SemiBold"/>
++                            <Grid Height="34">
++                                <ComboBox x:Name="QuoteStatusComboBox"
++                                          Visibility="Collapsed"
++                                          ItemsSource="{StaticResource QuoteStatusList}"
++                                          SelectedItem="Pendiente"/>
++                                <Border x:Name="QuoteStatusBadgeBorder"
++                                        CornerRadius="9"
++                                        Padding="10,5"
++                                        HorizontalAlignment="Left"
++                                        VerticalAlignment="Center"
++                                        Background="#EEF2EA">
++                                    <TextBlock x:Name="QuoteStatusBadgeTextBlock"
++                                               Text="PENDIENTE"
++                                               FontSize="11"
++                                               FontWeight="Bold"
++                                               Foreground="#2F332D"/>
++                                </Border>
++                            </Grid>
+                         </StackPanel>
+ 
+                         <StackPanel Grid.Column="2">
+-                            <TextBlock Text="Entrega" Style="{StaticResource ContextLabelTextStyle}"/>
+-                            <DatePicker x:Name="DeliveryDatePicker"
+-                                        Style="{StaticResource ContextDatePickerStyle}"
+-                                        SelectedDate="{x:Static sys:DateTime.Now}"
+-                                        IsHitTestVisible="False"
+-                                        Focusable="False"
+-                                        BorderThickness="0"
+-                                        Background="Transparent"
+-                                        FontWeight="SemiBold"/>
++                            <TextBlock Text="Evento" Style="{StaticResource ContextLabelTextStyle}"/>
++                            <Grid>
++                                <DatePicker x:Name="DeliveryDatePicker"
++                                            Visibility="Collapsed"
++                                            SelectedDate="{x:Static sys:DateTime.Now}"/>
++                                <TextBlock x:Name="EventDateDisplayTextBlock"
++                                           Text="—"
++                                           Height="34"
++                                           VerticalAlignment="Center"
++                                           FontSize="14"
++                                           FontWeight="SemiBold"
++                                           Foreground="#2B2520"
++                                           TextTrimming="CharacterEllipsis"/>
++                            </Grid>
+                         </StackPanel>
+                     </Grid>
+                 </Grid>

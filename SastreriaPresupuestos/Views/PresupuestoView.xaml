@@ -115,13 +115,33 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                            <TextBlock Text="Nombre" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <TextBox x:Name="ClientNameTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
+                            <TextBlock Text="Nombre" 
+                                       Style="{StaticResource ContextLabelTextStyle}"/>
+                            <TextBox x:Name="ClientNameTextBox" 
+                                     Style="{StaticResource ContextTextBoxStyle}" 
+                                     IsReadOnly="True" 
+                                     BorderThickness="0" 
+                                     Background="Transparent" 
+                                     Padding="0" 
+                                     FontWeight="SemiBold" 
+                                     Cursor="Arrow"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="0,0,0,0">
-                            <TextBlock Text="Teléfono" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <TextBox x:Name="PhoneTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
+                            <TextBlock Text="Teléfono" 
+                                       Style="{StaticResource ContextLabelTextStyle}"/>
+                            <Grid>
+                                <TextBox x:Name="PhoneTextBox"
+                                         Visibility="Collapsed"/>
+                                <TextBlock x:Name="PhoneDisplayTextBlock"
+                                           Text="—"
+                                           Height="34"
+                                           VerticalAlignment="Center"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="#2B2520"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </Grid>
                         </StackPanel>
 
                         <!-- El DNI se mantiene oculto para la lógica de ficha/PDF, pero ya no se muestra en la Context Bar. -->
@@ -189,6 +209,7 @@
                                     Content="Guardar"
                                     Width="86"
                                     Height="32"
+                                    Visibility="Collapsed"
                                     Style="{StaticResource PrimaryActionButtonStyle}"/>
                         </StackPanel>
                     </DockPanel>
@@ -215,28 +236,41 @@
 
                         <StackPanel Grid.Column="1" Margin="0,0,10,0">
                             <TextBlock Text="Estado" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <ComboBox x:Name="QuoteStatusComboBox"
-                                      Height="34"
-                                      FontSize="14"
-                                      ItemsSource="{StaticResource QuoteStatusList}"
-                                      SelectedItem="Pendiente"
-                                      IsHitTestVisible="False"
-                                      Focusable="False"
-                                      BorderThickness="0"
-                                      Background="Transparent"
-                                      FontWeight="SemiBold"/>
+                            <Grid Height="34">
+                                <ComboBox x:Name="QuoteStatusComboBox"
+                                          Visibility="Collapsed"
+                                          ItemsSource="{StaticResource QuoteStatusList}"
+                                          SelectedItem="Pendiente"/>
+                                <Border x:Name="QuoteStatusBadgeBorder"
+                                        CornerRadius="9"
+                                        Padding="10,5"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        Background="#EEF2EA">
+                                    <TextBlock x:Name="QuoteStatusBadgeTextBlock"
+                                               Text="PENDIENTE"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="#2F332D"/>
+                                </Border>
+                            </Grid>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="Entrega" Style="{StaticResource ContextLabelTextStyle}"/>
-                            <DatePicker x:Name="DeliveryDatePicker"
-                                        Style="{StaticResource ContextDatePickerStyle}"
-                                        SelectedDate="{x:Static sys:DateTime.Now}"
-                                        IsHitTestVisible="False"
-                                        Focusable="False"
-                                        BorderThickness="0"
-                                        Background="Transparent"
-                                        FontWeight="SemiBold"/>
+                            <TextBlock Text="Evento" Style="{StaticResource ContextLabelTextStyle}"/>
+                            <Grid>
+                                <DatePicker x:Name="DeliveryDatePicker"
+                                            Visibility="Collapsed"
+                                            SelectedDate="{x:Static sys:DateTime.Now}"/>
+                                <TextBlock x:Name="EventDateDisplayTextBlock"
+                                           Text="—"
+                                           Height="34"
+                                           VerticalAlignment="Center"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="#2B2520"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </Grid>
                         </StackPanel>
                     </Grid>
                 </Grid>

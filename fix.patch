@@ -1,0 +1,66 @@
+diff --git a/SastreriaPresupuestos/Views/PresupuestoView.xaml b/SastreriaPresupuestos/Views/PresupuestoView.xaml
+index 114e74c..51cf4df 100644
+--- a/SastreriaPresupuestos/Views/PresupuestoView.xaml
++++ b/SastreriaPresupuestos/Views/PresupuestoView.xaml
+@@ -28,6 +28,15 @@
+             <Setter Property="Background" Value="#FBFCFA"/>
+         </Style>
+ 
++        <Style x:Key="ContextReadOnlyValueTextStyle" TargetType="TextBlock">
++            <Setter Property="Height" Value="34"/>
++            <Setter Property="FontSize" Value="14"/>
++            <Setter Property="FontWeight" Value="SemiBold"/>
++            <Setter Property="Foreground" Value="#2B2520"/>
++            <Setter Property="VerticalAlignment" Value="Center"/>
++            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
++        </Style>
++
+         <Style x:Key="ContextDatePickerStyle" TargetType="DatePicker">
+             <Setter Property="Height" Value="34"/>
+             <Setter Property="FontSize" Value="14"/>
+@@ -116,22 +125,23 @@
+ 
+                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                             <TextBlock Text="Nombre" Style="{StaticResource ContextLabelTextStyle}"/>
+-                            <TextBox x:Name="ClientNameTextBox" Style="{StaticResource ContextTextBoxStyle}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" FontWeight="SemiBold" Cursor="Arrow"/>
++                            <Grid Height="34">
++                                <TextBox x:Name="ClientNameTextBox"
++                                         Visibility="Collapsed"/>
++                                <TextBlock x:Name="ClientNameDisplayTextBlock"
++                                           Text="{Binding Text, ElementName=ClientNameTextBox, TargetNullValue=—, FallbackValue=—}"
++                                           Style="{StaticResource ContextReadOnlyValueTextStyle}"/>
++                            </Grid>
+                         </StackPanel>
+ 
+                         <StackPanel Grid.Column="1" Margin="0,0,0,0">
+                             <TextBlock Text="Teléfono" Style="{StaticResource ContextLabelTextStyle}"/>
+-                            <Grid>
++                            <Grid Height="34">
+                                 <TextBox x:Name="PhoneTextBox"
+                                          Visibility="Collapsed"/>
+                                 <TextBlock x:Name="PhoneDisplayTextBlock"
+                                            Text="—"
+-                                           Height="34"
+-                                           VerticalAlignment="Center"
+-                                           FontSize="14"
+-                                           FontWeight="SemiBold"
+-                                           Foreground="#2B2520"
+-                                           TextTrimming="CharacterEllipsis"/>
++                                           Style="{StaticResource ContextReadOnlyValueTextStyle}"/>
+                             </Grid>
+                         </StackPanel>
+ 
+@@ -255,12 +265,7 @@
+                                             SelectedDate="{x:Static sys:DateTime.Now}"/>
+                                 <TextBlock x:Name="EventDateDisplayTextBlock"
+                                            Text="—"
+-                                           Height="34"
+-                                           VerticalAlignment="Center"
+-                                           FontSize="14"
+-                                           FontWeight="SemiBold"
+-                                           Foreground="#2B2520"
+-                                           TextTrimming="CharacterEllipsis"/>
++                                           Style="{StaticResource ContextReadOnlyValueTextStyle}"/>
+                             </Grid>
+                         </StackPanel>
+                     </Grid>

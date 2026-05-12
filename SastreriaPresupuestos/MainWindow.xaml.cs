@@ -92,6 +92,7 @@ namespace SastreriaPresupuestos
         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
+        private TextBlock PhoneDisplayTextBlock => PresupuestoView.PhoneDisplayTextBlock;
         private TextBox DniTextBox => PresupuestoView.DniTextBox;
         private Button SaveClientButton => PresupuestoView.SaveClientButton;
         private Button ClientSheetButton => PresupuestoView.ClientSheetButton;
@@ -101,6 +102,9 @@ namespace SastreriaPresupuestos
         private TextBox QuoteTitleTextBox => PresupuestoView.QuoteTitleTextBox;
         private TextBlock QuoteTitlePlaceholderTextBlock => PresupuestoView.QuoteTitlePlaceholderTextBlock;
         private ComboBox QuoteStatusComboBox => PresupuestoView.QuoteStatusComboBox;
+        private Border QuoteStatusBadgeBorder => PresupuestoView.QuoteStatusBadgeBorder;
+        private TextBlock QuoteStatusBadgeTextBlock => PresupuestoView.QuoteStatusBadgeTextBlock;
+        private TextBlock EventDateDisplayTextBlock => PresupuestoView.EventDateDisplayTextBlock;
         private TextBox DepositTextBox => PresupuestoView.DepositTextBox;
         private TextBlock PendingAmountTextBlock => PresupuestoView.PendingAmountTextBlock;
         private TextBox QuoteNotesTextBox => PresupuestoView.QuoteNotesTextBox;
@@ -3230,15 +3234,16 @@ namespace SastreriaPresupuestos
                 ? "—"
                 : ClientNameTextBox.Text.Trim();
 
-            var phone = string.IsNullOrWhiteSpace(PhoneTextBox.Text)
-                ? "—"
-                : PhoneTextBox.Text.Trim();
+            var phone = FormatPhoneForDisplay(PhoneTextBox.Text);
 
             var quoteTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
                 ? "—"
                 : QuoteTitleTextBox.Text.Trim();
 
             var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
+            var eventText = EventDatePicker.SelectedDate.HasValue
+                ? EventDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
+                : "—";
             var deliveryText = DeliveryDatePicker.SelectedDate.HasValue
                 ? DeliveryDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
                 : "—";
@@ -3248,9 +3253,13 @@ namespace SastreriaPresupuestos
             ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
             ActiveWorkspaceSubtitle.Text = clientName == "—" ? "Selecciona un cliente o crea un trabajo" : clientName;
             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
+            PhoneDisplayTextBlock.Text = phone;
+            UpdateQuoteStatusBadge(status);
+            EventDateDisplayTextBlock.Text = eventText;
+
             ActivePhoneTextBlock.Text = $"Teléfono: {phone}";
             ActiveQuoteTextBlock.Text = $"Estado: {status}";
-            ActiveDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
+            ActiveDeliveryTextBlock.Text = $"Evento: {eventText}";
             ActiveDepositTextBlock.Text = $"Señal: {deposit:N2} €";
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
 
@@ -3264,7 +3273,7 @@ namespace SastreriaPresupuestos
                 BudgetWorkspaceStatusTextBlock.Text = $"Estado: {status}";
 
             if (BudgetWorkspaceDeliveryTextBlock != null)
-                BudgetWorkspaceDeliveryTextBlock.Text = $"Entrega: {deliveryText}";
+                BudgetWorkspaceDeliveryTextBlock.Text = $"Evento: {eventText}";
 
             if (BudgetWorkspaceTotalTextBlock != null)
                 BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
@@ -3275,6 +3284,47 @@ namespace SastreriaPresupuestos
             UpdateWorkflowState();
         }
 
+
+
+        private string FormatPhoneForDisplay(string? phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return "—";
+
+            var digits = new string(phone.Where(char.IsDigit).ToArray());
+
+            if (digits.Length == 9)
+                return $"{digits[..3]} {digits.Substring(3, 2)} {digits.Substring(5, 2)} {digits.Substring(7, 2)}";
+
+            return phone.Trim();
+        }
+
+        private void UpdateQuoteStatusBadge(string? status)
+        {
+            var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "Pendiente" : status.Trim();
+
+            QuoteStatusBadgeTextBlock.Text = normalizedStatus.ToUpperInvariant();
+
+            switch (normalizedStatus)
+            {
+                case "Aceptado":
+                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(93, 135, 88));
+                    QuoteStatusBadgeTextBlock.Foreground = Brushes.White;
+                    break;
+                case "Entregado":
+                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(120, 130, 112));
+                    QuoteStatusBadgeTextBlock.Foreground = Brushes.White;
+                    break;
+                case "Rechazado":
+                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(170, 100, 90));
+                    QuoteStatusBadgeTextBlock.Foreground = Brushes.White;
+                    break;
+                default:
+                    QuoteStatusBadgeBorder.Background = new SolidColorBrush(MediaColor.FromRgb(238, 242, 234));
+                    QuoteStatusBadgeTextBlock.Foreground = new SolidColorBrush(MediaColor.FromRgb(47, 51, 45));
+                    break;
+            }
+        }
 
         private void UpdateContextPanel(string clientName, string quoteTitle, decimal total)
         {
