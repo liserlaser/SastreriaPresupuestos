@@ -119,6 +119,7 @@ namespace SastreriaPresupuestos
         private TextBlock ProductsUnsavedChangesTextBlock => ProductosView.ProductsUnsavedChangesTextBlock;
         private Button AddProductButton => ProductosView.AddProductButton;
         private Button SaveProductsButton => ProductosView.SaveProductsButton;
+        private Button BackToJobDashboardButton => ProductosView.BackToJobDashboardButton;
         private DataGrid ProductsDataGrid => ProductosView.ProductsDataGrid;
         private TextBlock TotalTextBlock => ProductosView.TotalTextBlock;
         private Border DocumentsEmptyHintBorder => DocumentosView.DocumentsEmptyHintBorder;
@@ -3435,6 +3436,7 @@ namespace SastreriaPresupuestos
             AddProductButton.Click += AddProductButton_Click;
             SaveButton.Click += SaveButton_Click;
             SaveProductsButton.Click += SaveButton_Click;
+            BackToJobDashboardButton.Click += BackToJobDashboardButton_Click;
             NewQuoteButton.Click += NewQuoteButton_Click;
             NewQuoteFromClientButton.Click += NewQuoteFromClientButton_Click;
             OpenSelectedClientQuoteButton.Click += OpenSelectedClientQuoteButton_Click;
@@ -4122,6 +4124,12 @@ namespace SastreriaPresupuestos
         }
 
         private void BudgetQuickSummaryButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            NavigateToSection(TabPresupuesto);
+        }
+
+        private void BackToJobDashboardButton_Click(object sender, RoutedEventArgs e)
         {
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
