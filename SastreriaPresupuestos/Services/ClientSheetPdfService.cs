@@ -16,8 +16,8 @@ namespace SastreriaPresupuestos.Services
         private const string BorderColor = "#D7DDD2";
         private const string MutedColor = "#6D7468";
 
-        private const string BusinessName = "Sastrería Martínez Mor";
-        private const string BusinessSubtitle = "Ficha interna de cliente";
+        private const string BusinessName = "Martínez Mor Sastrería";
+        private const string BusinessSubtitle = "Ficha de cliente";
 
         private static string LogoPath =>
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "logovectordefA.png");

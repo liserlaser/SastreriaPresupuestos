@@ -17,10 +17,10 @@ namespace SastreriaPresupuestos.Services
         private const string BorderColor = "#D7DDD2";
         private const string MutedColor = "#6D7468";
 
-        private const string BusinessName = "Sastrería Martínez Mor";
+        private const string BusinessName = "Martínez Mor Sastrería";
         private const string BusinessSubtitle = "Sastrería a medida";
         private const string BusinessPhone = "611 66 27 10";
-        private const string BusinessAddress = "Calle Maestro Sosa, 26 Valencia";
+        private const string BusinessAddress = "Maestro Sosa, 26 Valencia";
         private const string BusinessEmail = "sastreriamartinezmor@gmail.com";
         private const string BusinessFooter = "Gracias por confiar en nuestra sastrería";
 
