@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SastreriaPresupuestos.Views.PresupuestoView"
+<UserControl x:Class="SastreriaPresupuestos.Views.PresupuestoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime">
@@ -31,6 +31,9 @@
         <Style x:Key="ContextDatePickerStyle" TargetType="DatePicker">
             <Setter Property="Height" Value="34"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#2B2520"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="#FBFCFA"/>

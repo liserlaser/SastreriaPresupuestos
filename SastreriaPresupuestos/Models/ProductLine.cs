@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using SastreriaPresupuestos.Services;
 
@@ -144,7 +144,11 @@ namespace SastreriaPresupuestos.Models
 
         public void UpdateTotal()
         {
-            var calculatedTotal = (BasePrice + FabricPrice + ManualPrice) * Quantity;
+            // Si se introduce un importe en Ajuste, pasa a ser el importe final de la línea.
+            // Si Ajuste queda a 0, se mantiene el cálculo automático por base + tejido + cantidad.
+            var calculatedTotal = ManualPrice > 0
+                ? ManualPrice
+                : (BasePrice + FabricPrice) * Quantity;
 
             if (calculatedTotal < 0)
                 calculatedTotal = 0;

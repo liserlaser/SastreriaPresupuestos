@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Data;
@@ -2887,9 +2887,7 @@ namespace SastreriaPresupuestos
 
         private bool ShouldAllowNegative(System.Windows.Controls.TextBox textBox)
         {
-            var header = textBox.Tag?.ToString() ?? "";
-
-            return header == "Ajuste";
+            return false;
         }
 
         private bool IsValidNumericInput(string text, bool allowNegative)
@@ -2897,7 +2895,6 @@ namespace SastreriaPresupuestos
             if (string.IsNullOrWhiteSpace(text))
                 return true;
 
-            // Permitimos escribir parcialmente "-" solo en ajuste
             if (text == "-")
                 return allowNegative;
 
@@ -3481,6 +3478,7 @@ namespace SastreriaPresupuestos
             ClientNotesTextBox.TextChanged += AnyEditableField_Changed;
             DepositTextBox.TextChanged += DepositTextBox_TextChanged;
             DepositTextBox.PreviewTextInput += DepositTextBox_PreviewTextInput;
+            DepositTextBox.PreviewMouseLeftButtonDown += DepositTextBox_PreviewMouseLeftButtonDown;
             DepositTextBox.GotKeyboardFocus += DepositTextBox_GotKeyboardFocus;
             DepositTextBox.LostKeyboardFocus += DepositTextBox_LostKeyboardFocus;
 
@@ -4578,11 +4576,25 @@ namespace SastreriaPresupuestos
             }
         }
 
+        private void DepositTextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not TextBox textBox || textBox.IsKeyboardFocusWithin)
+                return;
+
+            e.Handled = true;
+            textBox.Focus();
+        }
+
         private void DepositTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             DepositTextBox.Text = DepositTextBox.Text
                 .Replace("€", "")
                 .Trim();
+
+            if (GetDepositValue() == 0)
+            {
+                DepositTextBox.Clear();
+            }
 
             DepositTextBox.SelectAll();
         }
