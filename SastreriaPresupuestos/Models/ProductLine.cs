@@ -22,7 +22,7 @@ namespace SastreriaPresupuestos.Models
             get => _productName;
             set
             {
-                _productName = value;
+                _productName = value ?? string.Empty;
 
                 UpdateTailoringOptions();
 
@@ -38,7 +38,7 @@ namespace SastreriaPresupuestos.Models
             get => _tailoringType;
             set
             {
-                _tailoringType = value;
+                _tailoringType = value ?? string.Empty;
                 Notify(nameof(TailoringType));
 
                 RefreshPrice();
@@ -50,7 +50,7 @@ namespace SastreriaPresupuestos.Models
             get => _fabric;
             set
             {
-                _fabric = value;
+                _fabric = value ?? string.Empty;
                 Notify(nameof(Fabric));
 
                 // aquí puedes añadir lógica futura de tejidos
@@ -174,34 +174,19 @@ namespace SastreriaPresupuestos.Models
         {
             AvailableTailoringTypes.Clear();
 
-            if (ProductName == "Camisa")
-            {
-                AvailableTailoringTypes.Add("Confeccion");
-                AvailableTailoringTypes.Add("Medida");
+            var tailoringTypes = PriceService.GetTailoringTypes(ProductName);
 
-                if (TailoringType != "Confeccion" && TailoringType != "Medida")
-                    TailoringType = "Confeccion";
+            foreach (var tailoringType in tailoringTypes)
+                AvailableTailoringTypes.Add(tailoringType);
 
-                return;
-            }
-
-            if (ProductName == "Corbata" ||
-                ProductName == "Pañuelo" ||
-                ProductName == "Gemelos" ||
-                ProductName == "Tirantes" ||
-                ProductName == "Zapatos" ||
-                ProductName == "Concepto Libre")
+            if (tailoringTypes.Count == 0)
             {
                 TailoringType = "";
                 return;
             }
 
-            AvailableTailoringTypes.Add("Confeccion");
-            AvailableTailoringTypes.Add("Medida");
-            AvailableTailoringTypes.Add("Artesanal");
-
-            if (string.IsNullOrWhiteSpace(TailoringType))
-                TailoringType = "Confeccion";
+            if (!tailoringTypes.Contains(TailoringType))
+                TailoringType = tailoringTypes[0];
         }
     }
 }

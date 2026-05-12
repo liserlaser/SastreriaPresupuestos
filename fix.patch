@@ -1,0 +1,63 @@
+diff --git a/SastreriaPresupuestos/Models/ProductLine.cs b/SastreriaPresupuestos/Models/ProductLine.cs
+index c5ba564..6bb47a1 100644
+--- a/SastreriaPresupuestos/Models/ProductLine.cs
++++ b/SastreriaPresupuestos/Models/ProductLine.cs
+@@ -22,7 +22,7 @@ namespace SastreriaPresupuestos.Models
+             get => _productName;
+             set
+             {
+-                _productName = value;
++                _productName = value ?? string.Empty;
+ 
+                 UpdateTailoringOptions();
+ 
+@@ -38,7 +38,7 @@ namespace SastreriaPresupuestos.Models
+             get => _tailoringType;
+             set
+             {
+-                _tailoringType = value;
++                _tailoringType = value ?? string.Empty;
+                 Notify(nameof(TailoringType));
+ 
+                 RefreshPrice();
+@@ -50,7 +50,7 @@ namespace SastreriaPresupuestos.Models
+             get => _fabric;
+             set
+             {
+-                _fabric = value;
++                _fabric = value ?? string.Empty;
+                 Notify(nameof(Fabric));
+ 
+                 // aquí puedes añadir lógica futura de tejidos
+diff --git a/SastreriaPresupuestos/Services/PriceService.cs b/SastreriaPresupuestos/Services/PriceService.cs
+index b9335fb..eaed9a5 100644
+--- a/SastreriaPresupuestos/Services/PriceService.cs
++++ b/SastreriaPresupuestos/Services/PriceService.cs
+@@ -61,16 +61,22 @@ namespace SastreriaPresupuestos.Services
+             db.SaveChanges();
+         }
+ 
+-        public static string BuildKey(string productName, string tailoringType)
++        public static string BuildKey(string? productName, string? tailoringType)
+         {
+-            if (string.IsNullOrWhiteSpace(tailoringType))
+-                return productName;
++            var normalizedProductName = productName?.Trim() ?? string.Empty;
++            var normalizedTailoringType = tailoringType?.Trim() ?? string.Empty;
+ 
+-            return $"{productName}-{tailoringType}";
++            if (string.IsNullOrWhiteSpace(normalizedTailoringType))
++                return normalizedProductName;
++
++            return $"{normalizedProductName}-{normalizedTailoringType}";
+         }
+ 
+-        public static decimal GetPrice(string productName, string tailoringType)
++        public static decimal GetPrice(string? productName, string? tailoringType)
+         {
++            if (string.IsNullOrWhiteSpace(productName))
++                return 0;
++
+             var key = BuildKey(productName, tailoringType);
+ 
+             if (Prices.ContainsKey(key))

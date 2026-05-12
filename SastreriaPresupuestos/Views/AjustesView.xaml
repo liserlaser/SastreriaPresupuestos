@@ -48,12 +48,12 @@
                         <StackPanel>
 
                             <TextBlock
-                                Text="Precios"
+                                Text="Productos"
                                 FontSize="18"
                                 FontWeight="Bold"/>
 
                             <TextBlock
-                                Text="Modifica las tarifas base de prendas y complementos."
+                                Text="Añade productos y modifica sus tipos, precios y categoría."
                                 FontSize="13"
                                 Foreground="{StaticResource MutedTextBrush}"
                                 TextWrapping="Wrap"
@@ -61,7 +61,7 @@
 
                             <Button
                                 x:Name="PricesConfigButton"
-                                Content="Configurar Precios"
+                                Content="Editar Productos"
                                 Height="40"
                                 FontSize="15"
                                 Style="{StaticResource SecondaryButtonStyle}"/>

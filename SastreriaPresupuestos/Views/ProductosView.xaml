@@ -1,24 +1,6 @@
 <UserControl x:Class="SastreriaPresupuestos.Views.ProductosView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sys="clr-namespace:System;assembly=System.Runtime">
-
-    <UserControl.Resources>
-        <x:Array Type="{x:Type sys:String}" x:Key="ProductList">
-            <sys:String>Traje</sys:String>
-            <sys:String>Chaqué</sys:String>
-            <sys:String>Chaleco</sys:String>
-            <sys:String>Chaqueta</sys:String>
-            <sys:String>Pantalón</sys:String>
-            <sys:String>Camisa</sys:String>
-            <sys:String>Corbata</sys:String>
-            <sys:String>Pañuelo</sys:String>
-            <sys:String>Gemelos</sys:String>
-            <sys:String>Tirantes</sys:String>
-            <sys:String>Zapatos</sys:String>
-            <sys:String>Concepto Libre</sys:String>
-        </x:Array>
-    </UserControl.Resources>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
                     <Grid Margin="0,0,0,0">
 
@@ -153,7 +135,7 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ComboBox
-														ItemsSource="{StaticResource ProductList}"
+														ItemsSource="{Binding AvailableProductNames, RelativeSource={RelativeSource AncestorType=Window}}"
 														SelectedItem="{Binding ProductName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 														VerticalAlignment="Center"/>
                                                 </DataTemplate>

@@ -44,6 +44,8 @@ namespace SastreriaPresupuestos
         private readonly DocumentosView DocumentosView = new();
         private readonly AjustesView AjustesView = new();
 
+        public ObservableCollection<string> AvailableProductNames { get; } = new();
+
         private TextBlock WeekTitleTextBlock => DashboardView.WeekTitleTextBlock;
         private Button PreviousCalendarButton => DashboardView.PreviousCalendarButton;
         private Button TodayCalendarButton => DashboardView.TodayCalendarButton;
@@ -1029,10 +1031,11 @@ namespace SastreriaPresupuestos
             if (result == true)
             {
                 PriceService.LoadPrices();
+                RefreshAvailableProductNames();
 
                 MessageBox.Show(
-                    "Los nuevos precios se aplicarán a los productos que añadas o cambies a partir de ahora. Los trabajos ya abiertos conservarán sus precios actuales.",
-                    "Precios actualizados",
+                    "Los productos y precios actualizados se aplicarán a los productos que añadas o cambies a partir de ahora. Los trabajos ya abiertos conservarán sus precios actuales.",
+                    "Productos actualizados",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
@@ -1283,12 +1286,7 @@ namespace SastreriaPresupuestos
                     return false;
                 }
 
-                if (product.ProductName != "Concepto Libre" &&
-                    product.ProductName != "Corbata" &&
-                    product.ProductName != "Pañuelo" &&
-                    product.ProductName != "Gemelos" &&
-                    product.ProductName != "Tirantes" &&
-                    product.ProductName != "Zapatos" &&
+                if (PriceService.HasTailoringTypes(product.ProductName) &&
                     string.IsNullOrWhiteSpace(product.TailoringType))
                 {
                     MessageBox.Show(
@@ -1389,12 +1387,7 @@ namespace SastreriaPresupuestos
                 if (string.IsNullOrWhiteSpace(product.ProductName))
                     return false;
 
-                if (product.ProductName != "Concepto Libre" &&
-                    product.ProductName != "Corbata" &&
-                    product.ProductName != "Pañuelo" &&
-                    product.ProductName != "Gemelos" &&
-                    product.ProductName != "Tirantes" &&
-                    product.ProductName != "Zapatos" &&
+                if (PriceService.HasTailoringTypes(product.ProductName) &&
                     string.IsNullOrWhiteSpace(product.TailoringType))
                 {
                     return false;
@@ -3421,9 +3414,18 @@ namespace SastreriaPresupuestos
         private void LoadInitialData()
         {
             PriceService.LoadPrices();
+            RefreshAvailableProductNames();
 
             LoadClients();
             LoadCalendarDeliveries();
+        }
+
+        private void RefreshAvailableProductNames()
+        {
+            AvailableProductNames.Clear();
+
+            foreach (var productName in PriceService.GetProductNames())
+                AvailableProductNames.Add(productName);
         }
 
         private void WireEvents()

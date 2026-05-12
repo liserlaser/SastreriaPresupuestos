@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using SastreriaPresupuestos.Data;
 using SastreriaPresupuestos.Models;
@@ -16,10 +16,11 @@ namespace SastreriaPresupuestos.Services
             EnsureDefaultPrices(db);
 
             Prices = db.PriceItems
-                .ToList()
+                .AsEnumerable()
+                .GroupBy(p => BuildKey(p.ProductName, p.TailoringType))
                 .ToDictionary(
-                    p => BuildKey(p.ProductName, p.TailoringType),
-                    p => p.Price);
+                    g => g.Key,
+                    g => g.Last().Price);
         }
 
         private static void EnsureDefaultPrices(AppDbContext db)
@@ -60,22 +61,69 @@ namespace SastreriaPresupuestos.Services
             db.SaveChanges();
         }
 
-        public static string BuildKey(string productName, string tailoringType)
+        public static string BuildKey(string? productName, string? tailoringType)
         {
-            if (string.IsNullOrWhiteSpace(tailoringType))
-                return productName;
+            var normalizedProductName = productName?.Trim() ?? string.Empty;
+            var normalizedTailoringType = tailoringType?.Trim() ?? string.Empty;
 
-            return $"{productName}-{tailoringType}";
+            if (string.IsNullOrWhiteSpace(normalizedTailoringType))
+                return normalizedProductName;
+
+            return $"{normalizedProductName}-{normalizedTailoringType}";
         }
 
-        public static decimal GetPrice(string productName, string tailoringType)
+        public static decimal GetPrice(string? productName, string? tailoringType)
         {
+            if (string.IsNullOrWhiteSpace(productName))
+                return 0;
+
             var key = BuildKey(productName, tailoringType);
 
             if (Prices.ContainsKey(key))
                 return Prices[key];
 
             return 0;
+        }
+
+        public static List<string> GetProductNames()
+        {
+            using var db = new AppDbContext();
+
+            EnsureDefaultPrices(db);
+
+            var products = db.PriceItems
+                .Select(p => p.ProductName)
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Distinct()
+                .OrderBy(p => p)
+                .ToList();
+
+            if (!products.Contains("Concepto Libre"))
+                products.Add("Concepto Libre");
+
+            return products;
+        }
+
+        public static List<string> GetTailoringTypes(string productName)
+        {
+            if (string.IsNullOrWhiteSpace(productName) || productName == "Concepto Libre")
+                return new List<string>();
+
+            using var db = new AppDbContext();
+
+            EnsureDefaultPrices(db);
+
+            return db.PriceItems
+                .Where(p => p.ProductName == productName && !string.IsNullOrWhiteSpace(p.TailoringType))
+                .Select(p => p.TailoringType)
+                .Distinct()
+                .OrderBy(t => t)
+                .ToList();
+        }
+
+        public static bool HasTailoringTypes(string productName)
+        {
+            return GetTailoringTypes(productName).Any();
         }
     }
 }
