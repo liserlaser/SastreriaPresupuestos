@@ -117,14 +117,18 @@
                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
                             <TextBlock Text="Nombre" 
                                        Style="{StaticResource ContextLabelTextStyle}"/>
-                            <TextBox x:Name="ClientNameTextBox" 
-                                     Style="{StaticResource ContextTextBoxStyle}" 
-                                     IsReadOnly="True" 
-                                     BorderThickness="0" 
-                                     Background="Transparent" 
-                                     Padding="0" 
-                                     FontWeight="SemiBold" 
-                                     Cursor="Arrow"/>
+                            <Grid>
+                                <!-- Se mantiene el TextBox oculto porque centraliza la lógica existente de guardado/autoguardado. -->
+                                <TextBox x:Name="ClientNameTextBox"
+                                         Visibility="Collapsed"/>
+                                <TextBlock Text="{Binding Text, ElementName=ClientNameTextBox, TargetNullValue=—, FallbackValue=—}"
+                                           Height="34"
+                                           VerticalAlignment="Center"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="#2B2520"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </Grid>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="0,0,0,0">
