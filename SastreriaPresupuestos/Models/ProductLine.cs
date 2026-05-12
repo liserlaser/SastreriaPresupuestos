@@ -144,11 +144,9 @@ namespace SastreriaPresupuestos.Models
 
         public void UpdateTotal()
         {
-            // Si se introduce un importe en Ajuste, pasa a ser el importe final de la línea.
-            // Si Ajuste queda a 0, se mantiene el cálculo automático por base + tejido + cantidad.
-            var calculatedTotal = ManualPrice > 0
-                ? ManualPrice
-                : (BasePrice + FabricPrice) * Quantity;
+            // El campo Precio es editable y sustituye al antiguo Ajuste.
+            // El total se calcula directamente desde Precio + Tejido, sin una segunda celda manual.
+            var calculatedTotal = (BasePrice + FabricPrice) * Quantity;
 
             if (calculatedTotal < 0)
                 calculatedTotal = 0;
@@ -163,6 +161,9 @@ namespace SastreriaPresupuestos.Models
 
         public void RefreshPrice()
         {
+            // Solo debe llamarse cuando cambia el producto o el tipo de confección.
+            // No debe ejecutarse al editar cantidad/precio, porque sobrescribiría
+            // el precio final introducido manualmente con la tarifa base.
             UpdateBasePrice();
             UpdateTotal();
         }

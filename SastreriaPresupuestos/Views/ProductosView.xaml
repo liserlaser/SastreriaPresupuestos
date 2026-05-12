@@ -180,9 +180,9 @@
 											EditingElementStyle="{StaticResource FabricEditingTextBoxStyle}"
 											Width="*" />
 
-                                        <!-- PRECIO BASE -->
+                                        <!-- PRECIO -->
                                         <DataGridTextColumn
-											Header="Base"
+											Header="Precio"
 											Binding="{Binding BasePrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 											ElementStyle="{StaticResource RightAlignedCellStyle}"
 											EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
@@ -196,13 +196,6 @@
 											EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
 											Width="115" />
 
-                                        <!-- INCREMENTO / DESCUENTO -->
-                                        <DataGridTextColumn
-											Header="Ajuste"
-											Binding="{Binding ManualPrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
-											ElementStyle="{StaticResource RightAlignedCellStyle}"
-											EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
-											Width="115" />
 
                                         <!-- TOTAL -->
                                         <DataGridTextColumn

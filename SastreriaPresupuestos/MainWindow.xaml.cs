@@ -440,7 +440,7 @@ namespace SastreriaPresupuestos
                     Fabric = product.Fabric,
                     BasePrice = product.BasePrice,
                     FabricPrice = product.FabricPrice,
-                    ManualPrice = product.ManualPrice,
+                    ManualPrice = 0,
                     Total = product.Total
                 };
 
@@ -765,9 +765,11 @@ namespace SastreriaPresupuestos
                     ProductName = item.ProductName,
                     TailoringType = item.TailoringType,
                     Fabric = item.Fabric,
-                    BasePrice = item.BasePrice,
+                    // Compatibilidad: si la línea venía de la etapa anterior con Ajuste,
+                    // ese importe pasa a ser el Precio editable visible.
+                    BasePrice = item.ManualPrice > 0 ? item.ManualPrice : item.BasePrice,
                     FabricPrice = item.FabricPrice,
-                    ManualPrice = item.ManualPrice,
+                    ManualPrice = 0,
                     Quantity = item.Quantity,
                     Total = item.Total
                 };
@@ -908,11 +910,13 @@ namespace SastreriaPresupuestos
 
         private void ProductsDataGrid_CellEditEnding(object? sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
         {
-            if (e.Row.Item is ProductLine line)
+            if (e.Row.Item is ProductLine)
             {
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    line.RefreshPrice();
+                    // No recalculamos el precio base aquí: el campo "Precio" es editable
+                    // y debe mantenerse como precio final cuando cambia la cantidad.
+                    // ProductName/TailoringType ya actualizan el precio por defecto desde ProductLine.
                     UpdateGrandTotal();
                     MarkAsChanged();
                 }), System.Windows.Threading.DispatcherPriority.Background);
@@ -1456,7 +1460,7 @@ namespace SastreriaPresupuestos
                         Fabric = product.Fabric,
                         BasePrice = product.BasePrice,
                         FabricPrice = product.FabricPrice,
-                        ManualPrice = product.ManualPrice,
+                        ManualPrice = 0,
                         Total = product.Total
                     });
                 }
@@ -2048,9 +2052,9 @@ namespace SastreriaPresupuestos
                                 ProductName = item.ProductName,
                                 TailoringType = item.TailoringType,
                                 Fabric = item.Fabric,
-                                BasePrice = item.BasePrice,
+                                BasePrice = item.ManualPrice > 0 ? item.ManualPrice : item.BasePrice,
                                 FabricPrice = item.FabricPrice,
-                                ManualPrice = item.ManualPrice,
+                                ManualPrice = 0,
                                 Quantity = item.Quantity,
                                 Total = item.Total
                             };
@@ -2852,10 +2856,9 @@ namespace SastreriaPresupuestos
 
             textBox.Tag = header;
 
-            if (header == "Base" ||
-                header == "Precio tejido" ||
-                header == "Tejido" ||
-                header == "Ajuste")
+            if (header == "Precio" ||
+                header == "Precio Tejido" ||
+                header == "Tejido")
             {
                 textBox.Text = textBox.Text
                     .Replace("€", "")
@@ -2872,10 +2875,9 @@ namespace SastreriaPresupuestos
             }
 
             if (header == "Cant." ||
-                header == "Base" ||
-                header == "Precio tejido" ||
-                header == "Tejido" ||
-                header == "Ajuste")
+                header == "Precio" ||
+                header == "Precio Tejido" ||
+                header == "Tejido")
             {
                 textBox.PreviewTextInput -= NumericTextBox_PreviewTextInput;
                 textBox.PreviewTextInput += NumericTextBox_PreviewTextInput;
