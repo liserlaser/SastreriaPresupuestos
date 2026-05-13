@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /fix.patch
 /job.patch
+/summary.patch
