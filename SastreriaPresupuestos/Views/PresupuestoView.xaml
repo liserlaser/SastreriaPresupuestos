@@ -334,13 +334,13 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border
-        Background="{Binding CardBackground}"
-        BorderBrush="{Binding CardBorderBrush}"
-        BorderThickness="{Binding CardBorderThickness}"
-        CornerRadius="14"
-        Padding="14,12"
-        Margin="0,0,0,8"
-		ToolTip="Doble clic para abrir el trabajo">
+                                    Background="{Binding CardBackground}"
+                                    BorderBrush="{Binding CardBorderBrush}"
+                                    BorderThickness="{Binding CardBorderThickness}"
+                                    CornerRadius="14"
+                                    Padding="14,12"
+                                    Margin="0,0,0,8"
+		                            ToolTip="Doble clic para abrir el trabajo">
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -454,8 +454,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0"
@@ -472,7 +470,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel>
-                                <TextBlock Text="RESUMEN"
+                                <TextBlock Text="TRABAJO ACTIVO"
                                            FontSize="12"
                                            FontWeight="Bold"
                                            Foreground="{StaticResource AccentBrush}"/>
@@ -482,7 +480,7 @@
                                            FontWeight="Bold"
                                            Margin="0,4,0,0"
                                            TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="Completa importes, notas, productos y PDF desde este espacio. Cliente y trabajo se editan desde la barra superior."
+                                <TextBlock Text="Gestiona el resumen, las notas y los documentos del trabajo sin salir de esta vista."
                                            FontSize="13"
                                            Foreground="{StaticResource MutedTextBrush}"
                                            Margin="0,10,0,0"
@@ -519,16 +517,16 @@
                                     <Button x:Name="BudgetQuickHistoryButton"
                                             Content="Historial"
                                             Height="34"
-                                            ToolTip="Ir a Actividad reciente"
+                                            ToolTip="Ir al historial del trabajo"
                                             Style="{StaticResource SecondaryButtonStyle}"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
                                     <Button x:Name="BudgetQuickDocumentsButton"
-                                            Content="Ver PDF"
+                                            Content="Documentos"
                                             Height="34"
                                             Margin="0,0,0,7"
-                                            ToolTip="Abrir la zona de PDF y documentos"
+                                            ToolTip="Abrir las acciones de documentos del trabajo"
                                             Style="{StaticResource SecondaryButtonStyle}"/>
                                     <Button x:Name="BudgetQuickExportPdfButton"
                                             Content="Exportar PDF"
@@ -558,156 +556,382 @@
                     <Border Grid.Row="1"
                             Background="{StaticResource CardBackgroundBrush}"
                             CornerRadius="18"
-                            Padding="16"
-                            BorderBrush="{StaticResource BorderSoftBrush}"
-                            BorderThickness="1"
-                            Margin="0,0,0,12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.05*"/>
-                                <ColumnDefinition Width="0.9*"/>
-                                <ColumnDefinition Width="0.95*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
-                                       Text="IMPORTES Y FECHAS"
-                                       FontSize="12"
-                                       FontWeight="Bold"
-                                       Foreground="{StaticResource AccentBrush}"
-                                       Margin="0,0,0,12"/>
-
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
-                                <TextBlock Text="Fecha evento" Style="{StaticResource ContextLabelTextStyle}"/>
-                                <DatePicker x:Name="EventDatePicker" Style="{StaticResource ContextDatePickerStyle}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,12,0">
-                                <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
-                                <TextBox x:Name="DepositTextBox"
-                                         Style="{StaticResource ContextTextBoxStyle}"
-                                         Text="0"
-                                         HorizontalContentAlignment="Right"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Row="1" Grid.Column="2">
-                                <TextBlock Text="Pendiente" Style="{StaticResource ContextLabelTextStyle}"/>
-                                <TextBlock x:Name="PendingAmountTextBlock"
-                                           Text="0,00 €"
-                                           Height="34"
-                                           VerticalAlignment="Center"
-                                           FontSize="20"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource PrimaryBrush}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>                    
-
-                    <Border Grid.Row="2"
-                            Background="{StaticResource CardBackgroundBrush}"
-                            CornerRadius="18"
-                            Padding="18"
-                            BorderBrush="{StaticResource BorderSoftBrush}"
-                            BorderThickness="1"
-                            Margin="0,0,0,14">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                       Text="NOTAS"
-                                       FontSize="12"
-                                       FontWeight="Bold"
-                                       Foreground="{StaticResource AccentBrush}"
-                                       Margin="0,0,0,12"/>
-
-                            <Grid Grid.Row="1" Margin="0,0,0,12">
-                                <TextBox x:Name="QuoteNotesTextBox"
-                                         Height="78"
-                                         FontSize="14"
-                                         Padding="10,8"
-                                         TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         VerticalScrollBarVisibility="Auto"/>
-                                <TextBlock x:Name="QuoteNotesPlaceholderTextBlock"
-                                           Text="Notas internas, ajustes, preferencias del cliente..."
-                                           Foreground="{StaticResource MutedTextBrush}"
-                                           Margin="10,8,10,0"
-                                           VerticalAlignment="Top"
-                                           IsHitTestVisible="False"/>
-                            </Grid>
-
-                            <Grid Grid.Row="2">
-                                <TextBox x:Name="ClientNotesTextBox"
-                                         Height="64"
-                                         FontSize="14"
-                                         Padding="10,8"
-                                         TextWrapping="Wrap"
-                                         AcceptsReturn="True"
-                                         VerticalScrollBarVisibility="Auto"/>
-                                <TextBlock x:Name="ClientNotesPlaceholderTextBlock"
-                                           Text="Texto visible para el cliente en el PDF..."
-                                           Foreground="{StaticResource MutedTextBrush}"
-                                           Margin="10,8,10,0"
-                                           VerticalAlignment="Top"
-                                           IsHitTestVisible="False"/>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                    
-                    <Border x:Name="ActivityTimelineBorder"
-                            Grid.Row="3"
-                            Background="{StaticResource CardBackgroundBrush}"
-                            CornerRadius="18"
-                            Padding="18"
+                            Padding="0"
                             BorderBrush="{StaticResource BorderSoftBrush}"
                             BorderThickness="1">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <TabControl x:Name="PresupuestoWorkspaceTabs"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    SelectedIndex="0">
 
-                            <TextBlock Grid.Row="0"
-                                       Text="ACTIVIDAD RECIENTE"
-                                       FontSize="12"
-                                       FontWeight="Bold"
-                                       Foreground="{StaticResource AccentBrush}"
-                                       Margin="0,0,0,12"/>
+                            <TabItem Header="Resumen">
+                                <Grid Margin="18">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="1">
-                                <Border Background="#F8F3EF" CornerRadius="12" Padding="11" Margin="0,0,0,8">
+                                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.45*"/>
+                                            <ColumnDefinition Width="0.8*"/>
+                                            <ColumnDefinition Width="0.8*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Título" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <TextBox x:Name="WorkspaceQuoteTitleTextBox"
+                                                     Style="{StaticResource ContextTextBoxStyle}"
+                                                     Text="{Binding Text, ElementName=QuoteTitleTextBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                            <TextBlock Text="Estado" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <ComboBox x:Name="WorkspaceQuoteStatusComboBox"
+                                                      Height="34"
+                                                      FontSize="14"
+                                                      Padding="8,0"
+                                                      ItemsSource="{StaticResource QuoteStatusList}"
+                                                      SelectedItem="{Binding SelectedItem, ElementName=QuoteStatusComboBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Fecha creación" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <TextBox x:Name="QuoteCreatedAtTextBox"
+                                                     Height="34"
+                                                     FontSize="14"
+                                                     Padding="10,0"
+                                                     VerticalContentAlignment="Center"
+                                                     BorderThickness="1"
+                                                     BorderBrush="{StaticResource BorderSoftBrush}"
+                                                     Background="#F8FAF6"
+                                                     IsReadOnly="True"
+                                                     Text="—"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid Grid.Row="1" Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="0.75*"/>
+                                            <ColumnDefinition Width="0.75*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Fecha evento" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <DatePicker x:Name="EventDatePicker" Style="{StaticResource ContextDatePickerStyle}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                            <TextBlock Text="Fecha entrega" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <DatePicker x:Name="WorkspaceDeliveryDatePicker"
+                                                        Style="{StaticResource ContextDatePickerStyle}"
+                                                        SelectedDate="{Binding SelectedDate, ElementName=DeliveryDatePicker, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                                            <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <TextBox x:Name="DepositTextBox"
+                                                     Style="{StaticResource ContextTextBoxStyle}"
+                                                     Text="0"
+                                                     HorizontalContentAlignment="Right"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="3">
+                                            <TextBlock Text="Pendiente" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <TextBlock x:Name="PendingAmountTextBlock"
+                                                       Text="0,00 €"
+                                                       Height="34"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="20"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Border Grid.Row="2"
+                                            Background="#F8F3EF"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="14"
+                                            Padding="14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Total presupuesto" Style="{StaticResource ContextLabelTextStyle}"/>
+                                                <TextBlock Text="Se recalcula desde las líneas de producto. Usa Productos para modificar el desglose."
+                                                           FontSize="13"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                            <TextBox Grid.Column="1"
+                                                     Width="150"
+                                                     Height="38"
+                                                     Margin="18,0,0,0"
+                                                     VerticalContentAlignment="Center"
+                                                     HorizontalContentAlignment="Right"
+                                                     FontSize="18"
+                                                     FontWeight="Bold"
+                                                     BorderBrush="{StaticResource BorderSoftBrush}"
+                                                     Background="#FBFCFA"
+                                                     IsReadOnly="True"
+                                                     Text="{Binding Text, ElementName=BudgetWorkspaceTotalTextBlock}"/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <TabItem Header="Notas">
+                                <Grid Margin="18">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="12"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Border Grid.Row="0"
+                                            Background="#F8F3EF"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="16"
+                                            Padding="16">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="Notas internas"
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       Margin="0,0,0,10"/>
+                                            <Grid Grid.Row="1">
+                                                <TextBox x:Name="QuoteNotesTextBox"
+                                                         MinHeight="140"
+                                                         FontSize="14"
+                                                         Padding="10,8"
+                                                         TextWrapping="Wrap"
+                                                         AcceptsReturn="True"
+                                                         VerticalScrollBarVisibility="Auto"/>
+                                                <TextBlock x:Name="QuoteNotesPlaceholderTextBlock"
+                                                           Text="Notas internas, ajustes, preferencias del cliente..."
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           Margin="10,8,10,0"
+                                                           VerticalAlignment="Top"
+                                                           IsHitTestVisible="False"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Grid.Row="2"
+                                            Background="#FAF8F5"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="16"
+                                            Padding="16">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="Notas cliente / PDF"
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       Margin="0,0,0,10"/>
+                                            <Grid Grid.Row="1">
+                                                <TextBox x:Name="ClientNotesTextBox"
+                                                         MinHeight="120"
+                                                         FontSize="14"
+                                                         Padding="10,8"
+                                                         TextWrapping="Wrap"
+                                                         AcceptsReturn="True"
+                                                         VerticalScrollBarVisibility="Auto"/>
+                                                <TextBlock x:Name="ClientNotesPlaceholderTextBlock"
+                                                           Text="Texto visible para el cliente en el PDF..."
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           Margin="10,8,10,0"
+                                                           VerticalAlignment="Top"
+                                                           IsHitTestVisible="False"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <TabItem Header="Documentos">
+                                <Grid Margin="18">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Border x:Name="DocumentsEmptyHintBorder"
+                                            Grid.Row="0"
+                                            Background="#F8FAF6"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="13"
+                                            Margin="0,0,0,14"
+                                            Visibility="Collapsed">
+                                        <TextBlock x:Name="DocumentsEmptyHintTextBlock"
+                                                   Text="Selecciona o crea un trabajo con productos antes de exportar PDFs."
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource MutedTextBrush}"
+                                                   TextWrapping="Wrap"/>
+                                    </Border>
+
+                                    <Border x:Name="DocumentsLastPdfStatusBorder"
+                                            Grid.Row="1"
+                                            Background="#F8FAF6"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="13"
+                                            Margin="0,0,0,14"
+                                            Visibility="Collapsed">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                                                <TextBlock Text="Último documento generado"
+                                                           FontSize="12"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource AccentBrush}"/>
+                                                <TextBlock x:Name="DocumentsLastPdfStatusTextBlock"
+                                                           Text="Todavía no se ha generado ningún documento en esta sesión."
+                                                           FontSize="13"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                            <Button x:Name="OpenLastPdfButton"
+                                                    Grid.Column="1"
+                                                    Content="Abrir último"
+                                                    Height="34"
+                                                    MinWidth="112"
+                                                    VerticalAlignment="Center"
+                                                    Style="{StaticResource SecondaryButtonStyle}"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <UniformGrid Grid.Row="2" Columns="3" Margin="0,0,0,14">
+                                        <Border Background="#F8F3EF" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Ficha cliente" FontSize="17" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Genera la ficha interna del cliente y abre la carpeta configurada."
+                                                           FontSize="13" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,14"/>
+                                                <Button x:Name="ExportClientSheetButton" Content="Generar ficha" Height="36" Style="{StaticResource SecondaryButtonStyle}" Click="ExportClientSheetButton_Click"/>
+                                                <Button x:Name="OpenClientSheetFolderButton" Content="Abrir ficha cliente" Height="34" Margin="0,8,0,0" Style="{StaticResource SecondaryButtonStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Background="#F8F3EF" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="5,0,5,0">
+                                            <StackPanel>
+                                                <TextBlock Text="PDF presupuesto" FontSize="17" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Genera el PDF principal del trabajo o abre la carpeta de presupuestos."
+                                                           FontSize="13" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,14"/>
+                                                <Button x:Name="ExportPdfButton" Content="Generar PDF" Height="36" Style="{StaticResource DarkButtonStyle}"/>
+                                                <Button x:Name="OpenQuoteFolderButton" Content="Abrir presupuestos" Height="34" Margin="0,8,0,0" Style="{StaticResource SecondaryButtonStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Background="#FAF8F5" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="10,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="PDF opciones" FontSize="17" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Exporta todos los trabajos del cliente en un único documento comparativo."
+                                                           FontSize="13" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,14"/>
+                                                <Button x:Name="ExportAllQuotesPdfButton" Content="Generar PDF opciones" Height="36" Style="{StaticResource SecondaryButtonStyle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+
+                                    <Border Grid.Row="3"
+                                            Background="#FAF8F5"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="16"
+                                            Padding="16">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Factura"
+                                                           FontSize="17"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Botones preparados para la integración futura de facturación."
+                                                           FontSize="13"
+                                                           Foreground="{StaticResource MutedTextBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,6,0,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                                                <Button x:Name="CreateInvoiceButton" Content="Crear factura" Height="36" MinWidth="118" IsEnabled="False" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
+                                                <Button x:Name="ViewInvoiceButton" Content="Ver factura" Height="36" MinWidth="104" IsEnabled="False" Style="{StaticResource SecondaryButtonStyle}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <TabItem Header="Historial">
+                                <Border x:Name="ActivityTimelineBorder"
+                                        Margin="18"
+                                        Background="#FAF8F5"
+                                        CornerRadius="18"
+                                        Padding="18"
+                                        BorderBrush="{StaticResource BorderSoftBrush}"
+                                        BorderThickness="1">
                                     <StackPanel>
-                                        <TextBlock Text="Trabajo creado" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Datos base del cliente y del trabajo disponibles" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                        <TextBlock Text="HISTORIAL"
+                                                   FontSize="12"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   Margin="0,0,0,12"/>
+                                        <Border Background="#F8F3EF" CornerRadius="12" Padding="11" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="Implementación futura" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Aquí se mostrará la actividad real del trabajo: creación, cambios, documentos y facturación." FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#F8F3EF" CornerRadius="12" Padding="11" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="Trabajo creado" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Datos base del cliente y del trabajo disponibles" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#FAF8F5" CornerRadius="12" Padding="11" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="Productos preparados" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Accede a Productos para completar el presupuesto" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#F8F3EF" CornerRadius="12" Padding="11">
+                                            <StackPanel>
+                                                <TextBlock Text="PDF pendiente" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                <TextBlock Text="Genera el documento cuando productos y notas estén completos" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="#FAF8F5" CornerRadius="12" Padding="11" Margin="0,0,0,8">
-                                    <StackPanel>
-                                        <TextBlock Text="Productos preparados" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Accede a Productos para completar el presupuesto" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Background="#F8F3EF" CornerRadius="12" Padding="11" Margin="0,0,0,8">
-                                    <StackPanel>
-                                        <TextBlock Text="PDF pendiente" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Genera el documento cuando productos y notas estén completos" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Background="#FAF8F5" CornerRadius="12" Padding="11">
-                                    <StackPanel>
-                                        <TextBlock Text="Última edición" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Preparado para autosave e historial real en la siguiente fase" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Grid>
+                            </TabItem>
+                        </TabControl>
                     </Border>
                 </Grid>
             </ScrollViewer>

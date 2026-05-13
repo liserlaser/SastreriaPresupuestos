@@ -87,6 +87,10 @@ namespace SastreriaPresupuestos
         private Button BudgetQuickHistoryButton => PresupuestoView.BudgetQuickHistoryButton;
         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
         private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
+        private TabControl PresupuestoWorkspaceTabs => PresupuestoView.PresupuestoWorkspaceTabs;
+        private TextBox QuoteCreatedAtTextBox => PresupuestoView.QuoteCreatedAtTextBox;
+        private Button OpenQuoteFolderButton => PresupuestoView.OpenQuoteFolderButton;
+        private Button OpenClientSheetFolderButton => PresupuestoView.OpenClientSheetFolderButton;
         private ScrollViewer WorkspaceScrollViewer => PresupuestoView.WorkspaceScrollViewer;
         private Border ActivityTimelineBorder => PresupuestoView.ActivityTimelineBorder;
         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
@@ -126,14 +130,14 @@ namespace SastreriaPresupuestos
         private Button BackToJobDashboardButton => ProductosView.BackToJobDashboardButton;
         private DataGrid ProductsDataGrid => ProductosView.ProductsDataGrid;
         private TextBlock TotalTextBlock => ProductosView.TotalTextBlock;
-        private Border DocumentsEmptyHintBorder => DocumentosView.DocumentsEmptyHintBorder;
-        private TextBlock DocumentsEmptyHintTextBlock => DocumentosView.DocumentsEmptyHintTextBlock;
-        private Border DocumentsLastPdfStatusBorder => DocumentosView.DocumentsLastPdfStatusBorder;
-        private TextBlock DocumentsLastPdfStatusTextBlock => DocumentosView.DocumentsLastPdfStatusTextBlock;
-        private Button OpenLastPdfButton => DocumentosView.OpenLastPdfButton;
-        private Button ExportPdfButton => DocumentosView.ExportPdfButton;
-        private Button ExportClientSheetButton => DocumentosView.ExportClientSheetButton;
-        private Button ExportAllQuotesPdfButton => DocumentosView.ExportAllQuotesPdfButton;
+        private Border DocumentsEmptyHintBorder => PresupuestoView.DocumentsEmptyHintBorder;
+        private TextBlock DocumentsEmptyHintTextBlock => PresupuestoView.DocumentsEmptyHintTextBlock;
+        private Border DocumentsLastPdfStatusBorder => PresupuestoView.DocumentsLastPdfStatusBorder;
+        private TextBlock DocumentsLastPdfStatusTextBlock => PresupuestoView.DocumentsLastPdfStatusTextBlock;
+        private Button OpenLastPdfButton => PresupuestoView.OpenLastPdfButton;
+        private Button ExportPdfButton => PresupuestoView.ExportPdfButton;
+        private Button ExportClientSheetButton => PresupuestoView.ExportClientSheetButton;
+        private Button ExportAllQuotesPdfButton => PresupuestoView.ExportAllQuotesPdfButton;
         private Button PricesConfigButton => AjustesView.PricesConfigButton;
         private Button BackupButton => AjustesView.BackupButton;
         private TextBlock ClientSheetFolderTextBlock => AjustesView.ClientSheetFolderTextBlock;
@@ -1908,6 +1912,46 @@ namespace SastreriaPresupuestos
                 folder => CurrentSettings.QuoteExportFolder = folder);
         }
 
+        private void OpenQuoteFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenConfiguredExportFolder(CurrentSettings.QuoteExportFolder, "presupuestos");
+        }
+
+        private void OpenClientSheetFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenConfiguredExportFolder(CurrentSettings.ClientSheetExportFolder, "fichas de cliente");
+        }
+
+        private void OpenConfiguredExportFolder(string? folder, string label)
+        {
+            if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+            {
+                MessageBox.Show(
+                    $"Configura primero la carpeta de {label} en Ajustes.",
+                    "Abrir carpeta",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = folder,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo abrir la carpeta. {ex.Message}",
+                    "Abrir carpeta",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
 
         private bool TryBuildExportFilePath(string? folder, string fileName, string configurationLabel, out string filePath)
         {
@@ -3325,6 +3369,13 @@ namespace SastreriaPresupuestos
             var deposit = GetDepositValue();
             decimal total = Products.Sum(p => p.Total);
 
+            if (QuoteCreatedAtTextBox != null)
+            {
+                QuoteCreatedAtTextBox.Text = CurrentQuote == null
+                    ? "—"
+                    : CurrentQuote.CreatedAt.ToString("dd/MM/yyyy HH:mm");
+            }
+
             ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
             ActiveWorkspaceSubtitle.Text = clientName == "—" ? "Selecciona un cliente o crea un trabajo" : clientName;
             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
@@ -3427,8 +3478,9 @@ namespace SastreriaPresupuestos
             if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
                 return;
 
-            UpdateContextBreadcrumb("Trabajos", TabDocumentos);
-            NavigateToSection(TabDocumentos);
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            NavigateToSection(TabPresupuesto);
+            PresupuestoWorkspaceTabs.SelectedIndex = 2;
         }
 
         private void ShellRetrySaveButton_Click(object sender, RoutedEventArgs e)
@@ -3578,6 +3630,8 @@ namespace SastreriaPresupuestos
             ExportPdfButton.Click += ExportPdfButton_Click;
             OpenLastPdfButton.Click += OpenLastPdfButton_Click;
             ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
+            OpenQuoteFolderButton.Click += OpenQuoteFolderButton_Click;
+            OpenClientSheetFolderButton.Click += OpenClientSheetFolderButton_Click;
             PreviousCalendarButton.Click += PreviousCalendarButton_Click;
             TodayCalendarButton.Click += TodayCalendarButton_Click;
             NextCalendarButton.Click += NextCalendarButton_Click;
@@ -4254,6 +4308,7 @@ namespace SastreriaPresupuestos
         {
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
+            PresupuestoWorkspaceTabs.SelectedIndex = 0;
         }
 
         private void BackToJobDashboardButton_Click(object sender, RoutedEventArgs e)
@@ -4266,11 +4321,12 @@ namespace SastreriaPresupuestos
         {
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
+            PresupuestoWorkspaceTabs.SelectedIndex = 3;
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 ActivityTimelineBorder.BringIntoView();
-                WorkspaceScrollViewer.ScrollToVerticalOffset(ActivityTimelineBorder.TranslatePoint(new Point(0, 0), WorkspaceScrollViewer).Y + WorkspaceScrollViewer.VerticalOffset - 16);
+                WorkspaceScrollViewer.ScrollToTop();
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
@@ -4293,8 +4349,9 @@ namespace SastreriaPresupuestos
             if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
                 return;
 
-            UpdateContextBreadcrumb("Trabajos", TabDocumentos);
-            NavigateToSection(TabDocumentos);
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            NavigateToSection(TabPresupuesto);
+            PresupuestoWorkspaceTabs.SelectedIndex = 2;
         }
 
         private void OpenQuoteById(int quoteId, int targetTab = TabPresupuesto, string? breadcrumbOrigin = null)

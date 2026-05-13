@@ -26,5 +26,13 @@ namespace SastreriaPresupuestos.Views
                 mainWindow.BudgetQuotesListBox_MouseDoubleClick(sender, e);
             }
         }
+
+        private void ExportClientSheetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+            {
+                mainWindow.ExportClientSheetButton_Click(sender, e);
+            }
+        }
     }
 }
