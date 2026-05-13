@@ -140,8 +140,6 @@ namespace SastreriaPresupuestos
         private Button ClientSheetFolderButton => AjustesView.ClientSheetFolderButton;
         private TextBlock QuoteFolderTextBlock => AjustesView.QuoteFolderTextBlock;
         private Button QuoteFolderButton => AjustesView.QuoteFolderButton;
-        private TextBlock OptionsFolderTextBlock => AjustesView.OptionsFolderTextBlock;
-        private Button OptionsFolderButton => AjustesView.OptionsFolderButton;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -1871,7 +1869,6 @@ namespace SastreriaPresupuestos
         {
             ClientSheetFolderTextBlock.Text = FormatExportFolder(CurrentSettings.ClientSheetExportFolder);
             QuoteFolderTextBlock.Text = FormatExportFolder(CurrentSettings.QuoteExportFolder);
-            OptionsFolderTextBlock.Text = FormatExportFolder(CurrentSettings.OptionsExportFolder);
         }
 
         private string FormatExportFolder(string? folder)
@@ -1911,12 +1908,6 @@ namespace SastreriaPresupuestos
                 folder => CurrentSettings.QuoteExportFolder = folder);
         }
 
-        private void OptionsFolderButton_Click(object sender, RoutedEventArgs e)
-        {
-            SelectExportFolder(
-                "Seleccionar carpeta para opciones",
-                folder => CurrentSettings.OptionsExportFolder = folder);
-        }
 
         private bool TryBuildExportFilePath(string? folder, string fileName, string configurationLabel, out string filePath)
         {
@@ -2165,7 +2156,7 @@ namespace SastreriaPresupuestos
 
             var fileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf";
 
-            if (!TryBuildExportFilePath(CurrentSettings.OptionsExportFolder, fileName, "opciones", out var pdfPath))
+            if (!TryBuildExportFilePath(CurrentSettings.QuoteExportFolder, fileName, "presupuestos", out var pdfPath))
                 return;
 
             try
@@ -3584,7 +3575,6 @@ namespace SastreriaPresupuestos
             BackupButton.Click += BackupButton_Click;
             ClientSheetFolderButton.Click += ClientSheetFolderButton_Click;
             QuoteFolderButton.Click += QuoteFolderButton_Click;
-            OptionsFolderButton.Click += OptionsFolderButton_Click;
             ExportPdfButton.Click += ExportPdfButton_Click;
             OpenLastPdfButton.Click += OpenLastPdfButton_Click;
             ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;

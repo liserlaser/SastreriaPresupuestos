@@ -119,7 +119,7 @@
                                 FontWeight="Bold"/>
 
                             <TextBlock
-                                Text="Elige dónde se guardan automáticamente la ficha del cliente, los presupuestos y el PDF de opciones."
+                                Text="Elige dónde se guardan automáticamente la ficha del cliente y los presupuestos."
                                 FontSize="13"
                                 Foreground="{StaticResource MutedTextBrush}"
                                 TextWrapping="Wrap"
@@ -166,27 +166,6 @@
                                 FontSize="13"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,0,12"/>
-
-                            <TextBlock
-                                Text="Opciones"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource MutedTextBrush}"/>
-
-                            <TextBlock
-                                x:Name="OptionsFolderTextBlock"
-                                Text="Sin carpeta seleccionada"
-                                FontSize="12"
-                                TextTrimming="CharacterEllipsis"
-                                Margin="0,2,0,8"/>
-
-                            <Button
-                                x:Name="OptionsFolderButton"
-                                Content="Seleccionar carpeta"
-                                Height="34"
-                                FontSize="13"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
-
                         </StackPanel>
 
                     </Border>

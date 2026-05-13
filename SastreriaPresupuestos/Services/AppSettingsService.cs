@@ -8,7 +8,6 @@ namespace SastreriaPresupuestos.Services
     {
         public string? ClientSheetExportFolder { get; set; }
         public string? QuoteExportFolder { get; set; }
-        public string? OptionsExportFolder { get; set; }
     }
 
     public static class AppSettingsService
