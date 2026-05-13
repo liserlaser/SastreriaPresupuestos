@@ -136,6 +136,12 @@ namespace SastreriaPresupuestos
         private Button ExportAllQuotesPdfButton => DocumentosView.ExportAllQuotesPdfButton;
         private Button PricesConfigButton => AjustesView.PricesConfigButton;
         private Button BackupButton => AjustesView.BackupButton;
+        private TextBlock ClientSheetFolderTextBlock => AjustesView.ClientSheetFolderTextBlock;
+        private Button ClientSheetFolderButton => AjustesView.ClientSheetFolderButton;
+        private TextBlock QuoteFolderTextBlock => AjustesView.QuoteFolderTextBlock;
+        private Button QuoteFolderButton => AjustesView.QuoteFolderButton;
+        private TextBlock OptionsFolderTextBlock => AjustesView.OptionsFolderTextBlock;
+        private Button OptionsFolderButton => AjustesView.OptionsFolderButton;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -209,6 +215,7 @@ namespace SastreriaPresupuestos
         private int? LastSelectedQuoteId = null;
         private int? CurrentClientId = null;
         private string? LastGeneratedPdfPath = null;
+        private AppSettings CurrentSettings = AppSettingsService.Load();
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
@@ -238,6 +245,7 @@ namespace SastreriaPresupuestos
             LoadInitialData();
             WireEvents();
             InitializeUiState();
+            UpdateExportFolderSettingsUi();
         }
 
         private List<string> GetTailoringOptions(string product)
@@ -1859,6 +1867,91 @@ namespace SastreriaPresupuestos
                 : "Sastrería Presupuestos";
         }
 
+        private void UpdateExportFolderSettingsUi()
+        {
+            ClientSheetFolderTextBlock.Text = FormatExportFolder(CurrentSettings.ClientSheetExportFolder);
+            QuoteFolderTextBlock.Text = FormatExportFolder(CurrentSettings.QuoteExportFolder);
+            OptionsFolderTextBlock.Text = FormatExportFolder(CurrentSettings.OptionsExportFolder);
+        }
+
+        private string FormatExportFolder(string? folder)
+        {
+            return string.IsNullOrWhiteSpace(folder)
+                ? "Sin carpeta seleccionada"
+                : folder;
+        }
+
+        private void SelectExportFolder(string title, Action<string> updateSetting)
+        {
+            var dialog = new OpenFolderDialog
+            {
+                Title = title,
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog(this) != true)
+                return;
+
+            updateSetting(dialog.FolderName);
+            AppSettingsService.Save(CurrentSettings);
+            UpdateExportFolderSettingsUi();
+        }
+
+        private void ClientSheetFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectExportFolder(
+                "Seleccionar carpeta para fichas de cliente",
+                folder => CurrentSettings.ClientSheetExportFolder = folder);
+        }
+
+        private void QuoteFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectExportFolder(
+                "Seleccionar carpeta para presupuestos",
+                folder => CurrentSettings.QuoteExportFolder = folder);
+        }
+
+        private void OptionsFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectExportFolder(
+                "Seleccionar carpeta para opciones",
+                folder => CurrentSettings.OptionsExportFolder = folder);
+        }
+
+        private bool TryBuildExportFilePath(string? folder, string fileName, string configurationLabel, out string filePath)
+        {
+            filePath = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(folder))
+            {
+                MessageBox.Show(
+                    $"Configura primero la carpeta de guardado para {configurationLabel} en Ajustes.",
+                    "Carpeta no configurada",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                NavigateToSection(TabAjustes);
+                return false;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(folder);
+                filePath = Path.Combine(folder, fileName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo preparar la carpeta de guardado para {configurationLabel}.\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                return false;
+            }
+        }
+
         private void BackupButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1926,23 +2019,17 @@ namespace SastreriaPresupuestos
 
             var safeClientName = MakeSafeFileName(exportQuote.ClientName);
             var exportDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
+            var fileName = $"{safeClientName}_{exportDateTime}.pdf";
 
-            var dialog = new SaveFileDialog
-            {
-                Title = "Guardar PDF",
-                Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{safeClientName}_{exportDateTime}.pdf"
-            };
-
-            if (dialog.ShowDialog() != true)
+            if (!TryBuildExportFilePath(CurrentSettings.QuoteExportFolder, fileName, "presupuestos", out var pdfPath))
                 return;
 
             try
             {
-                PdfExportService.ExportQuoteToPdf(exportQuote, dialog.FileName);
+                PdfExportService.ExportQuoteToPdf(exportQuote, pdfPath);
 
-                LastGeneratedPdfPath = dialog.FileName;
-                UpdatePdfWorkflowStatus(dialog.FileName);
+                LastGeneratedPdfPath = pdfPath;
+                UpdatePdfWorkflowStatus(pdfPath);
                 UpdateContextBreadcrumb("Trabajos", TabDocumentos);
                 NavigateToSection(TabDocumentos);
 
@@ -2076,19 +2163,17 @@ namespace SastreriaPresupuestos
                 })
                 .ToList();
 
-            var dialog = new SaveFileDialog
-            {
-                Title = "Guardar PDF con opciones",
-                Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf"
-            };
+            var fileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf";
 
-            if (dialog.ShowDialog() != true)
+            if (!TryBuildExportFilePath(CurrentSettings.OptionsExportFolder, fileName, "opciones", out var pdfPath))
                 return;
 
             try
             {
-                PdfExportService.ExportQuotesToPdf(exportQuotes, dialog.FileName);
+                PdfExportService.ExportQuotesToPdf(exportQuotes, pdfPath);
+
+                LastGeneratedPdfPath = pdfPath;
+                UpdatePdfWorkflowStatus(pdfPath);
 
                 MessageBox.Show(
                     "PDF con opciones generado correctamente.",
@@ -2130,13 +2215,9 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            var saveFileDialog = new SaveFileDialog
-            {
-                Filter = "PDF (*.pdf)|*.pdf",
-                FileName = $"{SanitizeFileName(ClientNameTextBox.Text)}_ficha_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf"
-            };
+            var fileName = $"{SanitizeFileName(ClientNameTextBox.Text)}_ficha_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf";
 
-            if (saveFileDialog.ShowDialog() != true)
+            if (!TryBuildExportFilePath(CurrentSettings.ClientSheetExportFolder, fileName, "fichas de cliente", out var pdfPath))
                 return;
 
             var sheet = new ExportClientSheet
@@ -2151,7 +2232,10 @@ namespace SastreriaPresupuestos
                 Observations = QuoteNotesTextBox.Text.Trim()
             };
 
-            ClientSheetPdfService.ExportClientSheetToPdf(sheet, saveFileDialog.FileName);
+            ClientSheetPdfService.ExportClientSheetToPdf(sheet, pdfPath);
+
+            LastGeneratedPdfPath = pdfPath;
+            UpdatePdfWorkflowStatus(pdfPath);
 
             MessageBox.Show(
                 "Ficha interna generada correctamente.",
@@ -3498,6 +3582,9 @@ namespace SastreriaPresupuestos
             DuplicateQuoteButton.Click += DuplicateQuoteButton_Click;
             PricesConfigButton.Click += PricesConfigButton_Click;
             BackupButton.Click += BackupButton_Click;
+            ClientSheetFolderButton.Click += ClientSheetFolderButton_Click;
+            QuoteFolderButton.Click += QuoteFolderButton_Click;
+            OptionsFolderButton.Click += OptionsFolderButton_Click;
             ExportPdfButton.Click += ExportPdfButton_Click;
             OpenLastPdfButton.Click += OpenLastPdfButton_Click;
             ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;

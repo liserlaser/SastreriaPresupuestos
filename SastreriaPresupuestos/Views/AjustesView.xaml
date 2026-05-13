@@ -103,6 +103,94 @@
 
                     </Border>
 
+                    <Border
+                        Background="#F8FAF6"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="16"
+                        Margin="0,0,16,16">
+
+                        <StackPanel>
+
+                            <TextBlock
+                                Text="Carpetas de exportación"
+                                FontSize="18"
+                                FontWeight="Bold"/>
+
+                            <TextBlock
+                                Text="Elige dónde se guardan automáticamente la ficha del cliente, los presupuestos y el PDF de opciones."
+                                FontSize="13"
+                                Foreground="{StaticResource MutedTextBrush}"
+                                TextWrapping="Wrap"
+                                Margin="0,6,0,14"/>
+
+                            <TextBlock
+                                Text="Ficha cliente"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource MutedTextBrush}"/>
+
+                            <TextBlock
+                                x:Name="ClientSheetFolderTextBlock"
+                                Text="Sin carpeta seleccionada"
+                                FontSize="12"
+                                TextTrimming="CharacterEllipsis"
+                                Margin="0,2,0,8"/>
+
+                            <Button
+                                x:Name="ClientSheetFolderButton"
+                                Content="Seleccionar carpeta"
+                                Height="34"
+                                FontSize="13"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,0,12"/>
+
+                            <TextBlock
+                                Text="Presupuestos"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource MutedTextBrush}"/>
+
+                            <TextBlock
+                                x:Name="QuoteFolderTextBlock"
+                                Text="Sin carpeta seleccionada"
+                                FontSize="12"
+                                TextTrimming="CharacterEllipsis"
+                                Margin="0,2,0,8"/>
+
+                            <Button
+                                x:Name="QuoteFolderButton"
+                                Content="Seleccionar carpeta"
+                                Height="34"
+                                FontSize="13"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,0,12"/>
+
+                            <TextBlock
+                                Text="Opciones"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource MutedTextBrush}"/>
+
+                            <TextBlock
+                                x:Name="OptionsFolderTextBlock"
+                                Text="Sin carpeta seleccionada"
+                                FontSize="12"
+                                TextTrimming="CharacterEllipsis"
+                                Margin="0,2,0,8"/>
+
+                            <Button
+                                x:Name="OptionsFolderButton"
+                                Content="Seleccionar carpeta"
+                                Height="34"
+                                FontSize="13"
+                                Style="{StaticResource SecondaryButtonStyle}"/>
+
+                        </StackPanel>
+
+                    </Border>
+
                 </WrapPanel>
 
             </Grid>
