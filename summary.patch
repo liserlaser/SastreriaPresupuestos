@@ -1,0 +1,169 @@
+diff --git a/SastreriaPresupuestos/MainWindow.xaml.cs b/SastreriaPresupuestos/MainWindow.xaml.cs
+index b314706..8443513 100644
+--- a/SastreriaPresupuestos/MainWindow.xaml.cs
++++ b/SastreriaPresupuestos/MainWindow.xaml.cs
+@@ -88,7 +88,7 @@ namespace SastreriaPresupuestos
+         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
+         private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
+         private TabControl PresupuestoWorkspaceTabs => PresupuestoView.PresupuestoWorkspaceTabs;
+-        private TextBox QuoteCreatedAtTextBox => PresupuestoView.QuoteCreatedAtTextBox;
++        private TextBlock QuoteCreatedAtTextBox => PresupuestoView.QuoteCreatedAtTextBox;
+         private Button OpenQuoteFolderButton => PresupuestoView.OpenQuoteFolderButton;
+         private Button OpenClientSheetFolderButton => PresupuestoView.OpenClientSheetFolderButton;
+         private ScrollViewer WorkspaceScrollViewer => PresupuestoView.WorkspaceScrollViewer;
+@@ -3372,8 +3372,8 @@ namespace SastreriaPresupuestos
+             if (QuoteCreatedAtTextBox != null)
+             {
+                 QuoteCreatedAtTextBox.Text = CurrentQuote == null
+-                    ? "—"
+-                    : CurrentQuote.CreatedAt.ToString("dd/MM/yyyy HH:mm");
++                    ? "Creado: —"
++                    : $"Creado: {CurrentQuote.CreatedAt:dd/MM/yyyy HH:mm}";
+             }
+ 
+             ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
+diff --git a/SastreriaPresupuestos/Views/PresupuestoView.xaml b/SastreriaPresupuestos/Views/PresupuestoView.xaml
+index e62820d..59d7b1f 100644
+--- a/SastreriaPresupuestos/Views/PresupuestoView.xaml
++++ b/SastreriaPresupuestos/Views/PresupuestoView.xaml
+@@ -571,25 +571,30 @@
+                                 <Grid Margin="18">
+                                     <Grid.RowDefinitions>
+                                         <RowDefinition Height="Auto"/>
++                                        <RowDefinition Height="14"/>
+                                         <RowDefinition Height="Auto"/>
++                                        <RowDefinition Height="14"/>
++                                        <RowDefinition Height="Auto"/>
++                                        <RowDefinition Height="18"/>
++                                        <RowDefinition Height="Auto"/>
++                                        <RowDefinition Height="10"/>
+                                         <RowDefinition Height="Auto"/>
+                                     </Grid.RowDefinitions>
+ 
+-                                    <Grid Grid.Row="0" Margin="0,0,0,14">
++                                    <Grid Grid.Row="0">
+                                         <Grid.ColumnDefinitions>
+                                             <ColumnDefinition Width="1.45*"/>
+-                                            <ColumnDefinition Width="0.8*"/>
+-                                            <ColumnDefinition Width="0.8*"/>
++                                            <ColumnDefinition Width="0.9*"/>
+                                         </Grid.ColumnDefinitions>
+ 
+-                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
++                                        <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                                             <TextBlock Text="Título" Style="{StaticResource ContextLabelTextStyle}"/>
+                                             <TextBox x:Name="WorkspaceQuoteTitleTextBox"
+                                                      Style="{StaticResource ContextTextBoxStyle}"
+                                                      Text="{Binding Text, ElementName=QuoteTitleTextBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                         </StackPanel>
+ 
+-                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
++                                        <StackPanel Grid.Column="1">
+                                             <TextBlock Text="Estado" Style="{StaticResource ContextLabelTextStyle}"/>
+                                             <ComboBox x:Name="WorkspaceQuoteStatusComboBox"
+                                                       Height="34"
+@@ -598,43 +603,34 @@
+                                                       ItemsSource="{StaticResource QuoteStatusList}"
+                                                       SelectedItem="{Binding SelectedItem, ElementName=QuoteStatusComboBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                         </StackPanel>
+-
+-                                        <StackPanel Grid.Column="2">
+-                                            <TextBlock Text="Fecha creación" Style="{StaticResource ContextLabelTextStyle}"/>
+-                                            <TextBox x:Name="QuoteCreatedAtTextBox"
+-                                                     Height="34"
+-                                                     FontSize="14"
+-                                                     Padding="10,0"
+-                                                     VerticalContentAlignment="Center"
+-                                                     BorderThickness="1"
+-                                                     BorderBrush="{StaticResource BorderSoftBrush}"
+-                                                     Background="#F8FAF6"
+-                                                     IsReadOnly="True"
+-                                                     Text="—"/>
+-                                        </StackPanel>
+                                     </Grid>
+ 
+-                                    <Grid Grid.Row="1" Margin="0,0,0,14">
++                                    <Grid Grid.Row="2">
+                                         <Grid.ColumnDefinitions>
+                                             <ColumnDefinition Width="1*"/>
+                                             <ColumnDefinition Width="1*"/>
+-                                            <ColumnDefinition Width="0.75*"/>
+-                                            <ColumnDefinition Width="0.75*"/>
+                                         </Grid.ColumnDefinitions>
+ 
+-                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
++                                        <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                                             <TextBlock Text="Fecha evento" Style="{StaticResource ContextLabelTextStyle}"/>
+                                             <DatePicker x:Name="EventDatePicker" Style="{StaticResource ContextDatePickerStyle}"/>
+                                         </StackPanel>
+ 
+-                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
++                                        <StackPanel Grid.Column="1">
+                                             <TextBlock Text="Fecha entrega" Style="{StaticResource ContextLabelTextStyle}"/>
+                                             <DatePicker x:Name="WorkspaceDeliveryDatePicker"
+                                                         Style="{StaticResource ContextDatePickerStyle}"
+                                                         SelectedDate="{Binding SelectedDate, ElementName=DeliveryDatePicker, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                         </StackPanel>
++                                    </Grid>
+ 
+-                                        <StackPanel Grid.Column="2" Margin="0,0,12,0">
++                                    <Grid Grid.Row="4">
++                                        <Grid.ColumnDefinitions>
++                                            <ColumnDefinition Width="1*"/>
++                                            <ColumnDefinition Width="1*"/>
++                                        </Grid.ColumnDefinitions>
++
++                                        <StackPanel Grid.Column="0" Margin="0,0,14,0">
+                                             <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
+                                             <TextBox x:Name="DepositTextBox"
+                                                      Style="{StaticResource ContextTextBoxStyle}"
+@@ -642,19 +638,26 @@
+                                                      HorizontalContentAlignment="Right"/>
+                                         </StackPanel>
+ 
+-                                        <StackPanel Grid.Column="3">
++                                        <StackPanel Grid.Column="1">
+                                             <TextBlock Text="Pendiente" Style="{StaticResource ContextLabelTextStyle}"/>
+-                                            <TextBlock x:Name="PendingAmountTextBlock"
+-                                                       Text="0,00 €"
+-                                                       Height="34"
+-                                                       VerticalAlignment="Center"
+-                                                       FontSize="20"
+-                                                       FontWeight="Bold"
+-                                                       Foreground="{StaticResource PrimaryBrush}"/>
++                                            <Border Height="34"
++                                                    Background="#F8FAF6"
++                                                    BorderBrush="{StaticResource BorderSoftBrush}"
++                                                    BorderThickness="1"
++                                                    CornerRadius="8"
++                                                    Padding="10,0">
++                                                <TextBlock x:Name="PendingAmountTextBlock"
++                                                           Text="0,00 €"
++                                                           VerticalAlignment="Center"
++                                                           HorizontalAlignment="Right"
++                                                           FontSize="18"
++                                                           FontWeight="Bold"
++                                                           Foreground="{StaticResource PrimaryBrush}"/>
++                                            </Border>
+                                         </StackPanel>
+                                     </Grid>
+ 
+-                                    <Border Grid.Row="2"
++                                    <Border Grid.Row="6"
+                                             Background="#F8F3EF"
+                                             BorderBrush="{StaticResource BorderSoftBrush}"
+                                             BorderThickness="1"
+@@ -686,6 +689,13 @@
+                                                      Text="{Binding Text, ElementName=BudgetWorkspaceTotalTextBlock}"/>
+                                         </Grid>
+                                     </Border>
++
++                                    <TextBlock x:Name="QuoteCreatedAtTextBox"
++                                               Grid.Row="8"
++                                               Text="Creado: —"
++                                               FontSize="12"
++                                               Foreground="{StaticResource MutedTextBrush}"
++                                               HorizontalAlignment="Right"/>
+                                 </Grid>
+                             </TabItem>
+ 

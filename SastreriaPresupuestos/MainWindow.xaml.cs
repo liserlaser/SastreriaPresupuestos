@@ -88,7 +88,7 @@ namespace SastreriaPresupuestos
         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
         private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
         private TabControl PresupuestoWorkspaceTabs => PresupuestoView.PresupuestoWorkspaceTabs;
-        private TextBox QuoteCreatedAtTextBox => PresupuestoView.QuoteCreatedAtTextBox;
+        private TextBlock QuoteCreatedAtTextBox => PresupuestoView.QuoteCreatedAtTextBox;
         private Button OpenQuoteFolderButton => PresupuestoView.OpenQuoteFolderButton;
         private Button OpenClientSheetFolderButton => PresupuestoView.OpenClientSheetFolderButton;
         private ScrollViewer WorkspaceScrollViewer => PresupuestoView.WorkspaceScrollViewer;
