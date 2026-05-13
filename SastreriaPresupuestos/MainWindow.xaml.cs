@@ -3480,8 +3480,8 @@ namespace SastreriaPresupuestos
 
             AddDialogField(dialog.ContentPanel, "Título", titleTextBox);
             AddDialogField(dialog.ContentPanel, "Estado", statusComboBox);
-            AddDialogField(dialog.ContentPanel, "Entrega", deliveryDatePicker);
             AddDialogField(dialog.ContentPanel, "Fecha del evento", eventDatePicker);
+            AddDialogField(dialog.ContentPanel, "Entrega", deliveryDatePicker);
 
             dialog.AcceptButton.Click += (_, _) =>
             {
