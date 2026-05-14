@@ -401,6 +401,7 @@ namespace SastreriaPresupuestos
                 {
                     ClientId = client.Id,
                     DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                    EventDate = EventDatePicker.SelectedDate,
                     //Title = QuoteTitleTextBox.Text,
                     //Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente",
                     Title = quoteTitle,
@@ -3208,6 +3209,7 @@ namespace SastreriaPresupuestos
                     QuoteId = quote.Id,
                     ClientId = quote.ClientId,
                     DeliveryDate = quote.DeliveryDate,
+                    EventDate = quote.EventDate,
                     ClientName = quote.Client?.Name ?? "",
                     ClientPhone = quote.Client?.Phone ?? "",
                     QuoteTitle = quote.Title,
@@ -3296,6 +3298,7 @@ namespace SastreriaPresupuestos
                     QuoteId = quote.Id,
                     ClientId = quote.ClientId,
                     DeliveryDate = quote.DeliveryDate,
+                    EventDate = quote.EventDate,
                     ClientName = quote.Client?.Name ?? "",
                     ClientPhone = quote.Client?.Phone ?? "",
                     QuoteTitle = quote.Title,

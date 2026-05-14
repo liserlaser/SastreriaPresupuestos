@@ -178,6 +178,14 @@
                                                 Foreground="{StaticResource MutedTextBrush}"
                                                 Margin="0,2,0,0"
                                                 TextTrimming="CharacterEllipsis"/>
+
+                                            <TextBlock
+                                                Text="{Binding EventDateText}"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource AccentBrush}"
+                                                Margin="0,4,0,0"
+                                                TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
 
                                         <TextBlock
@@ -258,7 +266,8 @@
                                                             <StackPanel>
                                                                 <TextBlock Text="{Binding ClientName}" FontSize="14" FontWeight="{Binding ClientNameWeight}" TextTrimming="CharacterEllipsis"/>
                                                                 <TextBlock Text="{Binding DisplayTitle}" FontSize="12" Foreground="{StaticResource MutedTextBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
-                                                                <TextBlock Text="{Binding DayText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" Margin="0,8,0,0"/>
+                                                                <TextBlock Text="{Binding EventDateText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" TextTrimming="CharacterEllipsis" Margin="0,6,0,0"/>
+                                                                <TextBlock Text="{Binding DayText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/>
                                                                 <DockPanel Margin="0,6,0,0">
                                                                     <TextBlock Text="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" DockPanel.Dock="Right"/>
                                                                     <Border Background="{Binding StatusBackground}" CornerRadius="10" Padding="8,3" HorizontalAlignment="Left">
@@ -324,6 +333,7 @@
                                                             <StackPanel>
                                                                 <TextBlock Text="{Binding ClientName}" FontSize="15" FontWeight="{Binding ClientNameWeight}"/>
                                                                 <TextBlock Text="{Binding DisplayTitle}" FontSize="13" Foreground="{StaticResource MutedTextBrush}" Margin="0,2,0,0"/>
+                                                                <TextBlock Text="{Binding EventDateText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,4,0,0"/>
                                                                 <TextBlock Text="{Binding ClientPhone}" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,2,0,0"/>
                                                             </StackPanel>
 

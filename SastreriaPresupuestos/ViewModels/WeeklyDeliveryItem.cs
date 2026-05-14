@@ -13,12 +13,18 @@ namespace SastreriaPresupuestos.ViewModels
 
         public DateTime DeliveryDate { get; set; }
 
+        public DateTime? EventDate { get; set; }
+
         public string DayText => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(
             DeliveryDate.ToString("dddd dd/MM"));
 
         public string ClientName { get; set; } = "";
 
         public string ClientPhone { get; set; } = "";
+
+        public string EventDateText => EventDate.HasValue
+            ? $"Evento · {EventDate.Value:dd/MM/yyyy}"
+            : "Evento · —";
 
         public string QuoteTitle { get; set; } = "";
 
