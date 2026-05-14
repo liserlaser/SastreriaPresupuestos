@@ -41,7 +41,6 @@ namespace SastreriaPresupuestos
         private readonly ClientesView ClientesView = new();
         private readonly PresupuestoView PresupuestoView = new();
         private readonly ProductosView ProductosView = new();
-        private readonly DocumentosView DocumentosView = new();
         private readonly AjustesView AjustesView = new();
 
         public ObservableCollection<string> AvailableProductNames { get; } = new();
@@ -179,7 +178,6 @@ namespace SastreriaPresupuestos
             ClientesHost.Content = ClientesView;
             PresupuestoHost.Content = PresupuestoView;
             ProductosHost.Content = ProductosView;
-            DocumentosHost.Content = DocumentosView;
             AjustesHost.Content = AjustesView;
         }
 
@@ -229,8 +227,11 @@ namespace SastreriaPresupuestos
         private const int TabClientes = 1;
         private const int TabPresupuesto = 2;
         private const int TabProductos = 3;
-        private const int TabDocumentos = 4;
-        private const int TabAjustes = 5;
+        private const int TabAjustes = 4;
+        private const int InnerTabResumen = 0;
+        private const int InnerTabProductos = 1;
+        private const int InnerTabDocumentos = 2;
+        private const int InnerTabHistorial = 3;
 
         private static readonly IReadOnlyList<string> DefaultTailoringOptions =
             new[] { "Confeccion", "Medida", "Artesanal" };
@@ -1610,7 +1611,7 @@ namespace SastreriaPresupuestos
                 case Key.D3:
                 case Key.NumPad3:
                     e.Handled = true;
-                    NavigateToWorkspaceSectionFromShortcut(TabDocumentos);
+                    NavigateToWorkspaceDocumentsFromShortcut();
                     break;
 
                 case Key.D4:
@@ -1647,11 +1648,16 @@ namespace SastreriaPresupuestos
             if (sectionIndex == TabProductos && !TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
                 return;
 
-            if (sectionIndex == TabDocumentos && !TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
-                return;
-
             UpdateContextBreadcrumb("Trabajos", sectionIndex);
             NavigateToSection(sectionIndex);
+        }
+
+        private void NavigateToWorkspaceDocumentsFromShortcut()
+        {
+            if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
+                return;
+
+            OpenBudgetDocumentsTab();
         }
 
         private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -2001,11 +2007,9 @@ namespace SastreriaPresupuestos
 
                 LastGeneratedPdfPath = pdfPath;
                 UpdatePdfWorkflowStatus(pdfPath);
-                UpdateContextBreadcrumb("Trabajos", TabDocumentos);
-                NavigateToSection(TabDocumentos);
 
                 MessageBox.Show(
-                    "PDF generado correctamente y disponible en la zona PDF.",
+                    "PDF generado correctamente. Puedes abrirlo desde la pestaña Documentos.",
                     "Exportar PDF",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -3415,9 +3419,7 @@ namespace SastreriaPresupuestos
             if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
                 return;
 
-            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
-            NavigateToSection(TabPresupuesto);
-            PresupuestoWorkspaceTabs.SelectedIndex = 2;
+            OpenBudgetDocumentsTab();
         }
 
         private void ShellRetrySaveButton_Click(object sender, RoutedEventArgs e)
@@ -3584,6 +3586,7 @@ namespace SastreriaPresupuestos
             BudgetQuickHistoryButton.Click += BudgetQuickHistoryButton_Click;
             BudgetQuickDocumentsButton.Click += BudgetQuickDocumentsButton_Click;
             BudgetQuickExportPdfButton.Click += BudgetQuickExportPdfButton_Click;
+            PresupuestoWorkspaceTabs.SelectionChanged += PresupuestoWorkspaceTabs_SelectionChanged;
 
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
@@ -3746,8 +3749,7 @@ namespace SastreriaPresupuestos
                 1 => ("Trabajos", "Clientes y trabajos se gestionan desde el workspace contextual", "🏠 > Trabajos"),
                 2 => ("Trabajos", "Resumen del trabajo activo y datos principales", "🏠 > Trabajos"),
                 3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del trabajo activo", "🏠 > Trabajos > Productos"),
-                4 => ("Trabajos · PDF", "PDFs, ficha de cliente y exportaciones del trabajo activo", "🏠 > Trabajos > PDF"),
-                5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
+                4 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de trabajos, PDFs y entregas", "🏠")
             };
 
@@ -3770,14 +3772,9 @@ namespace SastreriaPresupuestos
             if (sectionIndex == TabClientes && clientName != null)
                 return $"🏠 > Trabajos > {clientName}";
 
-            if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos || sectionIndex == TabDocumentos) && clientName != null)
+            if ((sectionIndex == TabPresupuesto || sectionIndex == TabProductos) && clientName != null)
             {
-                var childSection = sectionIndex switch
-                {
-                    TabProductos => "Productos",
-                    TabDocumentos => "PDF",
-                    _ => null
-                };
+                var childSection = sectionIndex == TabProductos ? "Productos" : null;
 
                 var basePath = quoteTitle == null
                     ? $"🏠 > Trabajos > {clientName}"
@@ -3817,7 +3814,7 @@ namespace SastreriaPresupuestos
 
             SetSidebarButtonActive(DashboardNavButton, MainTabs.SelectedIndex == TabSemana);
             SetSidebarButtonActive(ClientsNavButton, MainTabs.SelectedIndex == TabClientes);
-            SetSidebarButtonActive(QuotesNavButton, MainTabs.SelectedIndex == TabPresupuesto || MainTabs.SelectedIndex == TabProductos || MainTabs.SelectedIndex == TabDocumentos);
+            SetSidebarButtonActive(QuotesNavButton, MainTabs.SelectedIndex == TabPresupuesto || MainTabs.SelectedIndex == TabProductos);
             SetSidebarButtonActive(SettingsNavButton, MainTabs.SelectedIndex == TabAjustes);
             UpdateWorkspaceButtonState();
         }
@@ -3837,9 +3834,9 @@ namespace SastreriaPresupuestos
             if (MainTabs == null)
                 return;
 
-            SetWorkspaceButtonActive(ActiveSummaryButton, MainTabs.SelectedIndex == TabPresupuesto);
+            SetWorkspaceButtonActive(ActiveSummaryButton, MainTabs.SelectedIndex == TabPresupuesto && PresupuestoWorkspaceTabs.SelectedIndex == InnerTabResumen);
             SetWorkspaceButtonActive(ActiveProductsButton, MainTabs.SelectedIndex == TabProductos);
-            SetWorkspaceButtonActive(ActiveDocumentsButton, MainTabs.SelectedIndex == TabDocumentos);
+            SetWorkspaceButtonActive(ActiveDocumentsButton, MainTabs.SelectedIndex == TabPresupuesto && PresupuestoWorkspaceTabs.SelectedIndex == InnerTabDocumentos);
         }
 
         private void SetWorkspaceButtonActive(Button button, bool isActive)
@@ -3856,6 +3853,21 @@ namespace SastreriaPresupuestos
         {
             if (sender is not Button button)
                 return;
+
+            if (button == ActiveDocumentsButton)
+            {
+                if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
+                    return;
+
+                OpenBudgetDocumentsTab();
+                return;
+            }
+
+            if (button == ActiveSummaryButton)
+            {
+                OpenBudgetSummaryTab();
+                return;
+            }
 
             if (button.Tag == null)
                 return;
@@ -4241,11 +4253,33 @@ namespace SastreriaPresupuestos
                 .Normalize(NormalizationForm.FormC);
         }
 
-        private void BudgetQuickSummaryButton_Click(object sender, RoutedEventArgs e)
+        private void PresupuestoWorkspaceTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender != PresupuestoWorkspaceTabs)
+                return;
+
+            UpdateWorkspaceButtonState();
+        }
+
+        private void OpenBudgetSummaryTab()
         {
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
-            PresupuestoWorkspaceTabs.SelectedIndex = 0;
+            PresupuestoWorkspaceTabs.SelectedIndex = InnerTabResumen;
+            UpdateWorkspaceButtonState();
+        }
+
+        private void OpenBudgetDocumentsTab()
+        {
+            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
+            NavigateToSection(TabPresupuesto);
+            PresupuestoWorkspaceTabs.SelectedIndex = InnerTabDocumentos;
+            UpdateWorkspaceButtonState();
+        }
+
+        private void BudgetQuickSummaryButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenBudgetSummaryTab();
         }
 
         private void BackToJobDashboardButton_Click(object sender, RoutedEventArgs e)
@@ -4258,7 +4292,7 @@ namespace SastreriaPresupuestos
         {
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
-            PresupuestoWorkspaceTabs.SelectedIndex = 3;
+            PresupuestoWorkspaceTabs.SelectedIndex = InnerTabHistorial;
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -4286,9 +4320,7 @@ namespace SastreriaPresupuestos
             if (!TryFlushPendingChangesBeforeWorkflowAction("abrir documentos"))
                 return;
 
-            UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
-            NavigateToSection(TabPresupuesto);
-            PresupuestoWorkspaceTabs.SelectedIndex = 2;
+            OpenBudgetDocumentsTab();
         }
 
         private void OpenQuoteById(int quoteId, int targetTab = TabPresupuesto, string? breadcrumbOrigin = null)
@@ -4362,7 +4394,6 @@ namespace SastreriaPresupuestos
             var target = targetTab switch
             {
                 TabProductos => "Productos",
-                TabDocumentos => "PDF",
                 TabClientes => "Trabajos",
                 _ => "Trabajos"
             };
@@ -4377,7 +4408,7 @@ namespace SastreriaPresupuestos
 
             {
 
-                if (targetTab == TabProductos || targetTab == TabDocumentos)
+                if (targetTab == TabProductos)
                     parts.Add(target);
             }
 

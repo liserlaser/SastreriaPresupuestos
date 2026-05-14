@@ -738,8 +738,8 @@
 
                                 <Button
                                     x:Name="ActiveDocumentsButton"
-                                    Content="PDF"
-                                    Tag="4"
+                                    Content="Documentos"
+                                    Tag="2"
                                     Style="{StaticResource WorkspaceTabButtonStyle}"
                                     Click="WorkspaceSectionButton_Click"/>
                             </UniformGrid>
@@ -919,7 +919,7 @@
                     <Button
                         x:Name="SettingsNavButton"
                         Content="⚙"
-                        Tag="5"
+                        Tag="4"
                         Style="{StaticResource ShellIconButtonStyle}"
                         Margin="0,8,8,0"
                         ToolTip="Ajustes"
@@ -973,10 +973,6 @@
 
                 <TabItem Header="Productos">
                     <ContentControl x:Name="ProductosHost"/>
-                </TabItem>
-
-                <TabItem Header="PDF">
-                    <ContentControl x:Name="DocumentosHost"/>
                 </TabItem>
 
                 <TabItem Header="Ajustes">
