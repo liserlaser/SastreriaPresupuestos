@@ -55,9 +55,19 @@ namespace SastreriaPresupuestos.Models
                     ? "Pendiente"
                     : Status;
 
-                return $"{DeliveryDate:dd/MM/yyyy} · {titleText} · {statusText} · {Total:N2} €";
+                var eventText = EventDate.HasValue
+                    ? EventDate.Value.ToString("dd/MM/yyyy")
+                    : "Sin fecha de evento";
+
+                return $"{eventText} · {titleText} · {statusText} · {Total:N2} €";
             }
         }
+
+        public string EventDateText => EventDate.HasValue
+            ? $"Evento · {EventDate.Value:dd/MM/yyyy}"
+            : "Evento · —";
+
+        public DateTime SortDate => EventDate ?? DateTime.MaxValue;
 
         public string DisplayTitle
         {
@@ -181,13 +191,15 @@ namespace SastreriaPresupuestos.Models
                     string.Equals(statusText, "Entregado", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(statusText, "Rechazado", StringComparison.OrdinalIgnoreCase);
 
-                return !isClosed && DeliveryDate.Date < DateTime.Today;
+                return !isClosed && EventDate.HasValue && EventDate.Value.Date < DateTime.Today;
             }
         }
 
         public Visibility OverdueBadgeVisibility => IsOverdue ? Visibility.Visible : Visibility.Collapsed;
 
-        public string DeliveryBadgeText => IsOverdue ? "ATRASADO" : $"{DeliveryDate:dd/MM}";
+        public string DeliveryBadgeText => IsOverdue
+            ? "ATRASADO"
+            : EventDate.HasValue ? $"{EventDate.Value:dd/MM}" : "SIN EVENTO";
 
         public Brush DeliveryBadgeBackground
         {

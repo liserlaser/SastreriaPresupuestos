@@ -17,7 +17,7 @@ namespace SastreriaPresupuestos.Models
 
         public List<Quote> Quotes { get; set; } = new();
 
-        public DateTime? NextDeliveryDate
+        public DateTime? NextEventDate
         {
             get
             {
@@ -25,20 +25,21 @@ namespace SastreriaPresupuestos.Models
                     return null;
 
                 return Quotes
-                    .OrderBy(q => q.DeliveryDate)
-                    .First()
-                    .DeliveryDate;
+                    .Where(q => q.EventDate.HasValue)
+                    .OrderBy(q => q.EventDate.Value)
+                    .FirstOrDefault()
+                    ?.EventDate;
             }
         }
 
-        public string DeliveryDateText
+        public string EventDateText
         {
             get
             {
-                if (NextDeliveryDate == null)
-                    return "Sin fecha";
+                if (NextEventDate == null)
+                    return "Sin evento";
 
-                return NextDeliveryDate.Value.ToString("dd/MM/yyyy");
+                return NextEventDate.Value.ToString("dd/MM/yyyy");
             }
         }
 

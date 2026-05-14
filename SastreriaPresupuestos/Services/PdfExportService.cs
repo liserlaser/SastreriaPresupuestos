@@ -228,16 +228,11 @@ namespace SastreriaPresupuestos.Services
                                     .FontColor(MutedColor);
                             }
 
-                            right.Item()
-                                .AlignRight()
-                                .Text($"Entrega: {quote.DeliveryDate:dd/MM/yyyy}")
-                                .FontSize(10);
-
                             if (quote.EventDate != null)
                             {
                                 right.Item()
                                     .AlignRight()
-                                    .Text($"Fecha evento: {quote.EventDate:dd/MM/yyyy}")
+                                    .Text($"Fecha evento: {quote.EventDate.Value:dd/MM/yyyy}")
                                     .FontSize(10)
                                     .FontColor(MutedColor);
                             }
@@ -287,18 +282,12 @@ namespace SastreriaPresupuestos.Services
 
                         row.RelativeItem().Column(right =>
                         {
-                            right.Item().Text(text =>
-                            {
-                                text.Span("Fecha de entrega: ").Bold();
-                                text.Span($"{quote.DeliveryDate:dd/MM/yyyy}");
-                            });
-
                             if (quote.EventDate != null)
                             {
                                 right.Item().Text(text =>
                                 {
                                     text.Span("Fecha evento: ").Bold();
-                                    text.Span($"{quote.EventDate:dd/MM/yyyy}");
+                                    text.Span($"{quote.EventDate.Value:dd/MM/yyyy}");
                                 });
                             }
 

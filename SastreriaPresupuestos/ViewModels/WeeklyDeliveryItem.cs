@@ -15,8 +15,11 @@ namespace SastreriaPresupuestos.ViewModels
 
         public DateTime? EventDate { get; set; }
 
-        public string DayText => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(
-            DeliveryDate.ToString("dddd dd/MM"));
+        public DateTime SortDate => EventDate ?? DateTime.MaxValue;
+
+        public string DayText => EventDate.HasValue
+            ? CultureInfo.CurrentCulture.TextInfo.ToTitleCase(EventDate.Value.ToString("dddd dd/MM"))
+            : "Sin fecha de evento";
 
         public string ClientName { get; set; } = "";
 

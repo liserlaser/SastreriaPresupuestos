@@ -487,7 +487,7 @@ namespace SastreriaPresupuestos
 
                 var reloadedQuotes = refreshDb.Quotes
                     .Where(q => q.ClientId == savedClientId)
-                    .OrderBy(q => q.DeliveryDate)
+                    .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                     .ThenBy(q => q.Id)
                     .ToList();
 
@@ -542,7 +542,7 @@ namespace SastreriaPresupuestos
             AllClients = db.Clients
                 .Include(c => c.Quotes)
                 .ToList()
-                .OrderBy(c => c.NextDeliveryDate ?? DateTime.MaxValue)
+                .OrderBy(c => c.NextEventDate ?? DateTime.MaxValue)
                 .ThenBy(c => c.Name)
                 .ToList();
 
@@ -576,7 +576,7 @@ namespace SastreriaPresupuestos
             var quotes = db.Quotes
                 .Include(q => q.Items)
                 .Where(q => q.ClientId == client.Id)
-                .OrderBy(q => q.DeliveryDate)
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Id)
                 .ToList();
 
@@ -649,8 +649,8 @@ namespace SastreriaPresupuestos
 
             var quoteList = quotes?.ToList() ?? new List<Models.Quote>();
             var nextQuote = quoteList
-                .Where(q => q.DeliveryDate.Date >= DateTime.Today)
-                .OrderBy(q => q.DeliveryDate)
+                .Where(q => q.EventDate.HasValue && q.EventDate.Value.Date >= DateTime.Today)
+                .OrderBy(q => q.EventDate.Value)
                 .FirstOrDefault();
 
             ClientDetailNameTextBlock.Text = client.Name;
@@ -661,12 +661,12 @@ namespace SastreriaPresupuestos
             ClientDetailPhoneTextBlock.Text = string.IsNullOrWhiteSpace(client.DisplayPhone) ? "—" : client.DisplayPhone;
             ClientDetailDniTextBlock.Text = string.IsNullOrWhiteSpace(client.Dni) ? "—" : client.Dni;
             ClientDetailNextDeliveryTextBlock.Text = nextQuote == null
-                ? "Sin próximas entregas"
-                : nextQuote.DeliveryDate.ToString("dd/MM/yyyy");
+                ? "Sin próximos eventos"
+                : nextQuote.EventDate.Value.ToString("dd/MM/yyyy");
 
             ClientDetailSummaryTextBlock.Text = nextQuote == null
-                ? "No hay entregas próximas para este cliente."
-                : $"Próxima entrega: {nextQuote.DisplayTitle} · {nextQuote.StatusLabelText} · {nextQuote.Total:N2} €";
+                ? "No hay eventos próximos para este cliente."
+                : $"Próximo evento: {nextQuote.DisplayTitle} · {nextQuote.StatusLabelText} · {nextQuote.Total:N2} €";
 
             OpenSelectedClientQuoteButton.IsEnabled = quoteList.Count > 0;
             NewQuoteFromClientButton.IsEnabled = true;
@@ -1192,7 +1192,7 @@ namespace SastreriaPresupuestos
             if (ActiveDeliveryFilter == "Próximas")
             {
                 filteredClients = filteredClients
-                    .Where(c => c.NextDeliveryDate != null && c.NextDeliveryDate.Value.Date >= today);
+                    .Where(c => c.NextEventDate != null && c.NextEventDate.Value.Date >= today);
             }
             else if (ActiveDeliveryFilter == "Semana")
             {
@@ -1200,9 +1200,9 @@ namespace SastreriaPresupuestos
 
                 filteredClients = filteredClients
                     .Where(c =>
-                        c.NextDeliveryDate != null &&
-                        c.NextDeliveryDate.Value.Date >= today &&
-                        c.NextDeliveryDate.Value.Date <= limit);
+                        c.NextEventDate != null &&
+                        c.NextEventDate.Value.Date >= today &&
+                        c.NextEventDate.Value.Date <= limit);
             }
             else if (ActiveDeliveryFilter == "Mes")
             {
@@ -1210,9 +1210,9 @@ namespace SastreriaPresupuestos
 
                 filteredClients = filteredClients
                     .Where(c =>
-                        c.NextDeliveryDate != null &&
-                        c.NextDeliveryDate.Value.Date >= today &&
-                        c.NextDeliveryDate.Value.Date <= limit);
+                        c.NextEventDate != null &&
+                        c.NextEventDate.Value.Date >= today &&
+                        c.NextEventDate.Value.Date <= limit);
             }
             else if (ActiveDeliveryFilter == "Sin trabajo")
             {
@@ -1226,16 +1226,16 @@ namespace SastreriaPresupuestos
                     .Where(c =>
                         c.Name.ToLower().Contains(search) ||
                         c.Phone.ToLower().Contains(search) ||
-                        c.DeliveryDateText.ToLower().Contains(search) ||
+                        c.EventDateText.ToLower().Contains(search) ||
                         c.Quotes.Any(q =>
                             (q.Title ?? "").ToLower().Contains(search) ||
                             (string.IsNullOrWhiteSpace(q.Status) ? "pendiente" : q.Status.ToLower()).Contains(search) ||
-                            q.DeliveryDate.ToString("dd/MM/yyyy").Contains(search)
+                            (q.EventDate.HasValue && q.EventDate.Value.ToString("dd/MM/yyyy").Contains(search))
                         ));
             }
 
             ClientsListBox.ItemsSource = filteredClients
-                .OrderBy(c => c.NextDeliveryDate ?? DateTime.MaxValue)
+                .OrderBy(c => c.NextEventDate ?? DateTime.MaxValue)
                 .ThenBy(c => c.Name)
                 .ToList();
         }
@@ -2161,7 +2161,7 @@ namespace SastreriaPresupuestos
             }
 
             var exportQuotes = client.Quotes
-                .OrderBy(q => q.DeliveryDate)
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Id)
                 .Select(q =>
                 {
@@ -3185,12 +3185,14 @@ namespace SastreriaPresupuestos
                 startDate = DateTime.Today;
                 endDate = DateTime.Today.AddMonths(6);
 
-                WeekTitleTextBlock.Text = "Próximas entregas ordenadas por fecha";
+                WeekTitleTextBlock.Text = "Próximos eventos ordenados por fecha";
             }
 
             var deliveriesQuery = db.Quotes
                 .Include(q => q.Client)
-                .Where(q => q.DeliveryDate.Date >= startDate && q.DeliveryDate.Date <= endDate);
+                .Where(q => q.EventDate.HasValue &&
+                    q.EventDate.Value.Date >= startDate &&
+                    q.EventDate.Value.Date <= endDate);
 
             if (CalendarViewMode == "Lista")
             {
@@ -3198,7 +3200,7 @@ namespace SastreriaPresupuestos
             }
 
             var deliveries = deliveriesQuery
-                .OrderBy(q => q.DeliveryDate)
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
                 .ToList();
 
@@ -3231,7 +3233,7 @@ namespace SastreriaPresupuestos
                     };
 
                     var dayDeliveries = WeeklyDeliveries
-                        .Where(d => d.DeliveryDate.Date == currentDate.Date)
+                        .Where(d => d.EventDate.HasValue && d.EventDate.Value.Date == currentDate.Date)
                         .OrderBy(d => d.ClientName)
                         .ToList();
 
@@ -3259,9 +3261,9 @@ namespace SastreriaPresupuestos
 
             EmptyWeekTextBlock.Text = CalendarViewMode switch
             {
-                "Mes" => "No hay entregas programadas para este mes.",
-                "Semana" => "No hay entregas programadas para esta semana.",
-                _ => "No hay próximas entregas pendientes."
+                "Mes" => "No hay eventos programados para este mes.",
+                "Semana" => "No hay eventos programados para esta semana.",
+                _ => "No hay próximos eventos pendientes."
             };
 
             EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
@@ -3283,10 +3285,11 @@ namespace SastreriaPresupuestos
             var deliveries = db.Quotes
                 .AsNoTracking()
                 .Include(q => q.Client)
-                .Where(q => q.DeliveryDate.Date >= today
-                    && q.DeliveryDate.Date <= limit
+                .Where(q => q.EventDate.HasValue
+                    && q.EventDate.Value.Date >= today
+                    && q.EventDate.Value.Date <= limit
                     && q.Status != "Entregado")
-                .OrderBy(q => q.DeliveryDate)
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
                 .Take(8)
                 .ToList();
@@ -3323,15 +3326,17 @@ namespace SastreriaPresupuestos
                 .AsNoTracking()
                 .ToList();
 
-            var todayCount = quotes.Count(q => q.DeliveryDate.Date == today);
+            var todayCount = quotes.Count(q => q.EventDate.HasValue && q.EventDate.Value.Date == today);
             var next7Count = quotes.Count(q =>
-                q.DeliveryDate.Date >= today &&
-                q.DeliveryDate.Date <= next7Limit);
+                q.EventDate.HasValue &&
+                q.EventDate.Value.Date >= today &&
+                q.EventDate.Value.Date <= next7Limit);
             var pendingCount = quotes.Count(q =>
                 !string.Equals(q.Status, "Entregado", StringComparison.OrdinalIgnoreCase));
             var monthCount = quotes.Count(q =>
-                q.DeliveryDate.Date >= monthStart &&
-                q.DeliveryDate.Date <= monthEnd);
+                q.EventDate.HasValue &&
+                q.EventDate.Value.Date >= monthStart &&
+                q.EventDate.Value.Date <= monthEnd);
 
             DashboardTodayCountTextBlock.Text = todayCount.ToString("N0");
             DashboardNext7CountTextBlock.Text = next7Count.ToString("N0");
@@ -3347,7 +3352,7 @@ namespace SastreriaPresupuestos
 
         private bool HasDeliveriesOnDate(IEnumerable<WeeklyDeliveryItem> deliveries, DateTime date)
         {
-            return deliveries.Any(d => d.DeliveryDate.Date == date.Date);
+            return deliveries.Any(d => d.EventDate.HasValue && d.EventDate.Value.Date == date.Date);
         }
 
         private void UpdateActiveContext()
@@ -4036,10 +4041,10 @@ namespace SastreriaPresupuestos
                     ContainsSearch(q.Client?.Name, term) ||
                     ContainsSearch(q.Client?.Phone, term) ||
                     ContainsSearch(q.Client?.Dni, term) ||
-                    q.DeliveryDate.ToString("dd/MM/yyyy").Contains(term) ||
-                    q.DeliveryDate.ToString("dd-MM-yyyy").Contains(term) ||
-                    (q.EventDate.HasValue && q.EventDate.Value.ToString("dd/MM/yyyy").Contains(term)))
-                .OrderBy(q => q.DeliveryDate)
+                    (q.EventDate.HasValue &&
+                        (q.EventDate.Value.ToString("dd/MM/yyyy").Contains(term) ||
+                         q.EventDate.Value.ToString("dd-MM-yyyy").Contains(term))))
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .Take(7)
                 .Select(q => new GlobalSearchResult
                 {
@@ -4048,7 +4053,7 @@ namespace SastreriaPresupuestos
                     QuoteId = q.Id,
                     TypeLabel = "PRESUP.",
                     PrimaryText = string.IsNullOrWhiteSpace(q.Title) ? $"Trabajo #{q.Id}" : q.Title,
-                    SecondaryText = $"{q.Client?.Name ?? "Cliente"} · {q.Status} · Entrega {q.DeliveryDate:dd/MM/yyyy} · {q.Total:N2} €"
+                    SecondaryText = $"{q.Client?.Name ?? "Cliente"} · {q.Status} · Evento {(q.EventDate.HasValue ? q.EventDate.Value.ToString("dd/MM/yyyy") : "—")} · {q.Total:N2} €"
                 });
 
             foreach (var result in quotes)
@@ -4084,14 +4089,14 @@ namespace SastreriaPresupuestos
                 parts.Add(client.Dni);
 
             var nextDelivery = client.Quotes?
-                .Where(q => q.DeliveryDate.Date >= DateTime.Today && q.Status != "Entregado")
-                .OrderBy(q => q.DeliveryDate)
+                .Where(q => q.EventDate.HasValue && q.EventDate.Value.Date >= DateTime.Today && q.Status != "Entregado")
+                .OrderBy(q => q.EventDate.Value)
                 .FirstOrDefault();
 
             if (nextDelivery != null)
-                parts.Add($"Próxima entrega {nextDelivery.DeliveryDate:dd/MM/yyyy}");
+                parts.Add($"Próximo evento {nextDelivery.EventDate.Value:dd/MM/yyyy}");
 
-            return parts.Count == 0 ? "Sin teléfono ni entregas próximas" : string.Join(" · ", parts);
+            return parts.Count == 0 ? "Sin teléfono ni eventos próximos" : string.Join(" · ", parts);
         }
 
         private void GlobalSearchTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -4266,7 +4271,7 @@ namespace SastreriaPresupuestos
                 : allQuotes.Where(q => MatchesWorkSearch(q, query));
 
             var ordered = filtered
-                .OrderBy(q => q.DeliveryDate)
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Id)
                 .ToList();
 
@@ -4294,7 +4299,7 @@ namespace SastreriaPresupuestos
                 || Contains(quote.Client?.Name)
                 || Contains(quote.Client?.Phone)
                 || Contains(quote.Client?.Dni)
-                || Contains(quote.DeliveryDate.ToString("dd/MM/yyyy"));
+                || (quote.EventDate.HasValue && Contains(quote.EventDate.Value.ToString("dd/MM/yyyy")));
         }
 
         private static string NormalizeSearchText(string value)

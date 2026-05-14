@@ -240,7 +240,7 @@
 
                                                     <TextBlock
 														Grid.Row="2"
-														Text="{Binding DeliveryDateText}"
+														Text="{Binding EventDateText}"
 														FontSize="13"
 														Foreground="{StaticResource MutedTextBrush}"
 														Margin="0,3,0,0"/>
@@ -392,7 +392,7 @@
                                                         <!-- Entrega -->
                                                         <TextBlock
 															Grid.Row="1"
-															Text="{Binding DeliveryDate, StringFormat=Entrega: {0:dd/MM/yyyy}}"
+															Text="{Binding EventDateText}"
 															FontSize="12"
 															Foreground="{StaticResource MutedTextBrush}"
 															Margin="0,3,0,0"/>

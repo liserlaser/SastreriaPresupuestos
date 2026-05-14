@@ -354,14 +354,14 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Fecha entrega + título -->
+                                        <!-- Fecha evento + título -->
                                         <StackPanel
                 Grid.Column="0"
                 VerticalAlignment="Center"
                 Margin="0,0,0,0">
 
                                             <TextBlock
-                    Text="{Binding DeliveryDate, StringFormat=Entrega · {0:dd/MM/yyyy}}"
+                    Text="{Binding EventDateText}"
                     FontSize="13"
                     FontWeight="SemiBold"
                     Foreground="{StaticResource MutedTextBrush}"/>
