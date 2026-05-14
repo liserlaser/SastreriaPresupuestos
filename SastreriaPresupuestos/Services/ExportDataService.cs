@@ -44,7 +44,7 @@ namespace SastreriaPresupuestos.Services
                 Deposit = deposit,                
             };
 
-            foreach (var product in products)
+            foreach (var product in products.Where(p => p != null))
             {
                 var productPrice = GetProductPriceWithoutSeparateFabricLine(product);
 
@@ -97,9 +97,11 @@ namespace SastreriaPresupuestos.Services
 
         private static decimal GetProductPriceWithoutSeparateFabricLine(ProductLine product)
         {
-            return ShouldShowFabricPrice(product) && product.FabricPrice > 0
+            var productPrice = ShouldShowFabricPrice(product) && product.FabricPrice > 0
                 ? product.Total - product.FabricPrice * product.Quantity
                 : product.Total;
+
+            return Math.Max(0, productPrice);
         }
 
         private static bool ShouldShowFabricPrice(ProductLine product)

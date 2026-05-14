@@ -335,170 +335,186 @@ namespace SastreriaPresupuestos
             if (!ValidateBeforeSave())
                 return;
 
-            SetSaveWorkflowState(WorkspaceSaveState.Saving);
-            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
-
-            using var db = new AppDbContext();
-
-            var clientName = ClientNameTextBox.Text.Trim();
-            var clientPhone = PhoneTextBox.Text.Trim();
-            var clientDni = DniTextBox.Text.Trim();
-            var quoteTitle = QuoteTitleTextBox.Text.Trim();
-            var quoteNotes = QuoteNotesTextBox.Text.Trim();
-            var clientNotes = ClientNotesTextBox.Text.Trim();
-
-            var selectedStatus = GetSelectedQuoteStatus();
-
-            var selectedClient = ClientsListBox.SelectedItem as Models.Client;
-            var currentClientId = selectedClient?.Id;
-
-            var possibleDuplicate = FindPossibleDuplicateClient(
-                db,
-                clientName,
-                clientPhone,
-                currentClientId);
-
-            if (possibleDuplicate != null && selectedClient == null)
+            try
             {
-                var result = MessageBox.Show(
-                    $"Ya existe un cliente parecido:\n\n" +
-                    $"{possibleDuplicate.Name}\n" +
-                    $"{possibleDuplicate.Phone}\n\n" +
-                    "¿Quieres crear otro cliente igualmente?",
-                    "Posible cliente duplicado",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                SetSaveWorkflowState(WorkspaceSaveState.Saving);
+                Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
 
-                if (result != MessageBoxResult.Yes)
-                    return;
-            }
+                int savedClientId;
+                int savedQuoteId;
 
-            Models.Client client;
-
-            if (CurrentClientId != null)
-            {
-                client = db.Clients.First(c => c.Id == CurrentClientId.Value);
-
-                client.Name = clientName;
-                client.Phone = clientPhone;
-                client.Dni = clientDni;
-
-                db.SaveChanges();
-            }
-            else
-            {
-                client = new Models.Client()
+                using (var db = new AppDbContext())
+                using (var transaction = db.Database.BeginTransaction())
                 {
-                    Name = clientName,
-                    Phone = clientPhone,
-                    Dni = clientDni
-                };
+                    var clientName = ClientNameTextBox.Text.Trim();
+                    var clientPhone = PhoneTextBox.Text.Trim();
+                    var clientDni = DniTextBox.Text.Trim();
+                    var quoteTitle = QuoteTitleTextBox.Text.Trim();
+                    var quoteNotes = QuoteNotesTextBox.Text.Trim();
+                    var clientNotes = ClientNotesTextBox.Text.Trim();
+                    var selectedStatus = GetSelectedQuoteStatus();
 
-                db.Clients.Add(client);
-                db.SaveChanges();
+                    var selectedClient = ClientsListBox.SelectedItem as Models.Client;
+                    var currentClientId = selectedClient?.Id;
 
-                CurrentClientId = client.Id;
-            }
+                    var possibleDuplicate = FindPossibleDuplicateClient(
+                        db,
+                        clientName,
+                        clientPhone,
+                        currentClientId);
 
-            Models.Quote quote;
+                    if (possibleDuplicate != null && selectedClient == null)
+                    {
+                        var result = MessageBox.Show(
+                            $"Ya existe un cliente parecido:\n\n" +
+                            $"{possibleDuplicate.Name}\n" +
+                            $"{possibleDuplicate.Phone}\n\n" +
+                            "¿Quieres crear otro cliente igualmente?",
+                            "Posible cliente duplicado",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
 
-            if (CurrentQuote == null)
-            {
-                quote = new Models.Quote()
-                {
-                    ClientId = client.Id,
-                    DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
-                    EventDate = EventDatePicker.SelectedDate,
-                    Title = quoteTitle,
-                    Status = selectedStatus,
-                    Deposit = GetDepositValue(),
-                    Notes = quoteNotes,
-                    ClientNotes = clientNotes,
-                    Total = Products.Sum(p => p.Total)
-                };
+                        if (result != MessageBoxResult.Yes)
+                        {
+                            SetSaveWorkflowState(WorkspaceSaveState.Dirty);
+                            return;
+                        }
+                    }
 
-                db.Quotes.Add(quote);
+                    Models.Client client;
 
-                db.SaveChanges();
-            }
+                    if (CurrentClientId != null)
+                    {
+                        client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value)
+                            ?? throw new InvalidOperationException("No se encontró el cliente actual en la base de datos.");
 
-            else
-            {
-                quote = db.Quotes
-                    .Include(q => q.Items)
-                    .First(q => q.Id == CurrentQuote.Id);
+                        client.Name = clientName;
+                        client.Phone = clientPhone;
+                        client.Dni = clientDni;
+                    }
+                    else
+                    {
+                        client = new Models.Client()
+                        {
+                            Name = clientName,
+                            Phone = clientPhone,
+                            Dni = clientDni
+                        };
 
-                quote.Total = Products.Sum(p => p.Total);
-                quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
-                quote.EventDate = EventDatePicker.SelectedDate;
-                quote.Title = quoteTitle;
-                quote.Notes = quoteNotes;
-                quote.ClientNotes = clientNotes;
-                quote.Status = selectedStatus;
-                quote.Deposit = GetDepositValue();
-                
+                        db.Clients.Add(client);
+                    }
 
-                db.QuoteItems.RemoveRange(quote.Items);
+                    Models.Quote quote;
 
-                db.SaveChanges();
+                    if (CurrentQuote == null)
+                    {
+                        quote = new Models.Quote()
+                        {
+                            Client = client,
+                            DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                            EventDate = EventDatePicker.SelectedDate,
+                            Title = quoteTitle,
+                            Status = selectedStatus,
+                            Deposit = GetDepositValue(),
+                            Notes = quoteNotes,
+                            ClientNotes = clientNotes,
+                            Total = Products.Sum(p => p.Total)
+                        };
 
-                quote.Items.Clear();
-            }
+                        db.Quotes.Add(quote);
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        quote = db.Quotes
+                            .Include(q => q.Items)
+                            .FirstOrDefault(q => q.Id == CurrentQuote.Id)
+                            ?? throw new InvalidOperationException("No se encontró el trabajo actual en la base de datos.");
 
-            AddQuoteItems(db, quote.Id);
+                        quote.Client = client;
+                        quote.Total = Products.Sum(p => p.Total);
+                        quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
+                        quote.EventDate = EventDatePicker.SelectedDate;
+                        quote.Title = quoteTitle;
+                        quote.Notes = quoteNotes;
+                        quote.ClientNotes = clientNotes;
+                        quote.Status = selectedStatus;
+                        quote.Deposit = GetDepositValue();
 
-            db.SaveChanges();
+                        db.QuoteItems.RemoveRange(quote.Items);
+                    }
 
-            int savedClientId = client.Id;
-            int savedQuoteId = quote.Id;
+                    AddQuoteItems(db, quote.Id);
 
-            SuppressSelectionConfirm = true;
+                    db.SaveChanges();
+                    transaction.Commit();
 
-            LoadClients();
-
-            LoadCalendarDeliveries();
-
-            var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                .FirstOrDefault(c => c.Id == savedClientId);
-
-            if (reloadedClient != null)
-            {
-                ClientsListBox.SelectedItem = reloadedClient;
-
-                using var refreshDb = new AppDbContext();
-
-                var reloadedQuotes = refreshDb.Quotes
-                    .Where(q => q.ClientId == savedClientId)
-                    .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
-                    .ThenBy(q => q.Id)
-                    .ToList();
-
-                QuotesListBox.ItemsSource = reloadedQuotes;
-                BudgetQuotesListBox.ItemsSource = reloadedQuotes;
-
-                var reloadedQuote = reloadedQuotes
-                    .FirstOrDefault(q => q.Id == savedQuoteId);
-
-                if (reloadedQuote != null)
-                {
-                    QuotesListBox.SelectedItem = reloadedQuote;
-                    CurrentQuote = reloadedQuote;
-
-                    UpdateSaveButtonText();
+                    savedClientId = client.Id;
+                    savedQuoteId = quote.Id;
+                    CurrentClientId = savedClientId;
                 }
+
+                SuppressSelectionConfirm = true;
+
+                try
+                {
+                    LoadClients();
+                    LoadCalendarDeliveries();
+
+                    var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                        .FirstOrDefault(c => c.Id == savedClientId);
+
+                    if (reloadedClient != null)
+                    {
+                        ClientsListBox.SelectedItem = reloadedClient;
+
+                        using var refreshDb = new AppDbContext();
+
+                        var reloadedQuotes = refreshDb.Quotes
+                            .Where(q => q.ClientId == savedClientId)
+                            .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
+                            .ThenBy(q => q.Id)
+                            .ToList();
+
+                        QuotesListBox.ItemsSource = reloadedQuotes;
+                        BudgetQuotesListBox.ItemsSource = reloadedQuotes;
+
+                        var reloadedQuote = reloadedQuotes
+                            .FirstOrDefault(q => q.Id == savedQuoteId);
+
+                        if (reloadedQuote != null)
+                        {
+                            QuotesListBox.SelectedItem = reloadedQuote;
+                            BudgetQuotesListBox.SelectedItem = reloadedQuote;
+                            CurrentQuote = reloadedQuote;
+                        }
+                    }
+                }
+                finally
+                {
+                    SuppressSelectionConfirm = false;
+                }
+
+                MarkAsSaved();
+                UpdateSaveButtonText();
+
+                MessageBox.Show(
+                    "Trabajo guardado correctamente",
+                    "Éxito",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
+            catch (Exception ex)
+            {
+                SuppressSelectionConfirm = false;
+                SetSaveWorkflowState(WorkspaceSaveState.SaveFailed);
 
-            SuppressSelectionConfirm = false;
-
-            MarkAsSaved();
-
-            UpdateSaveButtonText();
-
-            MessageBox.Show(
-                "Trabajo guardado correctamente",
-                "Éxito",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBox.Show(
+                    $"No se pudo guardar el trabajo. No se han aplicado cambios parciales.\n\n{ex.Message}",
+                    "Error al guardar",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private string GetSelectedQuoteStatus()
@@ -966,69 +982,90 @@ namespace SastreriaPresupuestos
             if (result != MessageBoxResult.Yes)
                 return;
 
-            using var db = new AppDbContext();
-
-            var quote = db.Quotes
-                .Include(q => q.Items)
-                .FirstOrDefault(q => q.Id == quoteToDelete.Id);
-
-            if (quote == null)
-                return;
-
-            db.QuoteItems.RemoveRange(quote.Items);
-            db.Quotes.Remove(quote);
-            db.SaveChanges();
-
-            if (CurrentQuote != null && CurrentQuote.Id == quoteToDelete.Id)
+            try
             {
-                IsLoadingData = true;
+                using var db = new AppDbContext();
+                using var transaction = db.Database.BeginTransaction();
 
-                Products.Clear();
-                UpdateGrandTotal();
+                var quote = db.Quotes
+                    .Include(q => q.Items)
+                    .FirstOrDefault(q => q.Id == quoteToDelete.Id);
 
-                CurrentQuote = null;
-                QuotesListBox.SelectedItem = null;
-
-                DeliveryDatePicker.SelectedDate = DateTime.Now;
-                EventDatePicker.SelectedDate = null;
-                QuoteTitleTextBox.Text = "";
-                QuoteStatusComboBox.SelectedItem = "Pendiente";
-                DepositTextBox.Text = "0";
-                QuoteNotesTextBox.Text = "";
-                ClientNotesTextBox.Text = "";
-
-                UpdatePendingAmount();
-
-                IsLoadingData = false;
-                MarkAsSaved();
-                UpdateSaveButtonText();
-            }
-
-            var selectedClient = ClientsListBox.SelectedItem as Models.Client;
-
-            LoadClients();
-            LoadCalendarDeliveries();
-
-            if (selectedClient != null)
-            {
-                var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                    .FirstOrDefault(c => c.Id == selectedClient.Id);
-
-                if (reloadedClient != null)
+                if (quote == null)
                 {
-                    ClientsListBox.SelectedItem = reloadedClient;
+                    MessageBox.Show(
+                        "El trabajo ya no existe en la base de datos.",
+                        "Eliminar trabajo",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
                 }
+
+                db.QuoteItems.RemoveRange(quote.Items);
+                db.Quotes.Remove(quote);
+                db.SaveChanges();
+                transaction.Commit();
+
+                if (CurrentQuote != null && CurrentQuote.Id == quoteToDelete.Id)
+                {
+                    IsLoadingData = true;
+
+                    Products.Clear();
+                    UpdateGrandTotal();
+
+                    CurrentQuote = null;
+                    QuotesListBox.SelectedItem = null;
+                    BudgetQuotesListBox.SelectedItem = null;
+
+                    DeliveryDatePicker.SelectedDate = DateTime.Now;
+                    EventDatePicker.SelectedDate = null;
+                    QuoteTitleTextBox.Text = "";
+                    QuoteStatusComboBox.SelectedItem = "Pendiente";
+                    DepositTextBox.Text = "0";
+                    QuoteNotesTextBox.Text = "";
+                    ClientNotesTextBox.Text = "";
+
+                    UpdatePendingAmount();
+
+                    IsLoadingData = false;
+                    MarkAsSaved();
+                    UpdateSaveButtonText();
+                }
+
+                var selectedClient = ClientsListBox.SelectedItem as Models.Client;
+
+                LoadClients();
+                LoadCalendarDeliveries();
+
+                if (selectedClient != null)
+                {
+                    var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                        .FirstOrDefault(c => c.Id == selectedClient.Id);
+
+                    if (reloadedClient != null)
+                    {
+                        ClientsListBox.SelectedItem = reloadedClient;
+                    }
+                }
+
+                UpdateSaveButtonText();
+                UpdateUnsavedChangesIndicator();
+                UpdateWindowTitle();
+
+                MessageBox.Show(
+                    "Trabajo eliminado correctamente.",
+                    "Eliminado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-
-            UpdateSaveButtonText();
-            UpdateUnsavedChangesIndicator();
-            UpdateWindowTitle();
-
-            MessageBox.Show(
-                "Trabajo eliminado correctamente.",
-                "Eliminado",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo eliminar el trabajo.\n\n{ex.Message}",
+                    "Eliminar trabajo",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private void PricesConfigButton_Click(object sender, RoutedEventArgs e)
@@ -1042,14 +1079,25 @@ namespace SastreriaPresupuestos
 
             if (result == true)
             {
-                PriceService.LoadPrices();
-                RefreshAvailableProductNames();
+                try
+                {
+                    PriceService.LoadPrices();
+                    RefreshAvailableProductNames();
 
-                MessageBox.Show(
-                    "Los productos y precios actualizados se aplicarán a los productos que añadas o cambies a partir de ahora. Los trabajos ya abiertos conservarán sus precios actuales.",
-                    "Productos actualizados",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBox.Show(
+                        "Los productos y precios actualizados se aplicarán a los productos que añadas o cambies a partir de ahora. Los trabajos ya abiertos conservarán sus precios actuales.",
+                        "Productos actualizados",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Los cambios se guardaron, pero no se pudieron recargar las tarifas en memoria. Reinicia la aplicación antes de crear nuevos productos.\n\n{ex.Message}",
+                        "Productos actualizados",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
             }
         }
 
@@ -1382,6 +1430,7 @@ namespace SastreriaPresupuestos
                     return;
 
                 using var db = new AppDbContext();
+                using var transaction = db.Database.BeginTransaction();
 
                 var client = db.Clients.FirstOrDefault(c => c.Id == clientId);
                 var quote = db.Quotes
@@ -1411,6 +1460,7 @@ namespace SastreriaPresupuestos
                 AddQuoteItems(db, quote.Id);
 
                 db.SaveChanges();
+                transaction.Commit();
 
                 currentQuote.Title = quote.Title;
                 currentQuote.Notes = quote.Notes;
@@ -1835,9 +1885,20 @@ namespace SastreriaPresupuestos
             if (dialog.ShowDialog(this) != true)
                 return;
 
-            updateSetting(dialog.FolderName);
-            AppSettingsService.Save(CurrentSettings);
-            UpdateExportFolderSettingsUi();
+            try
+            {
+                updateSetting(dialog.FolderName);
+                AppSettingsService.Save(CurrentSettings);
+                UpdateExportFolderSettingsUi();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo guardar la carpeta seleccionada.\n\n{ex.Message}",
+                    "Guardar ajustes",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private void ClientSheetFolderButton_Click(object sender, RoutedEventArgs e)
@@ -2081,56 +2142,53 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            using var db = new AppDbContext();
-
-            var client = db.Clients
-                .Include(c => c.Quotes)
-                    .ThenInclude(q => q.Items)
-                .FirstOrDefault(c => c.Id == selectedClient.Id);
-
-            if (client == null || client.Quotes.Count == 0)
-            {
-                MessageBox.Show(
-                    "El cliente seleccionado no tiene trabajos para exportar.",
-                    "Exportar opciones",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-
-                return;
-            }
-
-            var exportQuotes = client.Quotes
-                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
-                .ThenBy(q => q.Id)
-                .Select(q =>
-                {
-                    var productLines = new ObservableCollection<ProductLine>(
-                        q.Items.Select(item =>
-                        {
-                            return ProductLine.FromQuoteItem(item);
-                        }));
-
-                    return ExportDataService.CreateExportQuote(
-                        client.Name,
-                        client.Phone,
-                        q.DeliveryDate,
-                        q.EventDate,
-                        q.Title,
-                        string.IsNullOrWhiteSpace(q.Status) ? "Pendiente" : q.Status,
-                        q.Deposit,
-                        q.ClientNotes,
-                        productLines,
-                        q.Id);
-                })
-                .ToList();
-
-            var fileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf";
-
-            if (!TryBuildExportFilePath(CurrentSettings.QuoteExportFolder, fileName, "presupuestos", out var pdfPath))
-                return;
-
             try
             {
+                using var db = new AppDbContext();
+
+                var client = db.Clients
+                    .Include(c => c.Quotes)
+                        .ThenInclude(q => q.Items)
+                    .FirstOrDefault(c => c.Id == selectedClient.Id);
+
+                if (client == null || client.Quotes.Count == 0)
+                {
+                    MessageBox.Show(
+                        "El cliente seleccionado no tiene trabajos para exportar.",
+                        "Exportar opciones",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    return;
+                }
+
+                var exportQuotes = client.Quotes
+                    .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
+                    .ThenBy(q => q.Id)
+                    .Select(q =>
+                    {
+                        var productLines = new ObservableCollection<ProductLine>(
+                            q.Items.Select(ProductLine.FromQuoteItem));
+
+                        return ExportDataService.CreateExportQuote(
+                            client.Name,
+                            client.Phone,
+                            q.DeliveryDate,
+                            q.EventDate,
+                            q.Title,
+                            string.IsNullOrWhiteSpace(q.Status) ? "Pendiente" : q.Status,
+                            q.Deposit,
+                            q.ClientNotes,
+                            productLines,
+                            q.Id);
+                    })
+                    .ToList();
+
+                var fileName = $"{MakeSafeFileName(client.Name)}_opciones_{DateTime.Now:yyyy-MM-dd_HH-mm}.pdf";
+
+                if (!TryBuildExportFilePath(CurrentSettings.QuoteExportFolder, fileName, "presupuestos", out var pdfPath))
+                    return;
+
                 PdfExportService.ExportQuotesToPdf(exportQuotes, pdfPath);
 
                 LastGeneratedPdfPath = pdfPath;
@@ -2146,7 +2204,7 @@ namespace SastreriaPresupuestos
             {
                 MessageBox.Show(
                     $"No se pudo generar el PDF con opciones.\n\n{ex.Message}",
-                    "Error",
+                    "Exportar opciones",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -2181,28 +2239,39 @@ namespace SastreriaPresupuestos
             if (!TryBuildExportFilePath(CurrentSettings.ClientSheetExportFolder, fileName, "fichas de cliente", out var pdfPath))
                 return;
 
-            var sheet = new ExportClientSheet
+            try
             {
-                QuoteId = CurrentQuote.Id,
-                ClientName = ClientNameTextBox.Text.Trim(),
-                ClientDni = DniTextBox.Text.Trim(),
-                ClientPhone = PhoneTextBox.Text.Trim(),
-                OrderTitle = BuildClientSheetOrderSummary(),
-                EventDate = EventDatePicker.SelectedDate ?? DeliveryDatePicker.SelectedDate ?? DateTime.Now,
-                Deposit = GetDepositValue(),
-                Observations = QuoteNotesTextBox.Text.Trim()
-            };
+                var sheet = new ExportClientSheet
+                {
+                    QuoteId = CurrentQuote.Id,
+                    ClientName = ClientNameTextBox.Text.Trim(),
+                    ClientDni = DniTextBox.Text.Trim(),
+                    ClientPhone = PhoneTextBox.Text.Trim(),
+                    OrderTitle = BuildClientSheetOrderSummary(),
+                    EventDate = EventDatePicker.SelectedDate ?? DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                    Deposit = GetDepositValue(),
+                    Observations = QuoteNotesTextBox.Text.Trim()
+                };
 
-            ClientSheetPdfService.ExportClientSheetToPdf(sheet, pdfPath);
+                ClientSheetPdfService.ExportClientSheetToPdf(sheet, pdfPath);
 
-            LastGeneratedPdfPath = pdfPath;
-            UpdatePdfWorkflowStatus(pdfPath);
+                LastGeneratedPdfPath = pdfPath;
+                UpdatePdfWorkflowStatus(pdfPath);
 
-            MessageBox.Show(
-                "Ficha interna generada correctamente.",
-                "Exportar ficha cliente",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBox.Show(
+                    "Ficha interna generada correctamente.",
+                    "Exportar ficha cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo generar la ficha interna.\n\n{ex.Message}",
+                    "Exportar ficha cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private string BuildClientSheetOrderSummary()
@@ -2367,36 +2436,56 @@ namespace SastreriaPresupuestos
             if (result != MessageBoxResult.Yes)
                 return;
 
-            using var db = new AppDbContext();
-
-            var client = db.Clients
-                .Include(c => c.Quotes)
-                    .ThenInclude(q => q.Items)
-                .FirstOrDefault(c => c.Id == selectedClient.Id);
-
-            if (client == null)
-                return;
-
-            foreach (var quote in client.Quotes)
+            try
             {
-                db.QuoteItems.RemoveRange(quote.Items);
+                using var db = new AppDbContext();
+                using var transaction = db.Database.BeginTransaction();
+
+                var client = db.Clients
+                    .Include(c => c.Quotes)
+                        .ThenInclude(q => q.Items)
+                    .FirstOrDefault(c => c.Id == selectedClient.Id);
+
+                if (client == null)
+                {
+                    MessageBox.Show(
+                        "El cliente ya no existe en la base de datos.",
+                        "Eliminar cliente",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                foreach (var quote in client.Quotes)
+                {
+                    db.QuoteItems.RemoveRange(quote.Items);
+                }
+
+                db.Quotes.RemoveRange(client.Quotes);
+                db.Clients.Remove(client);
+
+                db.SaveChanges();
+                transaction.Commit();
+
+                LoadClients();
+                LoadCalendarDeliveries();
+
+                ClearScreenForNewClient();
+
+                MessageBox.Show(
+                    "Cliente eliminado correctamente.",
+                    "Eliminar cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-
-            db.Quotes.RemoveRange(client.Quotes);
-            db.Clients.Remove(client);
-
-            db.SaveChanges();
-
-            LoadClients();
-            LoadCalendarDeliveries();
-
-            ClearScreenForNewClient();
-
-            MessageBox.Show(
-                "Cliente eliminado correctamente.",
-                "Eliminar cliente",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudo eliminar el cliente.\n\n{ex.Message}",
+                    "Eliminar cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private void SaveClientButton_Click(object sender, RoutedEventArgs e)
@@ -2617,91 +2706,107 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            using var db = new AppDbContext();
-
-            var selectedClient = ClientsListBox.SelectedItem as Models.Client;
-
-            Models.Client? client = null;
-
-            var currentClientId = selectedClient?.Id;
-
-            var possibleDuplicate = FindPossibleDuplicateClient(
-                db,
-                clientName,
-                clientPhone,
-                currentClientId);
-
-            if (possibleDuplicate != null)
+            try
             {
-                var result = MessageBox.Show(
-                    $"Ya existe un cliente parecido:\n\n" +
-                    $"{possibleDuplicate.Name}\n" +
-                    $"{possibleDuplicate.Phone}\n\n" +
-                    "¿Quieres guardar igualmente?",
-                    "Posible cliente duplicado",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                using var db = new AppDbContext();
 
-                if (result != MessageBoxResult.Yes)
-                    return;
-            }
+                var selectedClient = ClientsListBox.SelectedItem as Models.Client;
+                Models.Client? client = null;
+                var currentClientId = selectedClient?.Id;
 
-            if (CurrentClientId != null)
-            {
-                client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value);
-            }
+                var possibleDuplicate = FindPossibleDuplicateClient(
+                    db,
+                    clientName,
+                    clientPhone,
+                    currentClientId);
 
-            if (selectedClient != null)
-            {
-                client = db.Clients.FirstOrDefault(c => c.Id == selectedClient.Id);
-            }
-
-            if (client == null)
-            {
-                client = new Models.Client
+                if (possibleDuplicate != null)
                 {
-                    Name = clientName,
-                    Phone = clientPhone,
-                    Dni = clientDni
-                };
+                    var result = MessageBox.Show(
+                        $"Ya existe un cliente parecido:\n\n" +
+                        $"{possibleDuplicate.Name}\n" +
+                        $"{possibleDuplicate.Phone}\n\n" +
+                        "¿Quieres guardar igualmente?",
+                        "Posible cliente duplicado",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
 
-                db.Clients.Add(client);
+                    if (result != MessageBoxResult.Yes)
+                        return;
+                }
+
+                if (CurrentClientId != null)
+                {
+                    client = db.Clients.FirstOrDefault(c => c.Id == CurrentClientId.Value);
+                }
+
+                if (selectedClient != null)
+                {
+                    client = db.Clients.FirstOrDefault(c => c.Id == selectedClient.Id);
+                }
+
+                if (client == null)
+                {
+                    client = new Models.Client
+                    {
+                        Name = clientName,
+                        Phone = clientPhone,
+                        Dni = clientDni
+                    };
+
+                    db.Clients.Add(client);
+                }
+                else
+                {
+                    client.Name = clientName;
+                    client.Phone = clientPhone;
+                    client.Dni = clientDni;
+                }
+
+                db.SaveChanges();
+
+                var savedClientId = client.Id;
+
+                SuppressSelectionConfirm = true;
+
+                try
+                {
+                    LoadClients();
+
+                    var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                        .FirstOrDefault(c => c.Id == savedClientId);
+
+                    if (reloadedClient != null)
+                    {
+                        ClientsListBox.SelectedItem = reloadedClient;
+                        LastSelectedClientId = savedClientId;
+                        CurrentClientId = savedClientId;
+                        UpdateWorkflowState();
+                    }
+                }
+                finally
+                {
+                    SuppressSelectionConfirm = false;
+                }
+
+                MarkAsSaved();
+
+                MessageBox.Show(
+                    "Cliente guardado correctamente.",
+                    "Guardar cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-            else
+            catch (Exception ex)
             {
-                client.Name = clientName;
-                client.Phone = clientPhone;
-                client.Dni = clientDni;
+                SuppressSelectionConfirm = false;
+
+                MessageBox.Show(
+                    $"No se pudo guardar el cliente.\n\n{ex.Message}",
+                    "Guardar cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
-
-            db.SaveChanges();
-
-            var savedClientId = client.Id;
-
-            SuppressSelectionConfirm = true;
-
-            LoadClients();
-
-            var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                .FirstOrDefault(c => c.Id == savedClientId);
-
-            if (reloadedClient != null)
-            {
-                ClientsListBox.SelectedItem = reloadedClient;
-                LastSelectedClientId = savedClientId;
-                CurrentClientId = savedClientId;
-                UpdateWorkflowState();
-            }
-
-            SuppressSelectionConfirm = false;
-
-            MarkAsSaved();
-
-            MessageBox.Show(
-                "Cliente guardado correctamente.",
-                "Guardar cliente",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
         }
 
         private (Window Window, StackPanel ContentPanel, Button AcceptButton) CreateContextEditDialog(string title, string subtitle)

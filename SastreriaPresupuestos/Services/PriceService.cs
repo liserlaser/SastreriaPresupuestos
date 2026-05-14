@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SastreriaPresupuestos.Data;
@@ -7,7 +8,9 @@ namespace SastreriaPresupuestos.Services
 {
     public static class PriceService
     {
-        public static Dictionary<string, decimal> Prices { get; private set; } = new();
+        private static readonly object SyncRoot = new();
+
+        public static Dictionary<string, decimal> Prices { get; private set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public static void LoadPrices()
         {
@@ -15,12 +18,18 @@ namespace SastreriaPresupuestos.Services
 
             EnsureDefaultPrices(db);
 
-            Prices = db.PriceItems
+            var loadedPrices = db.PriceItems
                 .AsEnumerable()
-                .GroupBy(p => BuildKey(p.ProductName, p.TailoringType))
+                .GroupBy(p => BuildKey(p.ProductName, p.TailoringType), StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Last().Price);
+                    g => g.Last().Price,
+                    StringComparer.OrdinalIgnoreCase);
+
+            lock (SyncRoot)
+            {
+                Prices = loadedPrices;
+            }
         }
 
         private static void EnsureDefaultPrices(AppDbContext db)
@@ -78,26 +87,37 @@ namespace SastreriaPresupuestos.Services
                 return 0;
 
             var key = BuildKey(productName, tailoringType);
-            return Prices.TryGetValue(key, out var price) ? price : 0;
+
+            lock (SyncRoot)
+            {
+                return Prices.TryGetValue(key, out var price) ? price : 0;
+            }
         }
 
         public static List<string> GetProductNames()
         {
-            using var db = new AppDbContext();
+            try
+            {
+                using var db = new AppDbContext();
 
-            EnsureDefaultPrices(db);
+                EnsureDefaultPrices(db);
 
-            var products = db.PriceItems
-                .Select(p => p.ProductName)
-                .Where(p => !string.IsNullOrWhiteSpace(p))
-                .Distinct()
-                .OrderBy(p => p)
-                .ToList();
+                var products = db.PriceItems
+                    .Select(p => p.ProductName)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Distinct()
+                    .OrderBy(p => p)
+                    .ToList();
 
-            if (!products.Contains("Concepto Libre"))
-                products.Add("Concepto Libre");
+                if (!products.Contains("Concepto Libre"))
+                    products.Add("Concepto Libre");
 
-            return products;
+                return products;
+            }
+            catch
+            {
+                return GetCachedProductNames();
+            }
         }
 
         public static List<string> GetTailoringTypes(string productName)
@@ -105,21 +125,80 @@ namespace SastreriaPresupuestos.Services
             if (string.IsNullOrWhiteSpace(productName) || productName == "Concepto Libre")
                 return new List<string>();
 
-            using var db = new AppDbContext();
+            try
+            {
+                using var db = new AppDbContext();
 
-            EnsureDefaultPrices(db);
+                EnsureDefaultPrices(db);
 
-            return db.PriceItems
-                .Where(p => p.ProductName == productName && !string.IsNullOrWhiteSpace(p.TailoringType))
-                .Select(p => p.TailoringType)
-                .Distinct()
-                .OrderBy(t => t)
-                .ToList();
+                return db.PriceItems
+                    .Where(p => p.ProductName == productName && !string.IsNullOrWhiteSpace(p.TailoringType))
+                    .Select(p => p.TailoringType)
+                    .Distinct()
+                    .OrderBy(t => t)
+                    .ToList();
+            }
+            catch
+            {
+                return GetCachedTailoringTypes(productName);
+            }
         }
 
         public static bool HasTailoringTypes(string productName)
         {
             return GetTailoringTypes(productName).Any();
+        }
+
+        private static List<string> GetCachedProductNames()
+        {
+            lock (SyncRoot)
+            {
+                var products = Prices.Keys
+                    .Select(GetProductNameFromKey)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(p => p)
+                    .ToList();
+
+                if (!products.Contains("Concepto Libre", StringComparer.OrdinalIgnoreCase))
+                    products.Add("Concepto Libre");
+
+                return products;
+            }
+        }
+
+        private static List<string> GetCachedTailoringTypes(string productName)
+        {
+            lock (SyncRoot)
+            {
+                return Prices.Keys
+                    .Select(SplitPriceKey)
+                    .Where(parts => string.Equals(parts.ProductName, productName, StringComparison.OrdinalIgnoreCase) &&
+                                    !string.IsNullOrWhiteSpace(parts.TailoringType))
+                    .Select(parts => parts.TailoringType)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(t => t)
+                    .ToList();
+            }
+        }
+
+        private static string GetProductNameFromKey(string key)
+        {
+            return SplitPriceKey(key).ProductName;
+        }
+
+        private static (string ProductName, string TailoringType) SplitPriceKey(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return (string.Empty, string.Empty);
+
+            var separatorIndex = key.LastIndexOf('-');
+            if (separatorIndex <= 0 || separatorIndex == key.Length - 1)
+                return (key.Trim(), string.Empty);
+
+            return (
+                key[..separatorIndex].Trim(),
+                key[(separatorIndex + 1)..].Trim());
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using SastreriaPresupuestos.Data;
 using SastreriaPresupuestos.Models;
@@ -84,90 +85,103 @@ namespace SastreriaPresupuestos.Views
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            PricesDataGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell, true);
-            PricesDataGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
-
-            var normalizedProducts = Prices
-                .Select(p => new PriceItem
-                {
-                    Id = p.Id,
-                    ProductName = (p.ProductName ?? "").Trim(),
-                    TailoringType = (p.TailoringType ?? "").Trim(),
-                    Price = p.Price < 0 ? 0 : p.Price,
-                    IsAccessory = p.IsAccessory
-                })
-                .ToList();
-
-            if (normalizedProducts.Any(p => string.IsNullOrWhiteSpace(p.ProductName)))
+            try
             {
-                MessageBox.Show(
-                    "Todos los productos deben tener nombre.",
-                    "Editar productos",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                PricesDataGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell, true);
+                PricesDataGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
 
-                return;
-            }
-
-            var duplicate = normalizedProducts
-                .GroupBy(p => PriceService.BuildKey(p.ProductName, p.TailoringType))
-                .FirstOrDefault(g => g.Count() > 1);
-
-            if (duplicate != null)
-            {
-                MessageBox.Show(
-                    $"Ya existe un producto con la misma combinación de nombre y tipo: {duplicate.Key}.",
-                    "Producto duplicado",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return;
-            }
-
-            using var db = new AppDbContext();
-
-            if (DeletedPriceIds.Count > 0)
-            {
-                var productsToDelete = db.PriceItems
-                    .Where(p => DeletedPriceIds.Contains(p.Id))
+                var normalizedProducts = Prices
+                    .Select(p => new PriceItem
+                    {
+                        Id = p.Id,
+                        ProductName = (p.ProductName ?? "").Trim(),
+                        TailoringType = (p.TailoringType ?? "").Trim(),
+                        Price = p.Price < 0 ? 0 : p.Price,
+                        IsAccessory = p.IsAccessory
+                    })
                     .ToList();
 
-                db.PriceItems.RemoveRange(productsToDelete);
-            }
-
-            foreach (var editedProduct in normalizedProducts)
-            {
-                if (editedProduct.Id <= 0)
+                if (normalizedProducts.Any(p => string.IsNullOrWhiteSpace(p.ProductName)))
                 {
-                    db.PriceItems.Add(editedProduct);
-                    continue;
+                    MessageBox.Show(
+                        "Todos los productos deben tener nombre.",
+                        "Editar productos",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    return;
                 }
 
-                var productInDb = db.PriceItems
-                    .FirstOrDefault(p => p.Id == editedProduct.Id);
+                var duplicate = normalizedProducts
+                    .GroupBy(p => PriceService.BuildKey(p.ProductName, p.TailoringType), StringComparer.OrdinalIgnoreCase)
+                    .FirstOrDefault(g => g.Count() > 1);
 
-                if (productInDb == null)
-                    continue;
+                if (duplicate != null)
+                {
+                    MessageBox.Show(
+                        $"Ya existe un producto con la misma combinación de nombre y tipo: {duplicate.Key}.",
+                        "Producto duplicado",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
 
-                productInDb.ProductName = editedProduct.ProductName;
-                productInDb.TailoringType = editedProduct.TailoringType;
-                productInDb.Price = editedProduct.Price;
-                productInDb.IsAccessory = editedProduct.IsAccessory;
+                    return;
+                }
+
+                using var db = new AppDbContext();
+                using var transaction = db.Database.BeginTransaction();
+
+                if (DeletedPriceIds.Count > 0)
+                {
+                    var productsToDelete = db.PriceItems
+                        .Where(p => DeletedPriceIds.Contains(p.Id))
+                        .ToList();
+
+                    db.PriceItems.RemoveRange(productsToDelete);
+                }
+
+                foreach (var editedProduct in normalizedProducts)
+                {
+                    if (editedProduct.Id <= 0)
+                    {
+                        db.PriceItems.Add(editedProduct);
+                        continue;
+                    }
+
+                    var productInDb = db.PriceItems
+                        .FirstOrDefault(p => p.Id == editedProduct.Id);
+
+                    if (productInDb == null)
+                        continue;
+
+                    productInDb.ProductName = editedProduct.ProductName;
+                    productInDb.TailoringType = editedProduct.TailoringType;
+                    productInDb.Price = editedProduct.Price;
+                    productInDb.IsAccessory = editedProduct.IsAccessory;
+                }
+
+                db.SaveChanges();
+                transaction.Commit();
+
+                PriceService.LoadPrices();
+
+                MessageBox.Show(
+                    "Productos guardados correctamente.",
+                    "Editar productos",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                DialogResult = true;
+
+                Close();
             }
-
-            db.SaveChanges();
-
-            PriceService.LoadPrices();
-
-            MessageBox.Show(
-                "Productos guardados correctamente.",
-                "Editar productos",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            DialogResult = true;
-
-            Close();
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"No se pudieron guardar los productos y tarifas.\n\n{ex.Message}",
+                    "Editar productos",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
