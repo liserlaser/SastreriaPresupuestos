@@ -261,9 +261,6 @@
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="ToolTip" Value="Doble clic para abrir el trabajo"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=(ItemsControl.AlternationIndex)}" Value="1">
-                <Setter Property="Background" Value="#F6F8F3"/>
-            </DataTrigger>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="#EEF2EA"/>
                 <Setter Property="BorderBrush" Value="#C8D1C2"/>
