@@ -82,6 +82,7 @@ namespace SastreriaPresupuestos
         private TextBlock BudgetWorkspaceStatusTextBlock => PresupuestoView.BudgetWorkspaceStatusTextBlock;
         private TextBlock BudgetWorkspaceDeliveryTextBlock => PresupuestoView.BudgetWorkspaceDeliveryTextBlock;
         private TextBlock BudgetWorkspaceTotalTextBlock => PresupuestoView.BudgetWorkspaceTotalTextBlock;
+        private TextBlock WorkspaceProductCountTextBlock => PresupuestoView.WorkspaceProductCountTextBlock;
         private Button BudgetQuickSummaryButton => PresupuestoView.BudgetQuickSummaryButton;
         private Button BudgetQuickProductsButton => PresupuestoView.BudgetQuickProductsButton;
         private Button BudgetQuickHistoryButton => PresupuestoView.BudgetQuickHistoryButton;
@@ -3389,7 +3390,15 @@ namespace SastreriaPresupuestos
                 BudgetWorkspaceDeliveryTextBlock.Text = $"Evento: {eventText}";
 
             if (BudgetWorkspaceTotalTextBlock != null)
-                BudgetWorkspaceTotalTextBlock.Text = $"Total: {total:N2} €";
+                BudgetWorkspaceTotalTextBlock.Text = $"{total:N2} €";
+
+            if (WorkspaceProductCountTextBlock != null)
+            {
+                var productCount = Products.Count;
+                WorkspaceProductCountTextBlock.Text = productCount == 1
+                    ? "1 producto"
+                    : $"{productCount} productos";
+            }
 
             UpdateContextPanel(clientName, quoteTitle, total);
 

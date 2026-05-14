@@ -461,7 +461,7 @@
                         <TextBlock x:Name="BudgetWorkspaceClientTextBlock" Text="Cliente: —"/>
                         <TextBlock x:Name="BudgetWorkspaceStatusTextBlock" Text="Estado: —"/>
                         <TextBlock x:Name="BudgetWorkspaceDeliveryTextBlock" Text="Entrega: —"/>
-                        <TextBlock x:Name="BudgetWorkspaceTotalTextBlock" Text="Total: 0,00 €"/>
+                        <TextBlock x:Name="BudgetWorkspaceTotalTextBlock" Text="0,00 €"/>
                         <Button x:Name="BudgetQuickSummaryButton"/>
                         <Button x:Name="BudgetQuickProductsButton"/>
                         <Button x:Name="BudgetQuickHistoryButton"/>
@@ -526,13 +526,20 @@
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1">
-                                            <TextBlock Text="Estado" Style="{StaticResource ContextLabelTextStyle}"/>
-                                            <ComboBox x:Name="WorkspaceQuoteStatusComboBox"
-                                                      Height="34"
-                                                      FontSize="14"
-                                                      Padding="8,0"
-                                                      ItemsSource="{StaticResource QuoteStatusList}"
-                                                      SelectedItem="{Binding SelectedItem, ElementName=QuoteStatusComboBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBlock Text="Productos" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <Border Height="34"
+                                                    Background="#FBFCFA"
+                                                    BorderBrush="{StaticResource BorderSoftBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="10,0">
+                                                <TextBlock x:Name="WorkspaceProductCountTextBlock"
+                                                           Text="0 productos"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PrimaryBrush}"/>
+                                            </Border>
                                         </StackPanel>
                                     </Grid>
 
@@ -555,64 +562,57 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <Grid Grid.Row="4">
+                                    <StackPanel Grid.Row="4">
+                                        <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
+                                        <TextBox x:Name="DepositTextBox"
+                                                 Style="{StaticResource ContextTextBoxStyle}"
+                                                 Text="0"
+                                                 HorizontalContentAlignment="Right"/>
+                                    </StackPanel>
+
+                                    <Grid Grid.Row="6">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="1*"/>
                                             <ColumnDefinition Width="1*"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                            <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
-                                            <TextBox x:Name="DepositTextBox"
-                                                     Style="{StaticResource ContextTextBoxStyle}"
-                                                     Text="0"
-                                                     HorizontalContentAlignment="Right"/>
+                                            <TextBlock Text="Total" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <Border MinHeight="42"
+                                                    Background="#FBFCFA"
+                                                    BorderBrush="{StaticResource BorderSoftBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10"
+                                                    Padding="12,0">
+                                                <TextBlock Text="{Binding Text, ElementName=BudgetWorkspaceTotalTextBlock}"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Right"
+                                                           FontSize="20"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                           TextTrimming="None"/>
+                                            </Border>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1">
                                             <TextBlock Text="Pendiente" Style="{StaticResource ContextLabelTextStyle}"/>
-                                            <TextBlock x:Name="PendingAmountTextBlock"
-                                                       Text="0,00 €"
-                                                       Height="34"
-                                                       VerticalAlignment="Center"
-                                                       FontSize="20"
-                                                       FontWeight="Bold"
-                                                       Foreground="{StaticResource PrimaryBrush}"/>
+                                            <Border MinHeight="42"
+                                                    Background="#FBFCFA"
+                                                    BorderBrush="{StaticResource BorderSoftBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10"
+                                                    Padding="12,0">
+                                                <TextBlock x:Name="PendingAmountTextBlock"
+                                                           Text="0,00 €"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Right"
+                                                           FontSize="20"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                           TextTrimming="None"/>
+                                            </Border>
                                         </StackPanel>
                                     </Grid>
-
-                                    <Border Grid.Row="6"
-                                            Background="#F8F3EF"
-                                            BorderBrush="{StaticResource BorderSoftBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="14"
-                                            Padding="14">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
-                                                <TextBlock Text="Total presupuesto" Style="{StaticResource ContextLabelTextStyle}"/>
-                                                <TextBlock Text="Se recalcula desde las líneas de producto. Usa Productos para modificar el desglose."
-                                                           FontSize="13"
-                                                           Foreground="{StaticResource MutedTextBrush}"
-                                                           TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                            <TextBox Grid.Column="1"
-                                                     Width="150"
-                                                     Height="38"
-                                                     Margin="18,0,0,0"
-                                                     VerticalContentAlignment="Center"
-                                                     HorizontalContentAlignment="Right"
-                                                     FontSize="18"
-                                                     FontWeight="Bold"
-                                                     BorderBrush="{StaticResource BorderSoftBrush}"
-                                                     Background="#FBFCFA"
-                                                     IsReadOnly="True"
-                                                     Text="{Binding Text, ElementName=BudgetWorkspaceTotalTextBlock}"/>
-                                        </Grid>
-                                    </Border>
 
                                     <StackPanel Grid.Row="8"
                                                 Orientation="Horizontal"
