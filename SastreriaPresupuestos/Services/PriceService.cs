@@ -78,11 +78,7 @@ namespace SastreriaPresupuestos.Services
                 return 0;
 
             var key = BuildKey(productName, tailoringType);
-
-            if (Prices.ContainsKey(key))
-                return Prices[key];
-
-            return 0;
+            return Prices.TryGetValue(key, out var price) ? price : 0;
         }
 
         public static List<string> GetProductNames()

@@ -196,7 +196,6 @@ namespace SastreriaPresupuestos
             return name.Trim();
         }
 
-        //private bool MarkAsSaved();
         private bool HasUnsavedChanges = false;
         private WorkspaceSaveState CurrentSaveState = WorkspaceSaveState.Saved;
         private DateTime? LastSavedAt = null;
@@ -233,6 +232,22 @@ namespace SastreriaPresupuestos
         private const int TabDocumentos = 4;
         private const int TabAjustes = 5;
 
+        private static readonly IReadOnlyList<string> DefaultTailoringOptions =
+            new[] { "Confeccion", "Medida", "Artesanal" };
+
+        private static readonly IReadOnlyList<string> ShirtTailoringOptions =
+            new[] { "Confeccion", "Medida" };
+
+        private static readonly HashSet<string> ProductsWithoutTailoring = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Corbata",
+            "Pañuelo",
+            "Gemelos",
+            "Tirantes",
+            "Zapatos",
+            "Concepto Libre"
+        };
+
         public MainWindow()
         {
             ConfigureCulture();
@@ -252,20 +267,27 @@ namespace SastreriaPresupuestos
 
         private List<string> GetTailoringOptions(string product)
         {
-            if (product == "Camisa")
-                return new List<string> { "Confeccion", "Medida" };
+            if (string.Equals(product, "Camisa", StringComparison.OrdinalIgnoreCase))
+                return ShirtTailoringOptions.ToList();
 
-            if (product == "Corbata" ||
-                product == "Pañuelo" ||
-                product == "Gemelos" ||
-                product == "Tirantes" ||
-                product == "Zapatos" ||
-                product == "Concepto Libre")
-            {
+            if (ProductsWithoutTailoring.Contains(product))
                 return new List<string>();
-            }
 
-            return new List<string> { "Confeccion", "Medida", "Artesanal" };
+            return DefaultTailoringOptions.ToList();
+        }
+
+        private static ProductLine CreateDefaultProductLine()
+        {
+            return new ProductLine
+            {
+                ProductName = "Concepto Libre",
+                TailoringType = string.Empty,
+                Fabric = string.Empty,
+                BasePrice = 0,
+                FabricPrice = 0,
+                ManualPrice = 0,
+                Quantity = 1
+            };
         }
 
         private void AddProductButton_Click(object sender, RoutedEventArgs e)
@@ -284,18 +306,7 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            var line = new ProductLine()
-            {
-                ProductName = "Concepto Libre",
-                TailoringType = "",
-                Fabric = "",
-                BasePrice = 0,
-                FabricPrice = 0,
-                ManualPrice = 0,
-                Quantity = 1
-            };
-
-            Products.Add(line);
+            Products.Add(CreateDefaultProductLine());
 
             UpdateGrandTotal();
 
@@ -335,10 +346,7 @@ namespace SastreriaPresupuestos
             var quoteNotes = QuoteNotesTextBox.Text.Trim();
             var clientNotes = ClientNotesTextBox.Text.Trim();
 
-            var selectedStatus = QuoteStatusComboBox.SelectedItem?.ToString();
-
-            if (string.IsNullOrWhiteSpace(selectedStatus))
-                selectedStatus = "Pendiente";
+            var selectedStatus = GetSelectedQuoteStatus();
 
             var selectedClient = ClientsListBox.SelectedItem as Models.Client;
             var currentClientId = selectedClient?.Id;
@@ -364,7 +372,6 @@ namespace SastreriaPresupuestos
                     return;
             }
 
-            // Buscar cliente existente
             Models.Client client;
 
             if (CurrentClientId != null)
@@ -394,7 +401,6 @@ namespace SastreriaPresupuestos
 
             Models.Quote quote;
 
-            // NUEVO PRESUPUESTO
             if (CurrentQuote == null)
             {
                 quote = new Models.Quote()
@@ -402,12 +408,9 @@ namespace SastreriaPresupuestos
                     ClientId = client.Id,
                     DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
                     EventDate = EventDatePicker.SelectedDate,
-                    //Title = QuoteTitleTextBox.Text,
-                    //Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente",
                     Title = quoteTitle,
                     Status = selectedStatus,
                     Deposit = GetDepositValue(),
-                    //Notes = QuoteNotesTextBox.Text,
                     Notes = quoteNotes,
                     ClientNotes = clientNotes,
                     Total = Products.Sum(p => p.Total)
@@ -418,7 +421,6 @@ namespace SastreriaPresupuestos
                 db.SaveChanges();
             }
 
-            // EDITAR PRESUPUESTO EXISTENTE
             else
             {
                 quote = db.Quotes
@@ -428,9 +430,6 @@ namespace SastreriaPresupuestos
                 quote.Total = Products.Sum(p => p.Total);
                 quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
                 quote.EventDate = EventDatePicker.SelectedDate;
-                //quote.Title = QuoteTitleTextBox.Text;
-                //quote.Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
-                //quote.Notes = QuoteNotesTextBox.Text;
                 quote.Title = quoteTitle;
                 quote.Notes = quoteNotes;
                 quote.ClientNotes = clientNotes;
@@ -438,7 +437,6 @@ namespace SastreriaPresupuestos
                 quote.Deposit = GetDepositValue();
                 
 
-                // Eliminar líneas antiguas
                 db.QuoteItems.RemoveRange(quote.Items);
 
                 db.SaveChanges();
@@ -446,24 +444,7 @@ namespace SastreriaPresupuestos
                 quote.Items.Clear();
             }
 
-            // Guardar líneas nuevas
-            foreach (var product in Products)
-            {
-                var item = new Models.QuoteItem()
-                {
-                    QuoteId = quote.Id,
-                    Quantity = product.Quantity,
-                    ProductName = product.ProductName,
-                    TailoringType = product.TailoringType,
-                    Fabric = product.Fabric,
-                    BasePrice = product.BasePrice,
-                    FabricPrice = product.FabricPrice,
-                    ManualPrice = 0,
-                    Total = product.Total
-                };
-
-                db.QuoteItems.Add(item);
-            }
+            AddQuoteItems(db, quote.Id);
 
             db.SaveChanges();
 
@@ -519,14 +500,42 @@ namespace SastreriaPresupuestos
                 MessageBoxImage.Information);
         }
 
+        private string GetSelectedQuoteStatus()
+        {
+            var selectedStatus = QuoteStatusComboBox.SelectedItem?.ToString();
+
+            return string.IsNullOrWhiteSpace(selectedStatus)
+                ? "Pendiente"
+                : selectedStatus;
+        }
+
+        private void AddQuoteItems(AppDbContext db, int quoteId)
+        {
+            foreach (var product in Products)
+            {
+                db.QuoteItems.Add(CreateQuoteItem(product, quoteId));
+            }
+        }
+
+        private static Models.QuoteItem CreateQuoteItem(ProductLine product, int quoteId)
+        {
+            return new Models.QuoteItem
+            {
+                QuoteId = quoteId,
+                Quantity = product.Quantity,
+                ProductName = product.ProductName,
+                TailoringType = product.TailoringType,
+                Fabric = product.Fabric,
+                BasePrice = product.BasePrice,
+                FabricPrice = product.FabricPrice,
+                ManualPrice = 0,
+                Total = product.Total
+            };
+        }
+
         private void UpdateGrandTotal()
         {
-            decimal total = 0;
-
-            foreach (var item in Products)
-            {
-                total += item.Total;
-            }
+            var total = Products.Sum(item => item.Total);
 
             TotalTextBlock.Text = $"{total:N2} €";
 
@@ -1125,105 +1134,91 @@ namespace SastreriaPresupuestos
                 .Replace("€", "")
                 .Trim();
 
-            if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var deposit))
-            {
-                if (deposit < 0)
-                    deposit = 0;
+            return TryParseNonNegativeDecimal(text, CultureInfo.CurrentCulture, out var deposit) ||
+                TryParseNonNegativeDecimal(text, CultureInfo.InvariantCulture, out deposit)
+                    ? deposit
+                    : 0;
+        }
 
-                return deposit;
-            }
+        private static bool TryParseNonNegativeDecimal(string text, CultureInfo cultureInfo, out decimal value)
+        {
+            if (!decimal.TryParse(text, NumberStyles.Number, cultureInfo, out value))
+                return false;
 
-            if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out deposit))
-            {
-                if (deposit < 0)
-                    deposit = 0;
-
-                return deposit;
-            }
-
-            return 0;
+            value = Math.Max(0, value);
+            return true;
         }
 
         private void UpdatePendingAmount()
         {
-            decimal total = Products.Sum(p => p.Total);
-            decimal deposit = GetDepositValue();
-
-            decimal pending = total - deposit;
-
-            if (pending < 0)
-                pending = 0;
+            var total = Products.Sum(p => p.Total);
+            var deposit = GetDepositValue();
+            var pending = Math.Max(0, total - deposit);
 
             PendingAmountTextBlock.Text = $"{pending:N2} €";
         }
 
         private void ApplyClientFilter()
         {
-            var search = ClientSearchTextBox.Text?.Trim().ToLower() ?? "";
+            var search = NormalizeSearchText(ClientSearchTextBox.Text ?? string.Empty);
 
-            IEnumerable<Models.Client> filteredClients = AllClients;
-
-            if (ActiveStatusFilter != "Todos")
-            {
-                filteredClients = filteredClients
-                    .Where(c => c.Quotes.Any(q =>
-                        string.Equals(
-                            string.IsNullOrWhiteSpace(q.Status) ? "Pendiente" : q.Status,
-                            ActiveStatusFilter,
-                            StringComparison.OrdinalIgnoreCase)));
-            }
-
-            var today = DateTime.Today;
-
-            if (ActiveDeliveryFilter == "Próximas")
-            {
-                filteredClients = filteredClients
-                    .Where(c => c.NextEventDate != null && c.NextEventDate.Value.Date >= today);
-            }
-            else if (ActiveDeliveryFilter == "Semana")
-            {
-                var limit = today.AddDays(7);
-
-                filteredClients = filteredClients
-                    .Where(c =>
-                        c.NextEventDate != null &&
-                        c.NextEventDate.Value.Date >= today &&
-                        c.NextEventDate.Value.Date <= limit);
-            }
-            else if (ActiveDeliveryFilter == "Mes")
-            {
-                var limit = today.AddDays(30);
-
-                filteredClients = filteredClients
-                    .Where(c =>
-                        c.NextEventDate != null &&
-                        c.NextEventDate.Value.Date >= today &&
-                        c.NextEventDate.Value.Date <= limit);
-            }
-            else if (ActiveDeliveryFilter == "Sin trabajo")
-            {
-                filteredClients = filteredClients
-                    .Where(c => c.Quotes == null || c.Quotes.Count == 0);
-            }
+            var filteredClients = AllClients
+                .Where(MatchesActiveStatusFilter)
+                .Where(MatchesActiveDeliveryFilter);
 
             if (!string.IsNullOrWhiteSpace(search))
-            {
-                filteredClients = filteredClients
-                    .Where(c =>
-                        c.Name.ToLower().Contains(search) ||
-                        c.Phone.ToLower().Contains(search) ||
-                        c.EventDateText.ToLower().Contains(search) ||
-                        c.Quotes.Any(q =>
-                            (q.Title ?? "").ToLower().Contains(search) ||
-                            (string.IsNullOrWhiteSpace(q.Status) ? "pendiente" : q.Status.ToLower()).Contains(search) ||
-                            (q.EventDate.HasValue && q.EventDate.Value.ToString("dd/MM/yyyy").Contains(search))
-                        ));
-            }
+                filteredClients = filteredClients.Where(client => MatchesClientSearch(client, search));
 
             ClientsListBox.ItemsSource = filteredClients
                 .OrderBy(c => c.NextEventDate ?? DateTime.MaxValue)
                 .ThenBy(c => c.Name)
                 .ToList();
+        }
+
+        private bool MatchesActiveStatusFilter(Models.Client client)
+        {
+            if (ActiveStatusFilter == "Todos")
+                return true;
+
+            return client.Quotes.Any(q =>
+                string.Equals(GetQuoteStatusOrDefault(q), ActiveStatusFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private bool MatchesActiveDeliveryFilter(Models.Client client)
+        {
+            var today = DateTime.Today;
+            var nextEventDate = client.NextEventDate?.Date;
+
+            return ActiveDeliveryFilter switch
+            {
+                "Próximas" => nextEventDate != null && nextEventDate >= today,
+                "Semana" => nextEventDate != null && nextEventDate >= today && nextEventDate <= today.AddDays(7),
+                "Mes" => nextEventDate != null && nextEventDate >= today && nextEventDate <= today.AddDays(30),
+                "Sin trabajo" => client.Quotes == null || client.Quotes.Count == 0,
+                _ => true
+            };
+        }
+
+        private static bool MatchesClientSearch(Models.Client client, string search)
+        {
+            return NormalizeSearchText(client.Name).Contains(search) ||
+                NormalizeSearchText(client.Phone).Contains(search) ||
+                NormalizeSearchText(client.EventDateText).Contains(search) ||
+                client.Quotes.Any(q => MatchesQuoteSearch(q, search));
+        }
+
+        private static bool MatchesQuoteSearch(Models.Quote quote, string search)
+        {
+            return NormalizeSearchText(quote.Title ?? string.Empty).Contains(search) ||
+                NormalizeSearchText(GetQuoteStatusOrDefault(quote)).Contains(search) ||
+                (quote.EventDate.HasValue && quote.EventDate.Value.ToString("dd/MM/yyyy").Contains(search));
+        }
+
+        private static string GetQuoteStatusOrDefault(Models.Quote quote)
+        {
+            return string.IsNullOrWhiteSpace(quote.Status)
+                ? "Pendiente"
+                : quote.Status;
         }
 
         internal void ClientSearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -1239,92 +1234,66 @@ namespace SastreriaPresupuestos
         private bool ValidateBeforeSave()
         {
             if (string.IsNullOrWhiteSpace(ClientNameTextBox.Text))
-            {
-                MessageBox.Show(
-                    "Debes indicar el nombre del cliente.",
-                    "Faltan datos",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                ClientNameTextBox.Focus();
-
-                return false;
-            }
+                return ShowValidationError("Debes indicar el nombre del cliente.", "Faltan datos", ClientNameTextBox);
 
             if (string.IsNullOrWhiteSpace(PhoneTextBox.Text))
-            {
-                MessageBox.Show(
-                    "Debes indicar el teléfono del cliente.",
-                    "Faltan datos",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                PhoneTextBox.Focus();
-
-                return false;
-            }
+                return ShowValidationError("Debes indicar el teléfono del cliente.", "Faltan datos", PhoneTextBox);
 
             if (Products.Count == 0)
-            {
-                MessageBox.Show(
-                    "Debes añadir al menos un producto al trabajo.",
-                    "Trabajo vacío",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return false;
-            }
+                return ShowValidationError("Debes añadir al menos un producto al trabajo.", "Trabajo vacío");
 
             foreach (var product in Products)
             {
-                if (string.IsNullOrWhiteSpace(product.ProductName))
-                {
-                    MessageBox.Show(
-                        "Hay una línea sin producto seleccionado.",
-                        "Producto incompleto",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-
+                if (!ValidateProductLine(product))
                     return false;
-                }
-
-                if (PriceService.HasTailoringTypes(product.ProductName) &&
-                    string.IsNullOrWhiteSpace(product.TailoringType))
-                {
-                    MessageBox.Show(
-                        $"El producto \"{product.ProductName}\" necesita tipo de confección.",
-                        "Producto incompleto",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-
-                    return false;
-                }
-
-                if (product.Quantity < 1)
-                {
-                    MessageBox.Show(
-                        $"La cantidad del producto \"{product.ProductName}\" debe ser al menos 1.",
-                        "Cantidad no válida",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-
-                    return false;
-                }
-
-                if (product.Total <= 0)
-                {
-                    var result = MessageBox.Show(
-                        $"El producto \"{product.ProductName}\" tiene total 0,00 €. ¿Quieres guardar igualmente?",
-                        "Producto sin importe",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-
-                    if (result != MessageBoxResult.Yes)
-                        return false;
-                }
             }
 
             return true;
+        }
+
+        private static bool ShowValidationError(string message, string title, Control? controlToFocus = null)
+        {
+            MessageBox.Show(
+                message,
+                title,
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            controlToFocus?.Focus();
+
+            return false;
+        }
+
+        private bool ValidateProductLine(ProductLine product)
+        {
+            if (string.IsNullOrWhiteSpace(product.ProductName))
+                return ShowValidationError("Hay una línea sin producto seleccionado.", "Producto incompleto");
+
+            if (PriceService.HasTailoringTypes(product.ProductName) &&
+                string.IsNullOrWhiteSpace(product.TailoringType))
+            {
+                return ShowValidationError(
+                    $"El producto \"{product.ProductName}\" necesita tipo de confección.",
+                    "Producto incompleto");
+            }
+
+            if (product.Quantity < 1)
+            {
+                return ShowValidationError(
+                    $"La cantidad del producto \"{product.ProductName}\" debe ser al menos 1.",
+                    "Cantidad no válida");
+            }
+
+            if (product.Total > 0)
+                return true;
+
+            var result = MessageBox.Show(
+                $"El producto \"{product.ProductName}\" tiene total 0,00 €. ¿Quieres guardar igualmente?",
+                "Producto sin importe",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            return result == MessageBoxResult.Yes;
         }
 
         private void MarkAsChanged()
@@ -1369,37 +1338,32 @@ namespace SastreriaPresupuestos
 
         private bool CanAutoSaveCurrentWorkspace()
         {
-            if (!HasUnsavedChanges)
+            return HasUnsavedChanges &&
+                CurrentClientId != null &&
+                CurrentQuote != null &&
+                HasRequiredClientData() &&
+                Products.Count > 0 &&
+                Products.All(IsProductLineReadyForAutoSave);
+        }
+
+        private bool HasRequiredClientData()
+        {
+            return !string.IsNullOrWhiteSpace(ClientNameTextBox.Text) &&
+                !string.IsNullOrWhiteSpace(PhoneTextBox.Text);
+        }
+
+        private static bool IsProductLineReadyForAutoSave(ProductLine product)
+        {
+            if (string.IsNullOrWhiteSpace(product.ProductName))
                 return false;
 
-            if (CurrentClientId == null || CurrentQuote == null)
-                return false;
-
-            if (string.IsNullOrWhiteSpace(ClientNameTextBox.Text) ||
-                string.IsNullOrWhiteSpace(PhoneTextBox.Text))
+            if (PriceService.HasTailoringTypes(product.ProductName) &&
+                string.IsNullOrWhiteSpace(product.TailoringType))
             {
                 return false;
             }
 
-            if (Products.Count == 0)
-                return false;
-
-            foreach (var product in Products)
-            {
-                if (string.IsNullOrWhiteSpace(product.ProductName))
-                    return false;
-
-                if (PriceService.HasTailoringTypes(product.ProductName) &&
-                    string.IsNullOrWhiteSpace(product.TailoringType))
-                {
-                    return false;
-                }
-
-                if (product.Quantity < 1)
-                    return false;
-            }
-
-            return true;
+            return product.Quantity >= 1;
         }
 
         private void TryAutoSaveCurrentWorkspace()
@@ -1436,29 +1400,14 @@ namespace SastreriaPresupuestos
                 quote.Title = QuoteTitleTextBox.Text.Trim();
                 quote.Notes = QuoteNotesTextBox.Text.Trim();
                 quote.ClientNotes = ClientNotesTextBox.Text.Trim();
-                quote.Status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
+                quote.Status = GetSelectedQuoteStatus();
                 quote.Deposit = GetDepositValue();
                 quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
                 quote.EventDate = EventDatePicker.SelectedDate;
                 quote.Total = Products.Sum(p => p.Total);
 
                 db.QuoteItems.RemoveRange(quote.Items);
-
-                foreach (var product in Products)
-                {
-                    db.QuoteItems.Add(new Models.QuoteItem()
-                    {
-                        QuoteId = quote.Id,
-                        Quantity = product.Quantity,
-                        ProductName = product.ProductName,
-                        TailoringType = product.TailoringType,
-                        Fabric = product.Fabric,
-                        BasePrice = product.BasePrice,
-                        FabricPrice = product.FabricPrice,
-                        ManualPrice = 0,
-                        Total = product.Total
-                    });
-                }
+                AddQuoteItems(db, quote.Id);
 
                 db.SaveChanges();
 

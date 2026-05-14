@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,6 +9,16 @@ namespace SastreriaPresupuestos.Services
 {
     public static class ExportDataService
     {
+        private static readonly HashSet<string> ProductsWithSeparateFabricLine = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Traje",
+            "Chaqué",
+            "Chaqueta",
+            "Chaleco",
+            "Pantalón",
+            "Camisa"
+        };
+
         public static ExportQuote CreateExportQuote(
             string clientName,
             string clientPhone,
@@ -36,12 +46,7 @@ namespace SastreriaPresupuestos.Services
 
             foreach (var product in products)
             {
-                var productPrice = product.Total;
-
-                if (ShouldShowFabricPrice(product) && product.FabricPrice > 0)
-                {
-                    productPrice -= product.FabricPrice * product.Quantity;
-                }
+                var productPrice = GetProductPriceWithoutSeparateFabricLine(product);
 
                 exportQuote.Items.Add(new ExportQuoteItem
                 {
@@ -90,14 +95,16 @@ namespace SastreriaPresupuestos.Services
             return string.Join(" · ", details);
         }
 
+        private static decimal GetProductPriceWithoutSeparateFabricLine(ProductLine product)
+        {
+            return ShouldShowFabricPrice(product) && product.FabricPrice > 0
+                ? product.Total - product.FabricPrice * product.Quantity
+                : product.Total;
+        }
+
         private static bool ShouldShowFabricPrice(ProductLine product)
         {
-            return product.ProductName == "Traje" ||
-                   product.ProductName == "Chaqué" ||
-                   product.ProductName == "Chaqueta" ||
-                   product.ProductName == "Chaleco" ||
-                   product.ProductName == "Pantalón" ||
-                   product.ProductName == "Camisa";
+            return ProductsWithSeparateFabricLine.Contains(product.ProductName);
         }
 
         private static string NormalizeText(string value)
