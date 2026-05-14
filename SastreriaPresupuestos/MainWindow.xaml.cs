@@ -3185,22 +3185,29 @@ namespace SastreriaPresupuestos
                 startDate = DateTime.Today;
                 endDate = DateTime.Today.AddMonths(6);
 
-                WeekTitleTextBlock.Text = "Próximos eventos ordenados por fecha";
+                WeekTitleTextBlock.Text = "Trabajos pendientes ordenados por fecha de evento";
             }
 
             var deliveriesQuery = db.Quotes
                 .Include(q => q.Client)
-                .Where(q => q.EventDate.HasValue &&
-                    q.EventDate.Value.Date >= startDate &&
-                    q.EventDate.Value.Date <= endDate);
+                .AsQueryable();
 
             if (CalendarViewMode == "Lista")
             {
-                deliveriesQuery = deliveriesQuery.Where(q => q.Status != "Entregado");
+                deliveriesQuery = deliveriesQuery
+                    .Where(q => q.Status != "Entregado");
+            }
+            else
+            {
+                deliveriesQuery = deliveriesQuery
+                    .Where(q => q.EventDate.HasValue &&
+                        q.EventDate.Value.Date >= startDate &&
+                        q.EventDate.Value.Date <= endDate);
             }
 
             var deliveries = deliveriesQuery
-                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
+                .OrderBy(q => q.EventDate.HasValue ? 0 : 1)
+                .ThenBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
                 .ToList();
 
@@ -3263,7 +3270,7 @@ namespace SastreriaPresupuestos
             {
                 "Mes" => "No hay eventos programados para este mes.",
                 "Semana" => "No hay eventos programados para esta semana.",
-                _ => "No hay próximos eventos pendientes."
+                _ => "No hay trabajos pendientes."
             };
 
             EmptyWeekTextBlock.Visibility = WeeklyDeliveries.Count == 0
