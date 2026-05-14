@@ -463,7 +463,6 @@
                         <TextBlock x:Name="BudgetWorkspaceDeliveryTextBlock" Text="Entrega: —"/>
                         <TextBlock x:Name="BudgetWorkspaceTotalTextBlock" Text="0,00 €"/>
                         <Button x:Name="BudgetQuickSummaryButton"/>
-                        <Button x:Name="BudgetQuickProductsButton"/>
                         <Button x:Name="BudgetQuickHistoryButton"/>
                         <Button x:Name="BudgetQuickDocumentsButton"/>
                         <Button x:Name="BudgetQuickExportPdfButton"/>
@@ -527,19 +526,12 @@
 
                                         <StackPanel Grid.Column="1">
                                             <TextBlock Text="Productos" Style="{StaticResource ContextLabelTextStyle}"/>
-                                            <Border Height="34"
-                                                    Background="#FBFCFA"
-                                                    BorderBrush="{StaticResource BorderSoftBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8"
-                                                    Padding="10,0">
-                                                <TextBlock x:Name="WorkspaceProductCountTextBlock"
-                                                           Text="0 productos"
-                                                           VerticalAlignment="Center"
-                                                           FontSize="14"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{StaticResource PrimaryBrush}"/>
-                                            </Border>
+                                            <Button x:Name="BudgetQuickProductsButton"
+                                                    Content="Configurar productos"
+                                                    Height="34"
+                                                    HorizontalContentAlignment="Center"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    ToolTip="Abrir el configurador de productos del trabajo activo"/>
                                         </StackPanel>
                                     </Grid>
 
