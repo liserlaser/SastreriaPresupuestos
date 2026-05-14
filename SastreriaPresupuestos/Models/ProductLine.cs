@@ -16,6 +16,7 @@ namespace SastreriaPresupuestos.Models
         private decimal _manualPrice;
         private decimal _total;
         private int _quantity = 1;
+        private bool _suppressPriceRefresh;
 
         public string ProductName
         {
@@ -29,7 +30,8 @@ namespace SastreriaPresupuestos.Models
                 Notify(nameof(ProductName));
                 Notify(nameof(AvailableTailoringTypes));
 
-                RefreshPrice();
+                if (!_suppressPriceRefresh)
+                    RefreshPrice();
             }
         }
 
@@ -41,7 +43,8 @@ namespace SastreriaPresupuestos.Models
                 _tailoringType = value ?? string.Empty;
                 Notify(nameof(TailoringType));
 
-                RefreshPrice();
+                if (!_suppressPriceRefresh)
+                    RefreshPrice();
             }
         }
 
@@ -170,6 +173,57 @@ namespace SastreriaPresupuestos.Models
 
         public ObservableCollection<string> AvailableTailoringTypes { get; set; } = new();
 
+        public static ProductLine FromQuoteItem(QuoteItem item)
+        {
+            var line = new ProductLine();
+
+            line.LoadPersistedValues(
+                item.ProductName,
+                item.TailoringType,
+                item.Fabric,
+                item.ManualPrice > 0 ? item.ManualPrice : item.BasePrice,
+                item.FabricPrice,
+                item.Quantity,
+                item.Total);
+
+            return line;
+        }
+
+        public void LoadPersistedValues(
+            string? productName,
+            string? tailoringType,
+            string? fabric,
+            decimal basePrice,
+            decimal fabricPrice,
+            int quantity,
+            decimal total)
+        {
+            _suppressPriceRefresh = true;
+
+            _productName = productName ?? string.Empty;
+            _tailoringType = tailoringType ?? string.Empty;
+            _fabric = fabric ?? string.Empty;
+            _basePrice = basePrice < 0 ? 0 : basePrice;
+            _fabricPrice = fabricPrice < 0 ? 0 : fabricPrice;
+            _manualPrice = 0;
+            _quantity = quantity < 1 ? 1 : quantity;
+            _total = total < 0 ? 0 : total;
+
+            RefreshTailoringOptionsWithoutChangingSelection();
+
+            Notify(nameof(ProductName));
+            Notify(nameof(TailoringType));
+            Notify(nameof(AvailableTailoringTypes));
+            Notify(nameof(Fabric));
+            Notify(nameof(BasePrice));
+            Notify(nameof(FabricPrice));
+            Notify(nameof(ManualPrice));
+            Notify(nameof(Quantity));
+            Notify(nameof(Total));
+
+            _suppressPriceRefresh = false;
+        }
+
         private void UpdateTailoringOptions()
         {
             AvailableTailoringTypes.Clear();
@@ -187,6 +241,16 @@ namespace SastreriaPresupuestos.Models
 
             if (!tailoringTypes.Contains(TailoringType))
                 TailoringType = tailoringTypes[0];
+        }
+
+        private void RefreshTailoringOptionsWithoutChangingSelection()
+        {
+            AvailableTailoringTypes.Clear();
+
+            var tailoringTypes = PriceService.GetTailoringTypes(ProductName);
+
+            foreach (var tailoringType in tailoringTypes)
+                AvailableTailoringTypes.Add(tailoringType);
         }
     }
 }

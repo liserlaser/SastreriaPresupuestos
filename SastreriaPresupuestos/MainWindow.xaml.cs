@@ -778,21 +778,7 @@ namespace SastreriaPresupuestos
 
             foreach (var item in quote.Items)
             {
-                var line = new ProductLine()
-                {
-                    ProductName = item.ProductName,
-                    TailoringType = item.TailoringType,
-                    Fabric = item.Fabric,
-                    // Compatibilidad: si la línea venía de la etapa anterior con Ajuste,
-                    // ese importe pasa a ser el Precio editable visible.
-                    BasePrice = item.ManualPrice > 0 ? item.ManualPrice : item.BasePrice,
-                    FabricPrice = item.FabricPrice,
-                    ManualPrice = 0,
-                    Quantity = item.Quantity,
-                    Total = item.Total
-                };
-
-                line.UpdateTotal();
+                var line = ProductLine.FromQuoteItem(item);
 
                 Products.Add(line);
             }
@@ -2168,21 +2154,7 @@ namespace SastreriaPresupuestos
                     var productLines = new ObservableCollection<ProductLine>(
                         q.Items.Select(item =>
                         {
-                            var line = new ProductLine()
-                            {
-                                ProductName = item.ProductName,
-                                TailoringType = item.TailoringType,
-                                Fabric = item.Fabric,
-                                BasePrice = item.ManualPrice > 0 ? item.ManualPrice : item.BasePrice,
-                                FabricPrice = item.FabricPrice,
-                                ManualPrice = 0,
-                                Quantity = item.Quantity,
-                                Total = item.Total
-                            };
-
-                            line.UpdateTotal();
-
-                            return line;
+                            return ProductLine.FromQuoteItem(item);
                         }));
 
                     return ExportDataService.CreateExportQuote(
