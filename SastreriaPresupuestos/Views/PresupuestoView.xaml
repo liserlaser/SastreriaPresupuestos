@@ -264,8 +264,7 @@
                             <TextBlock Text="Evento" Style="{StaticResource ContextLabelTextStyle}"/>
                             <Grid>
                                 <DatePicker x:Name="DeliveryDatePicker"
-                                            Visibility="Collapsed"
-                                            SelectedDate="{x:Static sys:DateTime.Now}"/>
+                                            Visibility="Collapsed"/>
                                 <TextBlock x:Name="EventDateDisplayTextBlock"
                                            Text="—"
                                            Height="34"

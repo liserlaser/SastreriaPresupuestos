@@ -407,7 +407,7 @@ namespace SastreriaPresupuestos
                 quote = new Models.Quote()
                 {
                     ClientId = client.Id,
-                    DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                    DeliveryDate = GetEffectiveDeliveryDate(),
                     EventDate = EventDatePicker.SelectedDate,
                     Title = quoteTitle,
                     Status = selectedStatus,
@@ -429,7 +429,7 @@ namespace SastreriaPresupuestos
                     .First(q => q.Id == CurrentQuote.Id);
 
                 quote.Total = Products.Sum(p => p.Total);
-                quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
+                quote.DeliveryDate = GetEffectiveDeliveryDate();
                 quote.EventDate = EventDatePicker.SelectedDate;
                 quote.Title = quoteTitle;
                 quote.Notes = quoteNotes;
@@ -601,7 +601,7 @@ namespace SastreriaPresupuestos
 
             CurrentQuote = null;
 
-            DeliveryDatePicker.SelectedDate = DateTime.Now;
+            DeliveryDatePicker.SelectedDate = null;
             EventDatePicker.SelectedDate = null;
 
             QuoteStatusComboBox.SelectedItem = "Pendiente";
@@ -892,7 +892,7 @@ namespace SastreriaPresupuestos
 
             LastSelectedQuoteId = null;
 
-            DeliveryDatePicker.SelectedDate = DateTime.Now;
+            DeliveryDatePicker.SelectedDate = null;
             EventDatePicker.SelectedDate = null;
 
             QuoteTitleTextBox.Text = "";
@@ -989,7 +989,7 @@ namespace SastreriaPresupuestos
                 CurrentQuote = null;
                 QuotesListBox.SelectedItem = null;
 
-                DeliveryDatePicker.SelectedDate = DateTime.Now;
+                DeliveryDatePicker.SelectedDate = null;
                 EventDatePicker.SelectedDate = null;
                 QuoteTitleTextBox.Text = "";
                 QuoteStatusComboBox.SelectedItem = "Pendiente";
@@ -1157,6 +1157,17 @@ namespace SastreriaPresupuestos
             var pending = Math.Max(0, total - deposit);
 
             PendingAmountTextBlock.Text = $"{pending:N2} €";
+        }
+
+        private DateTime GetEffectiveDeliveryDate()
+        {
+            if (DeliveryDatePicker.SelectedDate.HasValue)
+                return DeliveryDatePicker.SelectedDate.Value.Date;
+
+            if (EventDatePicker.SelectedDate.HasValue)
+                return EventDatePicker.SelectedDate.Value.Date.AddDays(-3);
+
+            return DateTime.Today;
         }
 
         private void ApplyClientFilter()
@@ -1437,7 +1448,7 @@ namespace SastreriaPresupuestos
                 quote.ClientNotes = ClientNotesTextBox.Text.Trim();
                 quote.Status = GetSelectedQuoteStatus();
                 quote.Deposit = GetDepositValue();
-                quote.DeliveryDate = DeliveryDatePicker.SelectedDate ?? DateTime.Now;
+                quote.DeliveryDate = GetEffectiveDeliveryDate();
                 quote.EventDate = EventDatePicker.SelectedDate;
                 quote.Total = Products.Sum(p => p.Total);
 
@@ -2019,7 +2030,7 @@ namespace SastreriaPresupuestos
             var exportQuote = ExportDataService.CreateExportQuote(
                 ClientNameTextBox.Text,
                 PhoneTextBox.Text,
-                DeliveryDatePicker.SelectedDate ?? DateTime.Now,
+                GetEffectiveDeliveryDate(),
                 EventDatePicker.SelectedDate,
                 QuoteTitleTextBox.Text,
                 QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente",
@@ -2340,7 +2351,7 @@ namespace SastreriaPresupuestos
             LastSelectedClientId = null;
             LastSelectedQuoteId = null;
 
-            DeliveryDatePicker.SelectedDate = DateTime.Now;
+            DeliveryDatePicker.SelectedDate = null;
             EventDatePicker.SelectedDate = null;
             QuoteTitleTextBox.Text = "";
             QuoteStatusComboBox.SelectedItem = "Pendiente";
@@ -4239,7 +4250,7 @@ namespace SastreriaPresupuestos
                 CurrentQuote = null;
                 LastSelectedQuoteId = null;
 
-                DeliveryDatePicker.SelectedDate = DateTime.Now;
+                DeliveryDatePicker.SelectedDate = null;
                 EventDatePicker.SelectedDate = null;
                 QuoteStatusComboBox.SelectedItem = "Pendiente";
                 DepositTextBox.Text = "0";
