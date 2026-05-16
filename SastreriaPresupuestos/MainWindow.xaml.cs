@@ -287,25 +287,23 @@ namespace SastreriaPresupuestos
         {
             WeakReferenceMessenger.Default.Register<ProductsTotalChangedMessage>(
                 this,
-                (_, __) => Dispatcher.BeginInvoke(
-                    new Action(UpdateGrandTotal),
-                    DispatcherPriority.Background));
+                (_, __) => UpdateGrandTotal());
 
             WeakReferenceMessenger.Default.Register<ProductLineChangedMessage>(
                 this,
-                (_, __) => Dispatcher.BeginInvoke(
-                    new Action(() =>
-                    {
-                        UpdateWorkflowState();
-                        UpdateActiveContext();
-                    }),
-                    DispatcherPriority.Background));
+                (_, __) =>
+                {
+                    UpdateWorkflowState();
+                    UpdateActiveContext();
+                });
 
             WeakReferenceMessenger.Default.Register<WorkspaceDirtyMessage>(
                 this,
-                (_, __) => Dispatcher.BeginInvoke(
-                    new Action(MarkAsChanged),
-                    DispatcherPriority.Background));
+                (_, __) =>
+                {
+                    if (!IsLoadingData)
+                        MarkAsChanged();
+                });
 
             WeakReferenceMessenger.Default.Register<ClientSelectedMessage>(
                 this,
@@ -4399,7 +4397,9 @@ namespace SastreriaPresupuestos
 
             var selectedQuote = quoteId.HasValue
                 ? quotes.FirstOrDefault(q => q.Id == quoteId.Value)
-                : null;
+                : quotes.Count == 1
+                    ? quotes[0]
+                    : null;
 
             IsLoadingData = true;
 
