@@ -26,7 +26,7 @@ namespace SastreriaPresupuestos.Models
 
                 return Quotes
                     .Where(q => q.EventDate.HasValue)
-                    .OrderBy(q => q.EventDate.Value)
+                    .OrderBy(q => q.EventDate.GetValueOrDefault())
                     .FirstOrDefault()
                     ?.EventDate;
             }
