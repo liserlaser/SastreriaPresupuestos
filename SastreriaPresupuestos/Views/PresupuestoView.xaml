@@ -121,13 +121,20 @@
                                 <!-- Se mantiene el TextBox oculto porque centraliza la lógica existente de guardado/autoguardado. -->
                                 <TextBox x:Name="ClientNameTextBox"
                                          Visibility="Collapsed"/>
-                                <TextBlock Text="{Binding Text, ElementName=ClientNameTextBox, TargetNullValue=—, FallbackValue=—}"
-                                           Height="34"
-                                           VerticalAlignment="Center"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Foreground="#2B2520"
-                                           TextTrimming="CharacterEllipsis"/>
+                                <ComboBox x:Name="ClientPredictiveComboBox"
+                                          Height="34"
+                                          FontSize="14"
+                                          Padding="8,0"
+                                          VerticalContentAlignment="Center"
+                                          IsEditable="True"
+                                          IsTextSearchEnabled="False"
+                                          StaysOpenOnEdit="True"
+                                          DisplayMemberPath="Name"
+                                          SelectedValuePath="Id"
+                                          BorderBrush="{StaticResource BorderSoftBrush}"
+                                          BorderThickness="1"
+                                          Background="#FBFCFA"
+                                          ToolTip="Buscar y seleccionar un cliente existente"/>
                             </Grid>
                         </StackPanel>
 

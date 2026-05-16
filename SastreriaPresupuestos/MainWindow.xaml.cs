@@ -1,8 +1,10 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using QuestPDF.Infrastructure;
 using SastreriaPresupuestos.Data;
 using SastreriaPresupuestos.Export;
+using SastreriaPresupuestos.Messages;
 using SastreriaPresupuestos.Models;
 using SastreriaPresupuestos.Services;
 using SastreriaPresupuestos.ViewModels;
@@ -19,6 +21,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -96,6 +99,7 @@ namespace SastreriaPresupuestos
         private Border ActivityTimelineBorder => PresupuestoView.ActivityTimelineBorder;
         private Border PresupuestoEmptyHintBorder => PresupuestoView.PresupuestoEmptyHintBorder;
         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
+        private ComboBox ClientPredictiveComboBox => PresupuestoView.ClientPredictiveComboBox;
         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
         private TextBlock PhoneDisplayTextBlock => PresupuestoView.PhoneDisplayTextBlock;
         private TextBox DniTextBox => PresupuestoView.DniTextBox;
@@ -162,6 +166,9 @@ namespace SastreriaPresupuestos
         private ObservableCollection<GlobalSearchResult> GlobalSearchResults =
             new ObservableCollection<GlobalSearchResult>();
 
+        private ObservableCollection<Models.Client> PredictiveClientResults =
+            new ObservableCollection<Models.Client>();
+
         private List<Models.Client> AllClients = new();
 
         private Models.Quote? CurrentQuote = null;
@@ -204,7 +211,7 @@ namespace SastreriaPresupuestos
         private bool IsAutoSaving = false;
         private readonly DispatcherTimer AutoSaveTimer = new DispatcherTimer()
         {
-            Interval = TimeSpan.FromMilliseconds(1400)
+            Interval = TimeSpan.FromMilliseconds(1500)
         };
 
         private readonly DispatcherTimer SaveStatusRefreshTimer = new DispatcherTimer()
@@ -220,6 +227,7 @@ namespace SastreriaPresupuestos
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
+        private bool IsUpdatingClientPredictiveComboBox = false;
         private string? ShellBreadcrumbOverride = null;
         private int? PendingNavigationTargetTab = null;
         private int? PreviousNavigationTab = null;
@@ -258,6 +266,7 @@ namespace SastreriaPresupuestos
             InitializeComponent();
 
             MountWorkspaceViews();
+            RegisterMessengerHandlers();
 
             QuestPDF.Settings.License = LicenseType.Community;
 
@@ -266,6 +275,43 @@ namespace SastreriaPresupuestos
             WireEvents();
             InitializeUiState();
             UpdateExportFolderSettingsUi();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(this);
+            base.OnClosed(e);
+        }
+
+        private void RegisterMessengerHandlers()
+        {
+            WeakReferenceMessenger.Default.Register<ProductsTotalChangedMessage>(
+                this,
+                (_, __) => Dispatcher.BeginInvoke(
+                    new Action(UpdateGrandTotal),
+                    DispatcherPriority.Background));
+
+            WeakReferenceMessenger.Default.Register<ProductLineChangedMessage>(
+                this,
+                (_, __) => Dispatcher.BeginInvoke(
+                    new Action(() =>
+                    {
+                        UpdateWorkflowState();
+                        UpdateActiveContext();
+                    }),
+                    DispatcherPriority.Background));
+
+            WeakReferenceMessenger.Default.Register<WorkspaceDirtyMessage>(
+                this,
+                (_, __) => Dispatcher.BeginInvoke(
+                    new Action(MarkAsChanged),
+                    DispatcherPriority.Background));
+
+            WeakReferenceMessenger.Default.Register<ClientSelectedMessage>(
+                this,
+                (_, message) => Dispatcher.BeginInvoke(
+                    new Action(() => SelectPredictiveClient(message.ClientId)),
+                    DispatcherPriority.Background));
         }
 
         private List<string> GetTailoringOptions(string product)
@@ -352,7 +398,7 @@ namespace SastreriaPresupuestos
             var selectedStatus = GetSelectedQuoteStatus();
 
             var selectedClient = ClientsListBox.SelectedItem as Models.Client;
-            var currentClientId = selectedClient?.Id;
+            var currentClientId = CurrentClientId ?? selectedClient?.Id;
 
             var possibleDuplicate = FindPossibleDuplicateClient(
                 db,
@@ -466,6 +512,7 @@ namespace SastreriaPresupuestos
             if (reloadedClient != null)
             {
                 ClientsListBox.SelectedItem = reloadedClient;
+                SyncPredictiveClientSelection(savedClientId);
 
                 using var refreshDb = new AppDbContext();
 
@@ -559,6 +606,7 @@ namespace SastreriaPresupuestos
                 .ToList();
 
             ApplyClientFilter();
+            RefreshPredictiveClientResults(ClientPredictiveComboBox.Text);
         }
 
         private void ClientsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -618,6 +666,7 @@ namespace SastreriaPresupuestos
             LastSelectedClientId = client.Id;
             LastSelectedQuoteId = null;
             CurrentClientId = client.Id;
+            SyncPredictiveClientSelection(client.Id);
             UpdateWorkflowState();
 
             IsLoadingData = false;
@@ -1251,8 +1300,122 @@ namespace SastreriaPresupuestos
         {
             return NormalizeSearchText(client.Name).Contains(search) ||
                 NormalizeSearchText(client.Phone).Contains(search) ||
+                NormalizeSearchText(client.Dni).Contains(search) ||
                 NormalizeSearchText(client.EventDateText).Contains(search) ||
                 client.Quotes.Any(q => MatchesQuoteSearch(q, search));
+        }
+
+        private void RefreshPredictiveClientResults(string? searchText)
+        {
+            var search = NormalizeSearchText(searchText ?? string.Empty);
+            var currentClientId = CurrentClientId;
+
+            var matches = AllClients.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                matches = matches.Where(client => MatchesClientSearch(client, search));
+
+            var ordered = matches
+                .OrderBy(c => c.NextEventDate ?? DateTime.MaxValue)
+                .ThenBy(c => c.Name)
+                .Take(25)
+                .ToList();
+
+            if (currentClientId.HasValue && ordered.All(c => c.Id != currentClientId.Value))
+            {
+                var currentClient = AllClients.FirstOrDefault(c => c.Id == currentClientId.Value);
+                if (currentClient != null)
+                    ordered.Insert(0, currentClient);
+            }
+
+            PredictiveClientResults.Clear();
+
+            foreach (var client in ordered)
+                PredictiveClientResults.Add(client);
+        }
+
+        private void SyncPredictiveClientSelection(int? clientId)
+        {
+            IsUpdatingClientPredictiveComboBox = true;
+
+            try
+            {
+                RefreshPredictiveClientResults(string.Empty);
+
+                if (!clientId.HasValue)
+                {
+                    ClientPredictiveComboBox.SelectedItem = null;
+                    ClientPredictiveComboBox.Text = string.Empty;
+                    return;
+                }
+
+                var selectedClient = PredictiveClientResults
+                    .FirstOrDefault(c => c.Id == clientId.Value);
+
+                ClientPredictiveComboBox.SelectedItem = selectedClient;
+
+                if (selectedClient != null)
+                    ClientPredictiveComboBox.Text = selectedClient.Name;
+            }
+            finally
+            {
+                IsUpdatingClientPredictiveComboBox = false;
+            }
+        }
+
+        private void ClientPredictiveComboBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (IsUpdatingClientPredictiveComboBox)
+                return;
+
+            RefreshPredictiveClientResults(ClientPredictiveComboBox.Text);
+
+            if (ClientPredictiveComboBox.IsKeyboardFocusWithin && PredictiveClientResults.Count > 0)
+                ClientPredictiveComboBox.IsDropDownOpen = true;
+        }
+
+        private void ClientPredictiveComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsUpdatingClientPredictiveComboBox)
+                return;
+
+            if (ClientPredictiveComboBox.SelectedItem is not Models.Client client)
+                return;
+
+            WeakReferenceMessenger.Default.Send(new ClientSelectedMessage(client.Id));
+        }
+
+        private void SelectPredictiveClient(int clientId)
+        {
+            if (CurrentClientId == clientId)
+            {
+                SyncPredictiveClientSelection(clientId);
+                return;
+            }
+
+            if (!ConfirmDiscardChanges())
+            {
+                SyncPredictiveClientSelection(CurrentClientId);
+                return;
+            }
+
+            SuppressSelectionConfirm = true;
+            ShellBreadcrumbOverride = null;
+
+            LoadClients();
+            var wasLoaded = LoadClientWorkspaceById(clientId);
+
+            SuppressSelectionConfirm = false;
+
+            if (!wasLoaded)
+            {
+                SyncPredictiveClientSelection(CurrentClientId);
+                return;
+            }
+
+            NavigateToSection(TabPresupuesto);
+            UpdateContextBreadcrumb("Cliente", TabPresupuesto);
+            UpdateShellNavigationState();
         }
 
         private static bool MatchesQuoteSearch(Models.Quote quote, string search)
@@ -2358,6 +2521,7 @@ namespace SastreriaPresupuestos
             CurrentClientId = null;
             LastSelectedClientId = null;
             LastSelectedQuoteId = null;
+            SyncPredictiveClientSelection(null);
 
             DeliveryDatePicker.SelectedDate = null;
             EventDatePicker.SelectedDate = null;
@@ -2597,6 +2761,7 @@ namespace SastreriaPresupuestos
                 ClientsListBox.SelectedItem = reloadedClient;
                 LastSelectedClientId = clientId;
                 CurrentClientId = clientId;
+                SyncPredictiveClientSelection(clientId);
             }
 
             SuppressSelectionConfirm = false;
@@ -2676,7 +2841,7 @@ namespace SastreriaPresupuestos
 
             Models.Client? client = null;
 
-            var currentClientId = selectedClient?.Id;
+            var currentClientId = CurrentClientId ?? selectedClient?.Id;
 
             var possibleDuplicate = FindPossibleDuplicateClient(
                 db,
@@ -2743,6 +2908,7 @@ namespace SastreriaPresupuestos
                 ClientsListBox.SelectedItem = reloadedClient;
                 LastSelectedClientId = savedClientId;
                 CurrentClientId = savedClientId;
+                SyncPredictiveClientSelection(savedClientId);
                 UpdateWorkflowState();
             }
 
@@ -3572,6 +3738,7 @@ namespace SastreriaPresupuestos
             DeliveriesListBox.ItemsSource = WeeklyDeliveries;
             GlobalSearchResultsListBox.ItemsSource = GlobalSearchResults;
             ProductsDataGrid.ItemsSource = Products;
+            ClientPredictiveComboBox.ItemsSource = PredictiveClientResults;
         }
 
         private void LoadInitialData()
@@ -3637,6 +3804,10 @@ namespace SastreriaPresupuestos
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
             WorkSearchTextBox.TextChanged += WorkSearchTextBox_TextChanged;
+            ClientPredictiveComboBox.SelectionChanged += ClientPredictiveComboBox_SelectionChanged;
+            ClientPredictiveComboBox.AddHandler(
+                TextBoxBase.TextChangedEvent,
+                new TextChangedEventHandler(ClientPredictiveComboBox_TextChanged));
 
             ProductsDataGrid.CellEditEnding += ProductsDataGrid_CellEditEnding;
             ProductsDataGrid.CurrentCellChanged += ProductsDataGrid_CurrentCellChanged;
@@ -3685,23 +3856,13 @@ namespace SastreriaPresupuestos
 
         private void Products_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (e.NewItems != null)
-            {
-                foreach (ProductLine item in e.NewItems)
-                {
-                    item.PropertyChanged += ProductLine_PropertyChanged;
-                }
-            }
-
-            UpdateGrandTotal();
-            UpdateWorkflowState();
-            MarkAsChanged();
+            WeakReferenceMessenger.Default.Send(new ProductsTotalChangedMessage(Products.Sum(p => p.Total)));
+            WeakReferenceMessenger.Default.Send(new WorkspaceDirtyMessage("Products collection changed"));
         }
 
         private void ProductLine_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            UpdateGrandTotal();
-            MarkAsChanged();
+            WeakReferenceMessenger.Default.Send(new ProductLineChangedMessage(e.PropertyName ?? string.Empty));
         }
 
         private void ClientNameTextBox_TextChanged(object? sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -4254,6 +4415,7 @@ namespace SastreriaPresupuestos
 
             CurrentClientId = client.Id;
             LastSelectedClientId = client.Id;
+            SyncPredictiveClientSelection(client.Id);
 
             if (selectedQuote == null)
             {

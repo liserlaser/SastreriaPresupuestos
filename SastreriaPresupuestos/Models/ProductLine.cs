@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using SastreriaPresupuestos.Messages;
 using SastreriaPresupuestos.Services;
 
 namespace SastreriaPresupuestos.Models
@@ -131,6 +133,7 @@ namespace SastreriaPresupuestos.Models
             {
                 _total = value;
                 Notify(nameof(Total));
+                WeakReferenceMessenger.Default.Send(new ProductsTotalChangedMessage(_total));
             }
         }
 
@@ -160,6 +163,8 @@ namespace SastreriaPresupuestos.Models
         private void Notify(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            WeakReferenceMessenger.Default.Send(new ProductLineChangedMessage(propertyName));
+            WeakReferenceMessenger.Default.Send(new WorkspaceDirtyMessage($"Product line {propertyName} changed"));
         }
 
         public void RefreshPrice()
