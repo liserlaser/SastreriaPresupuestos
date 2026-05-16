@@ -11,6 +11,9 @@ namespace SastreriaPresupuestos.Views
             InitializeComponent();
         }
 
+        public ContentControl ProductsInlineHost => ProductsInlineHostControl;
+        public FrameworkElement WorkspaceDashboard => WorkspaceDashboardGrid;
+
         private void BudgetQuotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)

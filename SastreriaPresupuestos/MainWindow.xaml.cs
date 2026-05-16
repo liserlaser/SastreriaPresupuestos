@@ -87,6 +87,8 @@ namespace SastreriaPresupuestos
         private Button BudgetQuickDocumentsButton => PresupuestoView.BudgetQuickDocumentsButton;
         private Button BudgetQuickExportPdfButton => PresupuestoView.BudgetQuickExportPdfButton;
         private TabControl PresupuestoWorkspaceTabs => PresupuestoView.PresupuestoWorkspaceTabs;
+        private ContentControl ProductsInlineHost => PresupuestoView.ProductsInlineHost;
+        private FrameworkElement WorkspaceDashboard => PresupuestoView.WorkspaceDashboard;
         private TextBlock QuoteCreatedAtTextBox => PresupuestoView.QuoteCreatedAtTextBox;
         private Button OpenQuoteFolderButton => PresupuestoView.OpenQuoteFolderButton;
         private Button OpenClientSheetFolderButton => PresupuestoView.OpenClientSheetFolderButton;
@@ -177,7 +179,7 @@ namespace SastreriaPresupuestos
             DashboardHost.Content = DashboardView;
             ClientesHost.Content = ClientesView;
             PresupuestoHost.Content = PresupuestoView;
-            ProductosHost.Content = ProductosView;
+            ProductsInlineHost.Content = ProductosView;
             AjustesHost.Content = AjustesView;
         }
 
@@ -311,7 +313,7 @@ namespace SastreriaPresupuestos
 
             UpdateGrandTotal();
 
-            GoToTab(TabProductos);
+            OpenProductsInlinePanel();
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -1690,8 +1692,14 @@ namespace SastreriaPresupuestos
 
         private void NavigateToWorkspaceSectionFromShortcut(int sectionIndex)
         {
-            if (sectionIndex == TabProductos && !TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
+            if (sectionIndex == TabProductos)
+            {
+                if (!TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
+                    return;
+
+                OpenProductsInlinePanel();
                 return;
+            }
 
             UpdateContextBreadcrumb("Trabajos", sectionIndex);
             NavigateToSection(sectionIndex);
@@ -3483,8 +3491,7 @@ namespace SastreriaPresupuestos
             if (!TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
                 return;
 
-            UpdateContextBreadcrumb("Trabajos", TabProductos);
-            NavigateToSection(TabProductos);
+            OpenProductsInlinePanel();
         }
 
         private void ShellQuickExportPdfButton_Click(object sender, RoutedEventArgs e)
@@ -3541,13 +3548,7 @@ namespace SastreriaPresupuestos
                 if (NavigateToProductsAfterJobEdit)
                 {
                     NavigateToProductsAfterJobEdit = false;
-                    UpdateContextBreadcrumb("Trabajos", TabProductos);
-                    NavigateToSection(TabProductos);
-
-                    Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        ProductsDataGrid.Focus();
-                    }), System.Windows.Threading.DispatcherPriority.Background);
+                    OpenProductsInlinePanel();
                 }
             }
             else
@@ -3879,8 +3880,8 @@ namespace SastreriaPresupuestos
             if (MainTabs == null)
                 return;
 
-            SetWorkspaceButtonActive(ActiveSummaryButton, MainTabs.SelectedIndex == TabPresupuesto && PresupuestoWorkspaceTabs.SelectedIndex == InnerTabResumen);
-            SetWorkspaceButtonActive(ActiveProductsButton, MainTabs.SelectedIndex == TabProductos);
+            SetWorkspaceButtonActive(ActiveSummaryButton, MainTabs.SelectedIndex == TabPresupuesto && PresupuestoWorkspaceTabs.SelectedIndex == InnerTabResumen && ProductsInlineHost.Visibility != Visibility.Visible);
+            SetWorkspaceButtonActive(ActiveProductsButton, MainTabs.SelectedIndex == TabPresupuesto && ProductsInlineHost.Visibility == Visibility.Visible);
             SetWorkspaceButtonActive(ActiveDocumentsButton, MainTabs.SelectedIndex == TabPresupuesto && PresupuestoWorkspaceTabs.SelectedIndex == InnerTabDocumentos);
         }
 
@@ -3919,6 +3920,15 @@ namespace SastreriaPresupuestos
 
             if (int.TryParse(button.Tag.ToString(), out var targetTab))
             {
+                if (targetTab == TabProductos)
+                {
+                    if (!TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
+                        return;
+
+                    OpenProductsInlinePanel();
+                    return;
+                }
+
                 ShellBreadcrumbOverride = null;
                 GoToTab(targetTab);
                 UpdateWorkspaceButtonState();
@@ -4398,8 +4408,36 @@ namespace SastreriaPresupuestos
             UpdateWorkspaceButtonState();
         }
 
+        private void OpenProductsInlinePanel()
+        {
+            UpdateContextBreadcrumb("Trabajos", TabProductos);
+            NavigateToSection(TabPresupuesto);
+            PresupuestoWorkspaceTabs.SelectedIndex = InnerTabResumen;
+
+            WorkspaceDashboard.Visibility = Visibility.Collapsed;
+            ProductsInlineHost.Visibility = Visibility.Visible;
+            UpdateWorkspaceButtonState();
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ProductsInlineHost.BringIntoView();
+                ProductsDataGrid.Focus();
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void HideProductsInlinePanel()
+        {
+            if (ProductsInlineHost.Visibility != Visibility.Visible)
+                return;
+
+            ProductsInlineHost.Visibility = Visibility.Collapsed;
+            WorkspaceDashboard.Visibility = Visibility.Visible;
+            UpdateWorkspaceButtonState();
+        }
+
         private void OpenBudgetSummaryTab()
         {
+            HideProductsInlinePanel();
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
             PresupuestoWorkspaceTabs.SelectedIndex = InnerTabResumen;
@@ -4421,6 +4459,7 @@ namespace SastreriaPresupuestos
 
         private void BackToJobDashboardButton_Click(object sender, RoutedEventArgs e)
         {
+            HideProductsInlinePanel();
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
         }
@@ -4448,8 +4487,7 @@ namespace SastreriaPresupuestos
             if (!TryFlushPendingChangesBeforeWorkflowAction("abrir productos"))
                 return;
 
-            UpdateContextBreadcrumb("Trabajos", TabProductos);
-            NavigateToSection(TabProductos);
+            OpenProductsInlinePanel();
         }
 
         private void BudgetQuickDocumentsButton_Click(object sender, RoutedEventArgs e)
@@ -4490,7 +4528,15 @@ namespace SastreriaPresupuestos
             }
 
             PendingNavigationTargetTab = null;
-            GoToTab(targetTab);
+            if (targetTab == TabProductos)
+            {
+                OpenProductsInlinePanel();
+            }
+            else
+            {
+                GoToTab(targetTab);
+            }
+
             UpdateContextBreadcrumb(breadcrumbOrigin, targetTab);
             UpdateShellNavigationState();
         }

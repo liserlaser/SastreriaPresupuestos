@@ -281,7 +281,7 @@
         </Border>
 
         <!-- WORKSPACE CONTEXTUAL -->
-        <Grid Grid.Row="1">
+        <Grid x:Name="WorkspaceDashboardGrid" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="400" MinWidth="360"/>
                 <ColumnDefinition Width="10"/>
@@ -863,8 +863,14 @@
                             </TabItem>
                         </TabControl>
                     </Border>
+
                 </Grid>
             </ScrollViewer>
         </Grid>
+
+        <ContentControl x:Name="ProductsInlineHostControl"
+                        Grid.Row="1"
+                        VerticalAlignment="Stretch"
+                        Visibility="Collapsed"/>
     </Grid>
 </UserControl>
