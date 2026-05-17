@@ -46,11 +46,11 @@ namespace SastreriaPresupuestos.Services
                         .Element(container => ComposeHeader(container, invoice));
 
                     page.Content()
-                        .PaddingTop(invoice.IsCompanyInvoice ? 24 : 4)
+                        .PaddingTop(invoice.IsCompanyInvoice ? 48 : 20) // Más espacio vertical antes del contenido
                         .PaddingBottom(18)
                         .Column(column =>
                         {
-                            column.Spacing(18);
+                            column.Spacing(36); // Distancia duplicada entre bloques (datos de cliente, tabla, totales)
 
                             if (!invoice.IsCompanyInvoice)
                             {
@@ -100,12 +100,12 @@ namespace SastreriaPresupuestos.Services
                 {
                     if (File.Exists(LogoPath))
                     {
-                        row.ConstantItem(104)
-                            .Height(112)
+                        row.ConstantItem(130) // Logotipo un 25% más grande (de 104 a 130)
+                            .Height(140)      // Logotipo un 25% más grande (de 112 a 140)
                             .Image(LogoPath)
                             .FitArea();
 
-                        row.ConstantItem(18);
+                        row.ConstantItem(24);
                     }
 
                     row.RelativeItem().Element(ComposeBusinessData);
@@ -116,7 +116,7 @@ namespace SastreriaPresupuestos.Services
                 });
 
                 column.Item()
-                    .PaddingTop(4)
+                    .PaddingTop(4) // Mayor separación con la línea divisoria
                     .LineHorizontal(2)
                     .LineColor(AccentColor);
             });
@@ -128,6 +128,7 @@ namespace SastreriaPresupuestos.Services
             {
                 column.Item()
                     .AlignCenter()
+                    .PaddingBottom(14) // Separación del encabezado "Factura"
                     .Text("Factura")
                     .FontSize(22)
                     .Bold()
@@ -135,7 +136,8 @@ namespace SastreriaPresupuestos.Services
 
                 column.Item()
                     .AlignCenter()
-                    .Text($"Fecha: {invoice.CreatedAt:dd/MM/yyyy} · Hora: {invoice.CreatedAt:HH:mm} · Nº: {invoice.InvoiceNumber}")
+                    .PaddingBottom(16) // Separación inferior de los metadatos de cabecera
+                    .Text($"Fecha: {invoice.CreatedAt:dd/MM/yyyy} Hora: {invoice.CreatedAt:HH:mm}                Nº: {invoice.InvoiceNumber}") // Mayor separación lateral
                     .FontSize(10)
                     .FontColor(MutedColor);
 
@@ -143,22 +145,22 @@ namespace SastreriaPresupuestos.Services
                 {
                     if (File.Exists(LogoPath))
                     {
-                        row.ConstantItem(72)
-                            .Height(78)
+                        row.ConstantItem(90) // Logotipo un 25% más grande (de 72 a 90)
+                            .Height(98)      // Logotipo un 25% más grande (de 78 a 98)
                             .Image(LogoPath)
                             .FitArea();
 
-                        row.ConstantItem(14);
+                        row.ConstantItem(18);
                     }
 
-                    row.RelativeItem(1.1f).Element(ComposeCompactBusinessData);
+                    row.RelativeItem(1.0f).Element(ComposeCompactBusinessData);
 
                     row.ConstantItem(1)
                         .Height(82)
                         .Background(BorderColor);
 
-                    row.RelativeItem(1.2f)
-                        .PaddingLeft(16)
+                    row.RelativeItem(1.4f) // Más proporción de ancho a la derecha para empujar el bloque
+                        .PaddingLeft(60)   // Más padding izquierdo para desplazar datos del cliente hacia la derecha
                         .Column(client =>
                         {
                             var clientAddress = SplitClientAddress(invoice.ClientAddress);
@@ -173,7 +175,7 @@ namespace SastreriaPresupuestos.Services
                 });
 
                 column.Item()
-                    .PaddingTop(6)
+                    .PaddingTop(4) // Mayor separación con la línea divisoria
                     .LineHorizontal(2)
                     .LineColor(AccentColor);
             });
@@ -234,6 +236,8 @@ namespace SastreriaPresupuestos.Services
 
         private static void ComposeDocumentMeta(ColumnDescriptor right, string title, ExportInvoice invoice)
         {
+            right.Spacing(4); // Espaciado vertical entre líneas de metadatos
+
             right.Item()
                 .AlignRight()
                 .Text(title)
