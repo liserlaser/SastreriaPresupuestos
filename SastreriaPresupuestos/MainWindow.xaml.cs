@@ -197,6 +197,8 @@ namespace SastreriaPresupuestos
 
         private string? PendingClientAddress = null;
         private bool PendingClientRequiresCompanyData = false;
+        private int? PendingInvoiceWorkspaceClientId = null;
+        private string? PendingInvoiceWorkspaceSeries = null;
 
         private bool IsSidebarCollapsed = false;
         private string ActiveDeliveryFilter = "Todas";
@@ -409,6 +411,12 @@ namespace SastreriaPresupuestos
 
             if (!ValidateBeforeSave())
                 return;
+
+            if (PendingInvoiceWorkspaceClientId != null && !string.IsNullOrWhiteSpace(PendingInvoiceWorkspaceSeries))
+            {
+                SavePendingInvoiceFromProductsWorkspace();
+                return;
+            }
 
             SetSaveWorkflowState(WorkspaceSaveState.Saving);
             Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
@@ -2054,7 +2062,9 @@ namespace SastreriaPresupuestos
 
         private void UpdateSaveButtonText()
         {
-            var text = CurrentQuote == null
+            var text = PendingInvoiceWorkspaceClientId != null
+                ? "Crear factura"
+                : CurrentQuote == null
                 ? "Guardar"
                 : "Actualizar";
 
@@ -2405,11 +2415,7 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            var products = SelectStandaloneInvoiceProducts();
-            if (products == null || products.Count == 0)
-                return;
-
-            CreateStandaloneInvoice(client.Id, products, series);
+            BeginInvoiceProductsWorkspace(client.Id, series);
         }
 
         private (int ClientId, bool IsCompany)? SelectClientForInvoiceWizard()
@@ -2575,6 +2581,106 @@ namespace SastreriaPresupuestos
             };
 
             return dialog.Window.ShowDialog() == true ? selectedQuote : null;
+        }
+
+        private void BeginInvoiceProductsWorkspace(int clientId, string series)
+        {
+            using var db = new AppDbContext();
+            var client = db.Clients
+                .AsNoTracking()
+                .FirstOrDefault(c => c.Id == clientId);
+
+            if (client == null)
+                return;
+
+            var quotes = db.Quotes
+                .AsNoTracking()
+                .Where(q => q.ClientId == clientId)
+                .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
+                .ThenBy(q => q.Id)
+                .ToList();
+
+            IsLoadingData = true;
+            SuppressSelectionConfirm = true;
+
+            LoadClients();
+
+            var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
+                .FirstOrDefault(c => c.Id == clientId);
+
+            if (reloadedClient != null)
+            {
+                ClientsListBox.SelectedItem = reloadedClient;
+                LastSelectedClientId = clientId;
+                SyncPredictiveClientSelection(clientId);
+            }
+
+            CurrentClientId = clientId;
+            CurrentQuote = null;
+            LastSelectedQuoteId = null;
+            PendingInvoiceWorkspaceClientId = clientId;
+            PendingInvoiceWorkspaceSeries = series;
+
+            ClientNameTextBox.Text = client.Name;
+            PhoneTextBox.Text = client.Phone;
+            DniTextBox.Text = client.Dni;
+            PendingClientAddress = client.Address;
+            PendingClientRequiresCompanyData = IsCompanyInvoiceSeries(series);
+
+            QuotesListBox.ItemsSource = quotes;
+            BudgetQuotesListBox.ItemsSource = quotes;
+            QuotesListBox.SelectedItem = null;
+            BudgetQuotesListBox.SelectedItem = null;
+
+            Products.Clear();
+            Products.Add(CreateDefaultProductLine());
+
+            DeliveryDatePicker.SelectedDate = null;
+            EventDatePicker.SelectedDate = null;
+            QuoteTitleTextBox.Text = "";
+            QuoteStatusComboBox.SelectedItem = "Pendiente";
+            DepositTextBox.Text = "0";
+            QuoteNotesTextBox.Text = "";
+            ClientNotesTextBox.Text = "";
+
+            SuppressSelectionConfirm = false;
+            IsLoadingData = false;
+
+            UpdateGrandTotal();
+            MarkAsSaved();
+            UpdateSaveButtonText();
+            UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
+            UpdateWorkflowState();
+            OpenProductsInlinePanel();
+
+            MessageBox.Show(
+                "Añade los productos en el workspace y pulsa Guardar productos para crear la factura.",
+                "Crear factura",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        private void SavePendingInvoiceFromProductsWorkspace()
+        {
+            if (PendingInvoiceWorkspaceClientId == null || string.IsNullOrWhiteSpace(PendingInvoiceWorkspaceSeries))
+                return;
+
+            var invoiceItems = Products
+                .Select(CreateInvoiceItemFromProductLine)
+                .ToList();
+
+            var clientId = PendingInvoiceWorkspaceClientId.Value;
+            var series = PendingInvoiceWorkspaceSeries;
+
+            ClearPendingInvoiceWorkspace();
+            CreateStandaloneInvoice(clientId, invoiceItems, series);
+        }
+
+        private void ClearPendingInvoiceWorkspace()
+        {
+            PendingInvoiceWorkspaceClientId = null;
+            PendingInvoiceWorkspaceSeries = null;
         }
 
         private List<InvoiceItem>? SelectStandaloneInvoiceProducts()
@@ -2813,6 +2919,19 @@ namespace SastreriaPresupuestos
                 Quantity = quantity,
                 UnitPrice = item.Total / quantity,
                 Total = item.Total
+            };
+        }
+
+        private static InvoiceItem CreateInvoiceItemFromProductLine(ProductLine product)
+        {
+            var quantity = product.Quantity < 1 ? 1 : product.Quantity;
+            return new InvoiceItem
+            {
+                ProductName = product.ProductName,
+                Description = string.Join(" · ", new[] { product.TailoringType, product.Fabric }.Where(v => !string.IsNullOrWhiteSpace(v))),
+                Quantity = quantity,
+                UnitPrice = product.Total / quantity,
+                Total = product.Total
             };
         }
 
