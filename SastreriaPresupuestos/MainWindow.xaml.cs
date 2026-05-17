@@ -2524,7 +2524,12 @@ namespace SastreriaPresupuestos
 
         private (int ClientId, bool IsCompany)? SelectExistingClientForInvoice(bool isCompany)
         {
-            var selectedClientId = ShowClientSelectionDialog();
+            var selectedClientId = ShowClientSelectionDialog(
+                title: "Elegir cliente",
+                subtitle: isCompany
+                    ? "Selecciona la empresa para la factura."
+                    : "Selecciona el cliente para la factura.",
+                companyOnly: isCompany);
             if (selectedClientId == null)
                 return null;
 
@@ -3492,7 +3497,7 @@ namespace SastreriaPresupuestos
 
             var selectedClientId = ShowClientSelectionDialog(
                 "Elegir cliente",
-                "Selecciona el cliente para la factura.");
+                "Selecciona el cliente al que quieres asociar el nuevo presupuesto.");
             if (selectedClientId == null)
                 return false;
 
@@ -3502,20 +3507,31 @@ namespace SastreriaPresupuestos
 
         private int? ShowClientSelectionDialog(
             string title = "Elegir cliente",
-            string subtitle = "Selecciona el cliente al que quieres asociar el nuevo presupuesto.")
+            string subtitle = "Selecciona el cliente al que quieres asociar el nuevo presupuesto.",
+            bool companyOnly = false)
         {
             using var db = new AppDbContext();
 
-            var clients = db.Clients
+            var clientsQuery = db.Clients
                 .AsNoTracking()
+                .AsQueryable();
+
+            if (companyOnly)
+                clientsQuery = clientsQuery.Where(c => c.Address != "");
+
+            var clients = clientsQuery
                 .OrderBy(c => c.Name)
                 .ThenBy(c => c.Phone)
                 .ToList();
 
             if (clients.Count == 0)
             {
+                var emptyMessage = companyOnly
+                    ? "Todavía no hay clientes empresa guardados. Crea uno nuevo o edita un cliente existente para marcarlo como empresa."
+                    : "Todavía no hay clientes guardados. Crea un cliente nuevo para continuar.";
+
                 MessageBox.Show(
-                    "Todavía no hay clientes guardados. Crea un cliente nuevo para continuar.",
+                    emptyMessage,
                     "Elegir cliente",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -3555,7 +3571,8 @@ namespace SastreriaPresupuestos
                 {
                     var phone = string.IsNullOrWhiteSpace(client.Phone) ? "Sin teléfono" : client.DisplayPhone;
                     var dni = string.IsNullOrWhiteSpace(client.Dni) ? "Sin DNI" : client.Dni;
-                    detailsTextBlock.Text = $"{phone} · {dni}";
+                    var address = string.IsNullOrWhiteSpace(client.Address) ? "" : $" · {client.Address}";
+                    detailsTextBlock.Text = $"{phone} · {dni}{address}";
                 }
                 else
                 {
@@ -3623,27 +3640,41 @@ namespace SastreriaPresupuestos
 
         private bool ShowClientEditDialog(bool requireCompanyData = false)
         {
+            var currentAddress = GetCurrentClientAddress();
+            var startsAsCompany = requireCompanyData || !string.IsNullOrWhiteSpace(currentAddress);
             var dialog = CreateContextEditDialog(
                 "Editar cliente",
-                requireCompanyData
-                    ? "Introduce los datos de la empresa para el presupuesto."
+                startsAsCompany
+                    ? "Introduce los datos de empresa del cliente."
                     : "Actualiza los datos básicos del cliente sin salir del trabajo actual.");
 
             var nameTextBox = CreateDialogTextBox(ClientNameTextBox.Text);
             var phoneTextBox = CreateDialogTextBox(PhoneTextBox.Text);
             var dniTextBox = CreateDialogTextBox(DniTextBox.Text);
-            var addressTextBox = CreateDialogTextBox(PendingClientAddress ?? "");
+            var addressTextBox = CreateDialogTextBox(PendingClientAddress ?? currentAddress);
+            var companyCheckBox = new CheckBox
+            {
+                Content = "Cliente empresa",
+                IsChecked = startsAsCompany,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
 
-            AddDialogField(dialog.ContentPanel, requireCompanyData ? "Nombre o razón social" : "Nombre", nameTextBox);
+            dialog.ContentPanel.Children.Add(companyCheckBox);
+            AddDialogField(dialog.ContentPanel, "Nombre o razón social", nameTextBox);
             AddDialogField(dialog.ContentPanel, "Teléfono", phoneTextBox);
-            AddDialogField(dialog.ContentPanel, requireCompanyData ? "NIF/CIF" : "DNI", dniTextBox);
+            AddDialogField(dialog.ContentPanel, "DNI/NIF/CIF", dniTextBox);
 
-            if (requireCompanyData)
-                AddDialogField(dialog.ContentPanel, "Dirección", addressTextBox);
+            var addressField = CreateDialogField("Dirección", addressTextBox);
+            addressField.Visibility = startsAsCompany ? Visibility.Visible : Visibility.Collapsed;
+            dialog.ContentPanel.Children.Add(addressField);
+
+            companyCheckBox.Checked += (_, _) => addressField.Visibility = Visibility.Visible;
+            companyCheckBox.Unchecked += (_, _) => addressField.Visibility = Visibility.Collapsed;
 
             dialog.AcceptButton.Click += (_, _) =>
             {
-                if (requireCompanyData &&
+                var isCompany = companyCheckBox.IsChecked == true;
+                if (isCompany &&
                     (string.IsNullOrWhiteSpace(dniTextBox.Text) || string.IsNullOrWhiteSpace(addressTextBox.Text)))
                 {
                     MessageBox.Show(
@@ -3657,8 +3688,8 @@ namespace SastreriaPresupuestos
                 ClientNameTextBox.Text = nameTextBox.Text.Trim();
                 PhoneTextBox.Text = phoneTextBox.Text.Trim();
                 DniTextBox.Text = dniTextBox.Text.Trim();
-                PendingClientRequiresCompanyData = requireCompanyData;
-                PendingClientAddress = requireCompanyData ? addressTextBox.Text.Trim() : null;
+                PendingClientRequiresCompanyData = isCompany;
+                PendingClientAddress = isCompany ? addressTextBox.Text.Trim() : "";
                 dialog.Window.DialogResult = true;
             };
 
@@ -3666,6 +3697,22 @@ namespace SastreriaPresupuestos
             nameTextBox.SelectAll();
 
             return dialog.Window.ShowDialog() == true;
+        }
+
+        private string GetCurrentClientAddress()
+        {
+            var selectedClient = ClientsListBox.SelectedItem as Models.Client;
+            var clientId = CurrentClientId ?? selectedClient?.Id;
+
+            if (clientId == null)
+                return "";
+
+            using var db = new AppDbContext();
+            return db.Clients
+                .AsNoTracking()
+                .Where(c => c.Id == clientId.Value)
+                .Select(c => c.Address)
+                .FirstOrDefault() ?? "";
         }
 
         private void SaveClientFromContextFields()
@@ -3766,7 +3813,7 @@ namespace SastreriaPresupuestos
                 client.Name = clientName;
                 client.Phone = clientPhone;
                 client.Dni = clientDni;
-                if (PendingClientRequiresCompanyData || !string.IsNullOrWhiteSpace(clientAddress))
+                if (PendingClientAddress != null)
                     client.Address = clientAddress;
             }
 
@@ -3934,6 +3981,11 @@ namespace SastreriaPresupuestos
 
         private void AddDialogField(Panel parent, string label, Control control)
         {
+            parent.Children.Add(CreateDialogField(label, control));
+        }
+
+        private StackPanel CreateDialogField(string label, Control control)
+        {
             var field = new StackPanel { Margin = new Thickness(0, 0, 0, 12) };
             field.Children.Add(new TextBlock
             {
@@ -3944,7 +3996,7 @@ namespace SastreriaPresupuestos
                 Margin = new Thickness(0, 0, 0, 4)
             });
             field.Children.Add(control);
-            parent.Children.Add(field);
+            return field;
         }
 
         internal void DeliveryFilterButton_Click(object sender, RoutedEventArgs e)

@@ -162,6 +162,12 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
         <!-- DATEPICKER -->
         <Style TargetType="DatePicker">
             <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}"/>
