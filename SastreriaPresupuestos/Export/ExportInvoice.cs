@@ -28,9 +28,9 @@ namespace SastreriaPresupuestos.Export
 
         public decimal ItemsTotal => Items.Sum(item => item.Total);
 
-        public decimal Total => InvoiceTotal != 0
-            ? InvoiceTotal
-            : IsCompanyInvoice ? ItemsTotal * 1.21m : ItemsTotal;
+        public decimal Total => IsCompanyInvoice
+            ? TaxBase + VatAmount
+            : InvoiceTotal != 0 ? InvoiceTotal : ItemsTotal;
 
         public decimal TaxBase => IsCompanyInvoice ? ItemsTotal : Total / 1.21m;
 

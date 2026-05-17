@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -45,7 +46,7 @@ namespace SastreriaPresupuestos.Services
                         .Element(container => ComposeHeader(container, invoice));
 
                     page.Content()
-                        .PaddingTop(4)
+                        .PaddingTop(invoice.IsCompanyInvoice ? 24 : 4)
                         .PaddingBottom(18)
                         .Column(column =>
                         {
@@ -125,7 +126,20 @@ namespace SastreriaPresupuestos.Services
         {
             container.Column(column =>
             {
-                column.Item().Row(row =>
+                column.Item()
+                    .AlignCenter()
+                    .Text("Factura")
+                    .FontSize(22)
+                    .Bold()
+                    .FontColor(AccentColor);
+
+                column.Item()
+                    .AlignCenter()
+                    .Text($"Fecha: {invoice.CreatedAt:dd/MM/yyyy} · Hora: {invoice.CreatedAt:HH:mm} · Nº: {invoice.InvoiceNumber}")
+                    .FontSize(10)
+                    .FontColor(MutedColor);
+
+                column.Item().PaddingTop(12).Row(row =>
                 {
                     if (File.Exists(LogoPath))
                     {
@@ -147,15 +161,15 @@ namespace SastreriaPresupuestos.Services
                         .PaddingLeft(16)
                         .Column(client =>
                         {
+                            var clientAddress = SplitClientAddress(invoice.ClientAddress);
                             client.Item().Text("Cliente").FontSize(12).Bold().FontColor(AccentColor);
                             client.Item().Text(invoice.ClientName).FontSize(11).Bold().FontColor(PrimaryColor);
                             client.Item().Text(invoice.ClientTaxId).FontSize(9).FontColor(MutedColor);
-                            client.Item().Text(invoice.ClientAddress).FontSize(9).FontColor(MutedColor);
-                        });
+                            client.Item().Text(clientAddress.Street).FontSize(9).FontColor(MutedColor);
 
-                    row.ConstantItem(160)
-                        .AlignRight()
-                        .Column(right => ComposeDocumentMeta(right, "Factura", invoice));
+                            if (!string.IsNullOrWhiteSpace(clientAddress.City))
+                                client.Item().Text(clientAddress.City).FontSize(9).FontColor(MutedColor);
+                        });
                 });
 
                 column.Item()
@@ -163,6 +177,23 @@ namespace SastreriaPresupuestos.Services
                     .LineHorizontal(2)
                     .LineColor(AccentColor);
             });
+        }
+
+        private static (string Street, string City) SplitClientAddress(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+                return ("", "");
+
+            var normalized = Regex.Replace(address.Trim(), @"\s+", " ");
+            var postalCodeMatch = Regex.Match(normalized, @"\b\d{5}\b");
+
+            if (!postalCodeMatch.Success)
+                return (normalized, "");
+
+            var street = normalized[..postalCodeMatch.Index].Trim().Trim(',', ';', '-');
+            var city = normalized[postalCodeMatch.Index..].Trim().Trim(',', ';', '-');
+
+            return (street, city);
         }
 
         private static void ComposeBusinessData(IContainer container)
