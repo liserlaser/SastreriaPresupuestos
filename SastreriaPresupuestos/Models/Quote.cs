@@ -70,12 +70,10 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                var quoteNumber = QuoteNumberService.FormatQuoteNumber(Id, CreatedAt);
-
                 if (string.IsNullOrWhiteSpace(Title))
-                    return quoteNumber;
+                    return QuoteNumberService.FormatQuoteNumber(Id, CreatedAt);
 
-                return $"{quoteNumber} · {Title}";
+                return Title;
             }
         }
 

@@ -47,7 +47,7 @@ namespace SastreriaPresupuestos.ViewModels
                 if (string.IsNullOrWhiteSpace(QuoteTitle))
                     return QuoteNumberService.FormatQuoteNumber(QuoteId, CreatedAt);
 
-                return $"{QuoteNumberService.FormatQuoteNumber(QuoteId, CreatedAt)} · {QuoteTitle}";
+                return QuoteTitle;
             }
         }
 

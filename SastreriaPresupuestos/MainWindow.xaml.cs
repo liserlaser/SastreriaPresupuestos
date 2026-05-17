@@ -3675,7 +3675,7 @@ namespace SastreriaPresupuestos
                 ? quoteTitle
                 : string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
                     ? quoteNumber
-                    : $"{quoteNumber} · {quoteTitle}";
+                    : quoteTitle;
 
             var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
             var eventText = EventDatePicker.SelectedDate.HasValue
