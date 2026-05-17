@@ -10,7 +10,7 @@ namespace SastreriaPresupuestos.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public string Series { get; set; } = InvoiceSeries.Customer;
+        public string Series { get; set; } = InvoiceSeries.Store;
 
         public int Number { get; set; }
 
@@ -57,16 +57,16 @@ namespace SastreriaPresupuestos.Models
 
     public static class InvoiceSeries
     {
-        public const string Customer = "B2C";
-        public const string Simplified = "T";
+        public const string Quote = "P";
+        public const string Store = "T";
         public const string Company = "C";
         public const string CorrectiveSimplified = "RT";
         public const string CorrectiveCompany = "RC";
 
         public static readonly string[] All =
         {
-            Customer,
-            Simplified,
+            Quote,
+            Store,
             Company,
             CorrectiveSimplified,
             CorrectiveCompany

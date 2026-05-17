@@ -14,14 +14,12 @@ namespace SastreriaPresupuestos.Export
 
         public string ClientName { get; set; } = "";
 
-        public string ClientPhone { get; set; } = "";
-
-        public string ClientDni { get; set; } = "";
-
-        public string Notes { get; set; } = "";
-
         public List<ExportInvoiceItem> Items { get; set; } = new();
 
         public decimal Total => Items.Sum(item => item.Total);
+
+        public decimal TaxBase => Total / 1.21m;
+
+        public decimal VatAmount => Total - TaxBase;
     }
 }

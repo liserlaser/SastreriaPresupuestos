@@ -2688,7 +2688,7 @@ namespace SastreriaPresupuestos
                 FontSize = 14,
                 ItemsSource = isCorrective
                     ? new[] { InvoiceSeries.CorrectiveSimplified, InvoiceSeries.CorrectiveCompany }
-                    : new[] { InvoiceSeries.Customer, InvoiceSeries.Simplified, InvoiceSeries.Company },
+                    : new[] { InvoiceSeries.Store, InvoiceSeries.Company },
                 SelectedIndex = 0,
                 BorderBrush = (Brush)FindResource("BorderSoftBrush"),
                 BorderThickness = new Thickness(1),
@@ -2773,9 +2773,6 @@ namespace SastreriaPresupuestos
                 Series = invoice.Series,
                 CreatedAt = invoice.CreatedAt,
                 ClientName = invoice.Client?.Name ?? "",
-                ClientPhone = invoice.Client?.Phone ?? "",
-                ClientDni = invoice.Client?.Dni ?? "",
-                Notes = invoice.Notes,
                 Items = invoice.Items.Select(i => new ExportInvoiceItem
                 {
                     ProductName = i.ProductName,
