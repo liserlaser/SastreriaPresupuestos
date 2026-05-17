@@ -29,11 +29,13 @@ namespace SastreriaPresupuestos.Services
             decimal deposit,
             string clientNotes,
             ObservableCollection<ProductLine> products,
-            int? quoteId = null)
+            int? quoteId = null,
+            DateTime? createdAt = null)
         {
             var exportQuote = new ExportQuote
             {
                 QuoteId = quoteId,
+                CreatedAt = createdAt,
                 ClientName = clientName.Trim(),
                 ClientPhone = clientPhone.Trim(),
                 DeliveryDate = deliveryDate,

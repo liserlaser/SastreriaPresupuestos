@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using SastreriaPresupuestos.Services;
 
 namespace SastreriaPresupuestos.Models
 {
@@ -47,10 +48,6 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                var titleText = string.IsNullOrWhiteSpace(Title)
-                    ? $"Presupuesto #{Id}"
-                    : Title;
-
                 var statusText = string.IsNullOrWhiteSpace(Status)
                     ? "Pendiente"
                     : Status;
@@ -59,7 +56,7 @@ namespace SastreriaPresupuestos.Models
                     ? EventDate.Value.ToString("dd/MM/yyyy")
                     : "Sin fecha de evento";
 
-                return $"{eventText} · {titleText} · {statusText} · {Total:N2} €";
+                return $"{eventText} · {DisplayTitle} · {statusText} · {Total:N2} €";
             }
         }
 
@@ -73,10 +70,12 @@ namespace SastreriaPresupuestos.Models
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(Title))
-                    return $"Presupuesto #{Id}";
+                var quoteNumber = QuoteNumberService.FormatQuoteNumber(Id, CreatedAt);
 
-                return Title;
+                if (string.IsNullOrWhiteSpace(Title))
+                    return quoteNumber;
+
+                return $"{quoteNumber} · {Title}";
             }
         }
 

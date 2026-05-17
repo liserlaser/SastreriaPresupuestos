@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
+using SastreriaPresupuestos.Services;
 
 namespace SastreriaPresupuestos.ViewModels
 {
@@ -10,6 +11,8 @@ namespace SastreriaPresupuestos.ViewModels
         public int QuoteId { get; set; }
 
         public int ClientId { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime DeliveryDate { get; set; }
 
@@ -42,9 +45,9 @@ namespace SastreriaPresupuestos.ViewModels
             get
             {
                 if (string.IsNullOrWhiteSpace(QuoteTitle))
-                    return $"Presupuesto #{QuoteId}";
+                    return QuoteNumberService.FormatQuoteNumber(QuoteId, CreatedAt);
 
-                return QuoteTitle;
+                return $"{QuoteNumberService.FormatQuoteNumber(QuoteId, CreatedAt)} · {QuoteTitle}";
             }
         }
 

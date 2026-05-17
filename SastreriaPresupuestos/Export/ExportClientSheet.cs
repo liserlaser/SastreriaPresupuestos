@@ -1,10 +1,14 @@
 ﻿using System;
 
+using SastreriaPresupuestos.Services;
+
 namespace SastreriaPresupuestos.Export
 {
     public class ExportClientSheet
     {
         public int QuoteId { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public string ClientName { get; set; } = "";
 
@@ -27,7 +31,7 @@ namespace SastreriaPresupuestos.Export
                 if (QuoteId <= 0)
                     return "";
 
-                return $"Presupuesto #{QuoteId:0000}";
+                return QuoteNumberService.FormatQuoteLabel(QuoteId, CreatedAt);
             }
         }
 

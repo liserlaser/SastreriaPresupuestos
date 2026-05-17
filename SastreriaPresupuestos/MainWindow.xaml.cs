@@ -1160,7 +1160,7 @@ namespace SastreriaPresupuestos
             }
 
             var originalTitle = string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
-                ? $"Trabajo #{CurrentQuote.Id}"
+                ? QuoteNumberService.FormatQuoteNumber(CurrentQuote.Id, CurrentQuote.CreatedAt)
                 : QuoteTitleTextBox.Text;
 
             QuoteTitleTextBox.Text = $"Copia de {originalTitle}";
@@ -2353,7 +2353,8 @@ namespace SastreriaPresupuestos
                 GetDepositValue(),
                 ClientNotesTextBox.Text,
                 Products,
-                CurrentQuote?.Id);
+                CurrentQuote?.Id,
+                CurrentQuote?.CreatedAt);
 
             var safeClientName = MakeSafeFileName(exportQuote.ClientName);
             var exportDateTime = DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
@@ -2481,7 +2482,8 @@ namespace SastreriaPresupuestos
                         q.Deposit,
                         q.ClientNotes,
                         productLines,
-                        q.Id);
+                        q.Id,
+                        q.CreatedAt);
                 })
                 .ToList();
 
@@ -2545,6 +2547,7 @@ namespace SastreriaPresupuestos
             var sheet = new ExportClientSheet
             {
                 QuoteId = CurrentQuote.Id,
+                CreatedAt = CurrentQuote.CreatedAt,
                 ClientName = ClientNameTextBox.Text.Trim(),
                 ClientDni = DniTextBox.Text.Trim(),
                 ClientPhone = PhoneTextBox.Text.Trim(),
@@ -2571,7 +2574,7 @@ namespace SastreriaPresupuestos
             var parts = new List<string>();
 
             if (CurrentQuote != null)
-                parts.Add($"Trabajo #{CurrentQuote.Id:0000}");
+                parts.Add(QuoteNumberService.FormatQuoteNumber(CurrentQuote.Id, CurrentQuote.CreatedAt));
 
             var firstProduct = Products.FirstOrDefault();
 
@@ -3506,6 +3509,7 @@ namespace SastreriaPresupuestos
                 {
                     QuoteId = quote.Id,
                     ClientId = quote.ClientId,
+                    CreatedAt = quote.CreatedAt,
                     DeliveryDate = quote.DeliveryDate,
                     EventDate = quote.EventDate,
                     ClientName = quote.Client?.Name ?? "",
@@ -3596,6 +3600,7 @@ namespace SastreriaPresupuestos
                 {
                     QuoteId = quote.Id,
                     ClientId = quote.ClientId,
+                    CreatedAt = quote.CreatedAt,
                     DeliveryDate = quote.DeliveryDate,
                     EventDate = quote.EventDate,
                     ClientName = quote.Client?.Name ?? "",
@@ -3663,6 +3668,15 @@ namespace SastreriaPresupuestos
                 ? "—"
                 : QuoteTitleTextBox.Text.Trim();
 
+            var quoteNumber = CurrentQuote == null
+                ? "—"
+                : QuoteNumberService.FormatQuoteNumber(CurrentQuote.Id, CurrentQuote.CreatedAt);
+            var quoteDisplayTitle = CurrentQuote == null
+                ? quoteTitle
+                : string.IsNullOrWhiteSpace(QuoteTitleTextBox.Text)
+                    ? quoteNumber
+                    : $"{quoteNumber} · {quoteTitle}";
+
             var status = QuoteStatusComboBox.SelectedItem?.ToString() ?? "Pendiente";
             var eventText = EventDatePicker.SelectedDate.HasValue
                 ? EventDatePicker.SelectedDate.Value.ToString("dd/MM/yyyy")
@@ -3680,7 +3694,7 @@ namespace SastreriaPresupuestos
                     : CurrentQuote.CreatedAt.ToString("dd/MM/yyyy HH:mm");
             }
 
-            ActiveWorkspaceTitle.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
+            ActiveWorkspaceTitle.Text = quoteDisplayTitle == "—" ? "Nuevo trabajo" : quoteDisplayTitle;
             ActiveWorkspaceSubtitle.Text = clientName == "—" ? "Selecciona un cliente o crea un trabajo" : clientName;
             ActiveClientTextBlock.Text = $"Cliente: {clientName}";
             PhoneDisplayTextBlock.Text = phone;
@@ -3694,7 +3708,7 @@ namespace SastreriaPresupuestos
             ActiveTotalTextBlock.Text = $"Total: {total:N2} €";
 
             if (BudgetWorkspaceTitleTextBlock != null)
-                BudgetWorkspaceTitleTextBlock.Text = quoteTitle == "—" ? "Nuevo trabajo" : quoteTitle;
+                BudgetWorkspaceTitleTextBlock.Text = quoteDisplayTitle == "—" ? "Nuevo trabajo" : quoteDisplayTitle;
 
             if (BudgetWorkspaceClientTextBlock != null)
                 BudgetWorkspaceClientTextBlock.Text = $"Cliente: {clientName}";
@@ -4339,6 +4353,7 @@ namespace SastreriaPresupuestos
                 .ToList()
                 .Where(q =>
                     ContainsSearch(q.Title, term) ||
+                    ContainsSearch(q.DisplayTitle, term) ||
                     ContainsSearch(q.Status, term) ||
                     ContainsSearch(q.Client?.Name, term) ||
                     ContainsSearch(q.Client?.Phone, term) ||
@@ -4354,7 +4369,7 @@ namespace SastreriaPresupuestos
                     ClientId = q.ClientId,
                     QuoteId = q.Id,
                     TypeLabel = "PRESUP.",
-                    PrimaryText = string.IsNullOrWhiteSpace(q.Title) ? $"Trabajo #{q.Id}" : q.Title,
+                    PrimaryText = q.DisplayTitle,
                     SecondaryText = $"{q.Client?.Name ?? "Cliente"} · {q.Status} · Evento {(q.EventDate.HasValue ? q.EventDate.Value.ToString("dd/MM/yyyy") : "—")} · {q.Total:N2} €"
                 });
 

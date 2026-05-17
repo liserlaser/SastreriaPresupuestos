@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SastreriaPresupuestos.Services;
 
 namespace SastreriaPresupuestos.Export
 {
     public class ExportQuote
     {
         public int? QuoteId { get; set; }
+
+        public DateTime? CreatedAt { get; set; }
 
         public string ClientName { get; set; } = "";
 
@@ -53,7 +56,9 @@ namespace SastreriaPresupuestos.Export
                 if (QuoteId == null || QuoteId <= 0)
                     return "";
 
-                return $"Presupuesto #{QuoteId.Value:0000}";
+                return QuoteNumberService.FormatQuoteLabel(
+                    QuoteId.Value,
+                    CreatedAt ?? DateTime.Now);
             }
         }
 
