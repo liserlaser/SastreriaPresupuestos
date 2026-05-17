@@ -224,10 +224,14 @@ namespace SastreriaPresupuestos
         private int? CurrentClientId = null;
         private string? LastGeneratedPdfPath = null;
         private AppSettings CurrentSettings = AppSettingsService.Load();
+        private const int MaxWorkspaceUndoSteps = 30;
+        private readonly Stack<WorkspaceUndoSnapshot> WorkspaceUndoStack = new();
+        private WorkspaceUndoSnapshot? LastWorkspaceUndoSnapshot = null;
 
         private bool IsRevertingSelection = false;
         private bool SuppressSelectionConfirm = false;
         private bool IsUpdatingClientPredictiveComboBox = false;
+        private bool IsRestoringUndoSnapshot = false;
         private string? ShellBreadcrumbOverride = null;
         private int? PendingNavigationTargetTab = null;
         private int? PreviousNavigationTab = null;
@@ -1507,13 +1511,145 @@ namespace SastreriaPresupuestos
 
         private void MarkAsChanged()
         {
-            if (IsLoadingData)
+            if (IsLoadingData || IsRestoringUndoSnapshot)
                 return;
+
+            CaptureWorkspaceUndoStep();
 
             HasUnsavedChanges = true;
 
             SetSaveWorkflowState(WorkspaceSaveState.Dirty);
             ScheduleAutoSave();
+        }
+
+        private void ResetWorkspaceUndoHistory()
+        {
+            WorkspaceUndoStack.Clear();
+            LastWorkspaceUndoSnapshot = CaptureWorkspaceUndoSnapshot();
+        }
+
+        private void CaptureWorkspaceUndoStep()
+        {
+            var currentSnapshot = CaptureWorkspaceUndoSnapshot();
+
+            if (LastWorkspaceUndoSnapshot == null)
+            {
+                LastWorkspaceUndoSnapshot = currentSnapshot;
+                return;
+            }
+
+            if (AreWorkspaceUndoSnapshotsEqual(LastWorkspaceUndoSnapshot, currentSnapshot))
+                return;
+
+            WorkspaceUndoStack.Push(LastWorkspaceUndoSnapshot);
+            TrimWorkspaceUndoStack();
+            LastWorkspaceUndoSnapshot = currentSnapshot;
+        }
+
+        private void TrimWorkspaceUndoStack()
+        {
+            if (WorkspaceUndoStack.Count <= MaxWorkspaceUndoSteps)
+                return;
+
+            var retained = WorkspaceUndoStack
+                .Take(MaxWorkspaceUndoSteps)
+                .Reverse()
+                .ToList();
+
+            WorkspaceUndoStack.Clear();
+
+            foreach (var snapshot in retained)
+                WorkspaceUndoStack.Push(snapshot);
+        }
+
+        private WorkspaceUndoSnapshot CaptureWorkspaceUndoSnapshot()
+        {
+            return new WorkspaceUndoSnapshot(
+                ClientNameTextBox.Text,
+                PhoneTextBox.Text,
+                DniTextBox.Text,
+                DeliveryDatePicker.SelectedDate,
+                EventDatePicker.SelectedDate,
+                QuoteTitleTextBox.Text,
+                GetSelectedQuoteStatus(),
+                DepositTextBox.Text,
+                QuoteNotesTextBox.Text,
+                ClientNotesTextBox.Text,
+                Products.Select(ProductUndoSnapshot.FromProductLine).ToList());
+        }
+
+        private static bool AreWorkspaceUndoSnapshotsEqual(
+            WorkspaceUndoSnapshot left,
+            WorkspaceUndoSnapshot right)
+        {
+            return left.ClientName == right.ClientName &&
+                left.Phone == right.Phone &&
+                left.Dni == right.Dni &&
+                left.DeliveryDate == right.DeliveryDate &&
+                left.EventDate == right.EventDate &&
+                left.QuoteTitle == right.QuoteTitle &&
+                left.QuoteStatus == right.QuoteStatus &&
+                left.Deposit == right.Deposit &&
+                left.QuoteNotes == right.QuoteNotes &&
+                left.ClientNotes == right.ClientNotes &&
+                left.Products.SequenceEqual(right.Products);
+        }
+
+        private void UndoLastWorkspaceChange()
+        {
+            if (WorkspaceUndoStack.Count == 0)
+                return;
+
+            AutoSaveTimer.Stop();
+
+            var snapshot = WorkspaceUndoStack.Pop();
+
+            IsRestoringUndoSnapshot = true;
+            IsLoadingData = true;
+
+            try
+            {
+                ApplyWorkspaceUndoSnapshot(snapshot);
+            }
+            finally
+            {
+                IsLoadingData = false;
+                IsRestoringUndoSnapshot = false;
+            }
+
+            LastWorkspaceUndoSnapshot = CaptureWorkspaceUndoSnapshot();
+            HasUnsavedChanges = true;
+            SetSaveWorkflowState(WorkspaceSaveState.Dirty);
+            ScheduleAutoSave();
+        }
+
+        private void ApplyWorkspaceUndoSnapshot(WorkspaceUndoSnapshot snapshot)
+        {
+            ClientNameTextBox.Text = snapshot.ClientName;
+            PhoneTextBox.Text = snapshot.Phone;
+            DniTextBox.Text = snapshot.Dni;
+            DeliveryDatePicker.SelectedDate = snapshot.DeliveryDate;
+            EventDatePicker.SelectedDate = snapshot.EventDate;
+            QuoteTitleTextBox.Text = snapshot.QuoteTitle;
+            QuoteStatusComboBox.SelectedItem = string.IsNullOrWhiteSpace(snapshot.QuoteStatus)
+                ? "Pendiente"
+                : snapshot.QuoteStatus;
+            DepositTextBox.Text = snapshot.Deposit;
+            QuoteNotesTextBox.Text = snapshot.QuoteNotes;
+            ClientNotesTextBox.Text = snapshot.ClientNotes;
+
+            Products.Clear();
+
+            foreach (var productSnapshot in snapshot.Products)
+                Products.Add(productSnapshot.ToProductLine());
+
+            UpdateGrandTotal();
+            UpdatePendingAmount();
+            UpdateSaveButtonText();
+            UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
+            UpdateWorkflowState();
+            UpdateWorkspaceButtonState();
         }
 
         private void ScheduleAutoSave()
@@ -1789,6 +1925,14 @@ namespace SastreriaPresupuestos
                     SaveCurrentWorkspaceFromShortcut();
                     break;
 
+                case Key.Z:
+                    if (WorkspaceUndoStack.Count > 0)
+                    {
+                        e.Handled = true;
+                        UndoLastWorkspaceChange();
+                    }
+                    break;
+
                 case Key.P:
                     e.Handled = true;
                     ExportPdfButton_Click(sender, e);
@@ -1909,6 +2053,9 @@ namespace SastreriaPresupuestos
             LastSavedAt = DateTime.Now;
 
             SetSaveWorkflowState(WorkspaceSaveState.Saved);
+
+            if (!IsAutoSaving)
+                ResetWorkspaceUndoHistory();
         }
 
         private void SetSaveWorkflowState(WorkspaceSaveState state)
@@ -5156,6 +5303,59 @@ namespace SastreriaPresupuestos
             public string PrimaryText { get; init; } = string.Empty;
 
             public string SecondaryText { get; init; } = string.Empty;
+        }
+
+        private sealed record WorkspaceUndoSnapshot(
+            string ClientName,
+            string Phone,
+            string Dni,
+            DateTime? DeliveryDate,
+            DateTime? EventDate,
+            string QuoteTitle,
+            string QuoteStatus,
+            string Deposit,
+            string QuoteNotes,
+            string ClientNotes,
+            IReadOnlyList<ProductUndoSnapshot> Products);
+
+        private sealed record ProductUndoSnapshot(
+            string ProductName,
+            string TailoringType,
+            string Fabric,
+            decimal BasePrice,
+            decimal FabricPrice,
+            decimal ManualPrice,
+            int Quantity,
+            decimal Total)
+        {
+            public static ProductUndoSnapshot FromProductLine(ProductLine product)
+            {
+                return new ProductUndoSnapshot(
+                    product.ProductName,
+                    product.TailoringType,
+                    product.Fabric,
+                    product.BasePrice,
+                    product.FabricPrice,
+                    product.ManualPrice,
+                    product.Quantity,
+                    product.Total);
+            }
+
+            public ProductLine ToProductLine()
+            {
+                var product = new ProductLine();
+
+                product.LoadPersistedValues(
+                    ProductName,
+                    TailoringType,
+                    Fabric,
+                    BasePrice,
+                    FabricPrice,
+                    Quantity,
+                    Total);
+
+                return product;
+            }
         }
 
     }
