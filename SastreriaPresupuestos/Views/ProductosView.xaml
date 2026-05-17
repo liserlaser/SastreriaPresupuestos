@@ -137,10 +137,10 @@
 											Binding="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 											ElementStyle="{StaticResource CenterAlignedCellStyle}"
 											EditingElementStyle="{StaticResource QuantityEditingTextBoxStyle}"
-											Width="70" />
+											Width="55" />
 
                                         <!-- PRODUCTO -->
-                                        <DataGridTemplateColumn Header="Producto" Width="170">
+                                        <DataGridTemplateColumn Header="Producto" Width="140">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ComboBox
@@ -152,7 +152,7 @@
                                         </DataGridTemplateColumn>
 
                                         <!-- TIPO -->
-                                        <DataGridTemplateColumn Header="Tipo" Width="140">
+                                        <DataGridTemplateColumn Header="Tipo" Width="105">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ComboBox
@@ -177,7 +177,7 @@
 											Binding="{Binding BasePrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 											ElementStyle="{StaticResource RightAlignedCellStyle}"
 											EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
-											Width="115" />
+											Width="100" />
 
                                         <!-- PRECIO TEJIDO -->
                                         <DataGridTextColumn
@@ -185,7 +185,7 @@
 											Binding="{Binding FabricPrice, Mode=TwoWay, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 											ElementStyle="{StaticResource RightAlignedCellStyle}"
 											EditingElementStyle="{StaticResource MoneyEditingTextBoxStyle}"
-											Width="115" />
+											Width="100" />
 
 
                                         <!-- TOTAL -->
@@ -194,7 +194,7 @@
 											Binding="{Binding Total, StringFormat={}{0:N2} €, ConverterCulture=es-ES}"
 											ElementStyle="{StaticResource RightAlignedCellStyle}"
 											IsReadOnly="True"
-											Width="125" />
+											Width="100" />
 
                                         <!-- ACCIONES -->
                                         <DataGridTemplateColumn Header="" Width="160">
