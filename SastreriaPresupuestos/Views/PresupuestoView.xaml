@@ -812,7 +812,7 @@
                                                            FontSize="17"
                                                            FontWeight="Bold"
                                                            Foreground="{StaticResource PrimaryBrush}"/>
-                                                <TextBlock Text="Botones preparados para la integración futura de facturación."
+                                                <TextBlock Text="Convierte el presupuesto actual en factura o consulta la factura emitida."
                                                            FontSize="13"
                                                            Foreground="{StaticResource MutedTextBrush}"
                                                            TextWrapping="Wrap"

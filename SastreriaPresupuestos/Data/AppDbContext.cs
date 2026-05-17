@@ -13,6 +13,10 @@ namespace SastreriaPresupuestos.Data
 
         public DbSet<QuoteItem> QuoteItems => Set<QuoteItem>();
 
+        public DbSet<Invoice> Invoices => Set<Invoice>();
+
+        public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+
         public DbSet<PriceItem> PriceItems => Set<PriceItem>();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

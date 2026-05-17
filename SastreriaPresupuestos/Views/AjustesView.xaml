@@ -166,6 +166,26 @@
                                 FontSize="13"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,0,12"/>
+
+                            <TextBlock
+                                Text="Facturas"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource MutedTextBrush}"/>
+
+                            <TextBlock
+                                x:Name="InvoiceFolderTextBlock"
+                                Text="Sin carpeta seleccionada"
+                                FontSize="12"
+                                TextTrimming="CharacterEllipsis"
+                                Margin="0,2,0,8"/>
+
+                            <Button
+                                x:Name="InvoiceFolderButton"
+                                Content="Seleccionar carpeta"
+                                Height="34"
+                                FontSize="13"
+                                Style="{StaticResource SecondaryButtonStyle}"/>
                         </StackPanel>
 
                     </Border>

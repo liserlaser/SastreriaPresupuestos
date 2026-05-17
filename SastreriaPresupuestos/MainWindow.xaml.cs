@@ -44,6 +44,7 @@ namespace SastreriaPresupuestos
         private readonly ClientesView ClientesView = new();
         private readonly PresupuestoView PresupuestoView = new();
         private readonly ProductosView ProductosView = new();
+        private readonly FacturasView FacturasView = new();
         private readonly AjustesView AjustesView = new();
 
         public ObservableCollection<string> AvailableProductNames { get; } = new();
@@ -143,12 +144,28 @@ namespace SastreriaPresupuestos
         private Button ExportPdfButton => PresupuestoView.ExportPdfButton;
         private Button ExportClientSheetButton => PresupuestoView.ExportClientSheetButton;
         private Button ExportAllQuotesPdfButton => PresupuestoView.ExportAllQuotesPdfButton;
+        private Button ConvertQuoteToInvoiceButton => PresupuestoView.CreateInvoiceButton;
+        private Button ViewQuoteInvoiceButton => PresupuestoView.ViewInvoiceButton;
+        private TextBox InvoiceSearchTextBox => FacturasView.InvoiceSearchTextBox;
+        private Button InvoiceCreateButton => FacturasView.CreateInvoiceButton;
+        private Button InvoiceExportButton => FacturasView.ExportInvoiceButton;
+        private Button InvoicePrintButton => FacturasView.PrintInvoiceButton;
+        private Button CreateCorrectiveInvoiceButton => FacturasView.CreateCorrectiveInvoiceButton;
+        private ListBox InvoicesListBox => FacturasView.InvoicesListBox;
+        private DataGrid InvoiceItemsDataGrid => FacturasView.InvoiceItemsDataGrid;
+        private TextBlock InvoiceDetailNumberTextBlock => FacturasView.InvoiceDetailNumberTextBlock;
+        private TextBlock InvoiceDetailMetaTextBlock => FacturasView.InvoiceDetailMetaTextBlock;
+        private TextBlock InvoiceDetailClientTextBlock => FacturasView.InvoiceDetailClientTextBlock;
+        private TextBlock InvoiceDetailSourceTextBlock => FacturasView.InvoiceDetailSourceTextBlock;
+        private TextBlock InvoiceDetailTotalTextBlock => FacturasView.InvoiceDetailTotalTextBlock;
         private Button PricesConfigButton => AjustesView.PricesConfigButton;
         private Button BackupButton => AjustesView.BackupButton;
         private TextBlock ClientSheetFolderTextBlock => AjustesView.ClientSheetFolderTextBlock;
         private Button ClientSheetFolderButton => AjustesView.ClientSheetFolderButton;
         private TextBlock QuoteFolderTextBlock => AjustesView.QuoteFolderTextBlock;
         private Button QuoteFolderButton => AjustesView.QuoteFolderButton;
+        private TextBlock InvoiceFolderTextBlock => AjustesView.InvoiceFolderTextBlock;
+        private Button InvoiceFolderButton => AjustesView.InvoiceFolderButton;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -165,6 +182,9 @@ namespace SastreriaPresupuestos
 
         private ObservableCollection<GlobalSearchResult> GlobalSearchResults =
             new ObservableCollection<GlobalSearchResult>();
+
+        private ObservableCollection<InvoiceListItem> Invoices =
+            new ObservableCollection<InvoiceListItem>();
 
         private ObservableCollection<Models.Client> PredictiveClientResults =
             new ObservableCollection<Models.Client>();
@@ -187,6 +207,7 @@ namespace SastreriaPresupuestos
             ClientesHost.Content = ClientesView;
             PresupuestoHost.Content = PresupuestoView;
             ProductsInlineHost.Content = ProductosView;
+            FacturasHost.Content = FacturasView;
             AjustesHost.Content = AjustesView;
         }
 
@@ -241,7 +262,8 @@ namespace SastreriaPresupuestos
         private const int TabClientes = 1;
         private const int TabPresupuesto = 2;
         private const int TabProductos = 3;
-        private const int TabAjustes = 4;
+        private const int TabFacturas = 4;
+        private const int TabAjustes = 5;
         private const int InnerTabResumen = 0;
         private const int InnerTabProductos = 1;
         private const int InnerTabDocumentos = 2;
@@ -2176,6 +2198,7 @@ namespace SastreriaPresupuestos
         {
             ClientSheetFolderTextBlock.Text = FormatExportFolder(CurrentSettings.ClientSheetExportFolder);
             QuoteFolderTextBlock.Text = FormatExportFolder(CurrentSettings.QuoteExportFolder);
+            InvoiceFolderTextBlock.Text = FormatExportFolder(CurrentSettings.InvoiceExportFolder);
         }
 
         private string FormatExportFolder(string? folder)
@@ -2213,6 +2236,13 @@ namespace SastreriaPresupuestos
             SelectExportFolder(
                 "Seleccionar carpeta para presupuestos",
                 folder => CurrentSettings.QuoteExportFolder = folder);
+        }
+
+        private void InvoiceFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectExportFolder(
+                "Seleccionar carpeta para facturas",
+                folder => CurrentSettings.InvoiceExportFolder = folder);
         }
 
         private void OpenQuoteFolderButton_Click(object sender, RoutedEventArgs e)
@@ -2253,6 +2283,533 @@ namespace SastreriaPresupuestos
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void LoadInvoices()
+        {
+            Invoices.Clear();
+
+            using var db = new AppDbContext();
+            var search = NormalizeSearchText(InvoiceSearchTextBox?.Text ?? "");
+
+            var invoices = db.Invoices
+                .Include(i => i.Client)
+                .Include(i => i.Items)
+                .AsNoTracking()
+                .OrderByDescending(i => i.CreatedAt)
+                .ThenByDescending(i => i.Id)
+                .ToList();
+
+            foreach (var invoice in invoices)
+            {
+                if (!string.IsNullOrWhiteSpace(search) &&
+                    !NormalizeSearchText(invoice.InvoiceNumber).Contains(search) &&
+                    !NormalizeSearchText(invoice.Client?.Name ?? "").Contains(search) &&
+                    !NormalizeSearchText(invoice.Summary).Contains(search))
+                {
+                    continue;
+                }
+
+                Invoices.Add(new InvoiceListItem
+                {
+                    InvoiceId = invoice.Id,
+                    InvoiceNumber = invoice.DisplayTitle,
+                    CreatedAt = invoice.CreatedAt,
+                    ClientName = invoice.Client?.Name ?? "",
+                    Summary = invoice.Summary,
+                    Total = invoice.Total,
+                    Series = invoice.Series
+                });
+            }
+        }
+
+        private void InvoiceSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            LoadInvoices();
+        }
+
+        private void InvoicesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (InvoicesListBox.SelectedItem is InvoiceListItem item)
+                LoadInvoiceDetail(item.InvoiceId);
+            else
+                ClearInvoiceDetail();
+        }
+
+        private void ClearInvoiceDetail()
+        {
+            InvoiceDetailNumberTextBlock.Text = "Selecciona una factura";
+            InvoiceDetailMetaTextBlock.Text = "Las facturas emitidas se visualizan en modo solo lectura.";
+            InvoiceDetailClientTextBlock.Text = "Cliente: —";
+            InvoiceDetailSourceTextBlock.Text = "Origen: —";
+            InvoiceDetailTotalTextBlock.Text = "Total: 0,00 €";
+            InvoiceItemsDataGrid.ItemsSource = null;
+            CreateCorrectiveInvoiceButton.IsEnabled = false;
+            InvoiceExportButton.IsEnabled = false;
+            InvoicePrintButton.IsEnabled = false;
+        }
+
+        private void LoadInvoiceDetail(int invoiceId)
+        {
+            using var db = new AppDbContext();
+            var invoice = db.Invoices
+                .Include(i => i.Client)
+                .Include(i => i.SourceQuote)
+                .Include(i => i.Items)
+                .AsNoTracking()
+                .FirstOrDefault(i => i.Id == invoiceId);
+
+            if (invoice == null)
+            {
+                ClearInvoiceDetail();
+                return;
+            }
+
+            InvoiceDetailNumberTextBlock.Text = invoice.DisplayTitle;
+            InvoiceDetailMetaTextBlock.Text = $"{invoice.CreatedAt:dd/MM/yyyy} · Serie {invoice.Series} · {invoice.Status}";
+            InvoiceDetailClientTextBlock.Text = $"Cliente: {invoice.Client?.Name ?? "—"}";
+            InvoiceDetailSourceTextBlock.Text = invoice.SourceQuote == null
+                ? "Origen: factura directa"
+                : $"Origen: {invoice.SourceQuote.DisplayTitle}";
+            InvoiceDetailTotalTextBlock.Text = $"Total: {invoice.Total:N2} €";
+            InvoiceItemsDataGrid.ItemsSource = invoice.Items.ToList();
+            CreateCorrectiveInvoiceButton.IsEnabled = true;
+            InvoiceExportButton.IsEnabled = true;
+            InvoicePrintButton.IsEnabled = true;
+        }
+
+        private void InvoiceCreateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var clientId = SelectClientForInvoiceWizard();
+            if (clientId == null)
+                return;
+
+            using var db = new AppDbContext();
+            var client = db.Clients
+                .Include(c => c.Quotes)
+                .ThenInclude(q => q.Items)
+                .FirstOrDefault(c => c.Id == clientId.Value);
+
+            if (client == null)
+                return;
+
+            var quote = SelectQuoteForInvoiceWizard(client);
+            if (quote != null)
+            {
+                CreateInvoiceFromQuote(quote.Id);
+                return;
+            }
+
+            var products = SelectStandaloneInvoiceProducts();
+            if (products == null || products.Count == 0)
+                return;
+
+            CreateStandaloneInvoice(client.Id, products);
+        }
+
+        private int? SelectClientForInvoiceWizard()
+        {
+            using var db = new AppDbContext();
+            var clients = db.Clients.AsNoTracking().OrderBy(c => c.Name).ToList();
+            var dialog = CreateContextEditDialog("Crear factura", "Selecciona un cliente existente o crea uno nuevo.");
+            dialog.AcceptButton.Content = "Continuar";
+
+            var combo = new ComboBox
+            {
+                Height = 36,
+                FontSize = 14,
+                ItemsSource = clients,
+                DisplayMemberPath = "Name",
+                SelectedValuePath = "Id",
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+            var nameBox = CreateDialogTextBox("");
+            var phoneBox = CreateDialogTextBox("");
+            var dniBox = CreateDialogTextBox("");
+
+            AddDialogField(dialog.ContentPanel, "Cliente existente", combo);
+            AddDialogField(dialog.ContentPanel, "Nuevo cliente - nombre", nameBox);
+            AddDialogField(dialog.ContentPanel, "Nuevo cliente - teléfono", phoneBox);
+            AddDialogField(dialog.ContentPanel, "Nuevo cliente - DNI/CIF", dniBox);
+
+            int? selectedClientId = null;
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                if (combo.SelectedValue is int existingClientId)
+                {
+                    selectedClientId = existingClientId;
+                    dialog.Window.DialogResult = true;
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(nameBox.Text))
+                {
+                    MessageBox.Show("Selecciona un cliente o indica el nombre del nuevo cliente.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                using var createDb = new AppDbContext();
+                var client = new Models.Client
+                {
+                    Name = nameBox.Text.Trim(),
+                    Phone = phoneBox.Text.Trim(),
+                    Dni = dniBox.Text.Trim()
+                };
+                createDb.Clients.Add(client);
+                createDb.SaveChanges();
+                selectedClientId = client.Id;
+                LoadClients();
+                dialog.Window.DialogResult = true;
+            };
+
+            return dialog.Window.ShowDialog() == true ? selectedClientId : null;
+        }
+
+        private Models.Quote? SelectQuoteForInvoiceWizard(Models.Client client)
+        {
+            var quotes = client.Quotes.OrderBy(q => q.EventDate ?? DateTime.MaxValue).ThenBy(q => q.Id).ToList();
+            if (quotes.Count == 0)
+                return null;
+
+            var dialog = CreateContextEditDialog("Presupuesto", "Elige un presupuesto o continúa sin presupuesto.");
+            dialog.AcceptButton.Content = "Continuar";
+
+            var combo = new ComboBox
+            {
+                Height = 36,
+                FontSize = 14,
+                ItemsSource = quotes,
+                DisplayMemberPath = "DisplayTitle",
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+            var withoutQuoteCheckBox = new CheckBox { Content = "Crear factura sin presupuesto" };
+            AddDialogField(dialog.ContentPanel, "Presupuesto", combo);
+            dialog.ContentPanel.Children.Add(withoutQuoteCheckBox);
+
+            Models.Quote? selectedQuote = null;
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                selectedQuote = withoutQuoteCheckBox.IsChecked == true ? null : combo.SelectedItem as Models.Quote;
+                dialog.Window.DialogResult = true;
+            };
+
+            return dialog.Window.ShowDialog() == true ? selectedQuote : null;
+        }
+
+        private List<InvoiceItem>? SelectStandaloneInvoiceProducts()
+        {
+            var dialog = CreateContextEditDialog("Productos", "Añade los productos que aparecerán en la factura.");
+            dialog.AcceptButton.Content = "Crear";
+            var productCombo = new ComboBox
+            {
+                Height = 36,
+                FontSize = 14,
+                ItemsSource = PriceService.GetProductNames(),
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+            var quantityBox = CreateDialogTextBox("1");
+            var priceBox = CreateDialogTextBox("0");
+            var selectedItems = new ObservableCollection<InvoiceItem>();
+            var itemsListBox = new ListBox
+            {
+                Height = 116,
+                ItemsSource = selectedItems,
+                DisplayMemberPath = "Description",
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+            var addButton = new Button
+            {
+                Content = "Añadir producto",
+                Height = 34,
+                MinWidth = 118,
+                Style = (Style)FindResource("SecondaryButtonStyle"),
+                Margin = new Thickness(0, 8, 0, 0)
+            };
+            AddDialogField(dialog.ContentPanel, "Producto", productCombo);
+            AddDialogField(dialog.ContentPanel, "Cantidad", quantityBox);
+            AddDialogField(dialog.ContentPanel, "Precio unitario", priceBox);
+            dialog.ContentPanel.Children.Add(addButton);
+            AddDialogField(dialog.ContentPanel, "Productos añadidos", itemsListBox);
+
+            addButton.Click += (_, _) =>
+            {
+                var productName = productCombo.SelectedItem?.ToString() ?? "";
+                if (string.IsNullOrWhiteSpace(productName) ||
+                    !int.TryParse(quantityBox.Text, out var quantity) ||
+                    !decimal.TryParse(priceBox.Text, out var price))
+                {
+                    MessageBox.Show("Completa producto, cantidad y precio.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var normalizedQuantity = Math.Max(1, quantity);
+                var normalizedPrice = Math.Max(0, price);
+                selectedItems.Add(new InvoiceItem
+                {
+                    ProductName = productName,
+                    Description = $"{productName} · {normalizedQuantity} x {normalizedPrice:N2} €",
+                    Quantity = normalizedQuantity,
+                    UnitPrice = normalizedPrice,
+                    Total = normalizedQuantity * normalizedPrice
+                });
+
+                productCombo.SelectedIndex = -1;
+                quantityBox.Text = "1";
+                priceBox.Text = "0";
+            };
+
+            List<InvoiceItem>? result = null;
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                if (selectedItems.Count == 0)
+                {
+                    MessageBox.Show("Añade al menos un producto.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                result = selectedItems
+                    .Select(item => new InvoiceItem
+                    {
+                        ProductName = item.ProductName,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        Total = item.Total
+                    })
+                    .ToList();
+                dialog.Window.DialogResult = true;
+            };
+
+            return dialog.Window.ShowDialog() == true ? result : null;
+        }
+
+        private void CreateInvoiceFromQuote(int quoteId, string? forcedSeries = null, int? correctsInvoiceId = null)
+        {
+            using var db = new AppDbContext();
+            var quote = db.Quotes.Include(q => q.Client).Include(q => q.Items).FirstOrDefault(q => q.Id == quoteId);
+            if (quote == null)
+                return;
+
+            var existingInvoice = db.Invoices.FirstOrDefault(i => i.SourceQuoteId == quoteId && i.CorrectsInvoiceId == null);
+            if (existingInvoice != null && correctsInvoiceId == null)
+            {
+                MessageBox.Show($"Este presupuesto ya tiene factura: {existingInvoice.InvoiceNumber}.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Information);
+                OpenInvoice(existingInvoice.Id);
+                return;
+            }
+
+            var series = forcedSeries ?? SelectInvoiceSeries(correctsInvoiceId != null);
+            if (string.IsNullOrWhiteSpace(series))
+                return;
+
+            var invoice = BuildInvoice(db, quote.ClientId, quote.Items.Select(CreateInvoiceItemFromQuoteItem).ToList(), series, quote.Id, correctsInvoiceId);
+            invoice.Notes = quote.Notes;
+            if (correctsInvoiceId != null)
+            {
+                foreach (var item in invoice.Items)
+                {
+                    item.UnitPrice *= -1;
+                    item.Total *= -1;
+                }
+
+                invoice.Total = invoice.Items.Sum(i => i.Total);
+                invoice.Status = "Rectificativa";
+                invoice.Notes = $"Rectifica la factura #{correctsInvoiceId}. {invoice.Notes}".Trim();
+            }
+
+            db.Invoices.Add(invoice);
+            db.SaveChanges();
+            LoadInvoices();
+            OpenInvoice(invoice.Id);
+            MessageBox.Show($"Factura {invoice.InvoiceNumber} creada correctamente.", "Facturas", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void CreateStandaloneInvoice(int clientId, List<InvoiceItem> items)
+        {
+            using var db = new AppDbContext();
+            var series = SelectInvoiceSeries(false);
+            if (string.IsNullOrWhiteSpace(series))
+                return;
+
+            var invoice = BuildInvoice(db, clientId, items, series, null, null);
+
+            db.Invoices.Add(invoice);
+            db.SaveChanges();
+            LoadInvoices();
+            OpenInvoice(invoice.Id);
+        }
+
+        private Invoice BuildInvoice(AppDbContext db, int clientId, List<InvoiceItem> items, string series, int? sourceQuoteId, int? correctsInvoiceId)
+        {
+            var createdAt = DateTime.Now;
+            var number = InvoiceNumberService.GetNextNumber(db, series, createdAt);
+            return new Invoice
+            {
+                CreatedAt = createdAt,
+                Series = series,
+                Number = number,
+                InvoiceNumber = InvoiceNumberService.Format(createdAt, series, number),
+                ClientId = clientId,
+                SourceQuoteId = sourceQuoteId,
+                CorrectsInvoiceId = correctsInvoiceId,
+                Total = items.Sum(i => i.Total),
+                Items = items
+            };
+        }
+
+        private static InvoiceItem CreateInvoiceItemFromQuoteItem(QuoteItem item)
+        {
+            var quantity = item.Quantity < 1 ? 1 : item.Quantity;
+            return new InvoiceItem
+            {
+                ProductName = item.ProductName,
+                Description = string.Join(" · ", new[] { item.TailoringType, item.Fabric }.Where(v => !string.IsNullOrWhiteSpace(v))),
+                Quantity = quantity,
+                UnitPrice = item.Total / quantity,
+                Total = item.Total
+            };
+        }
+
+        private string? SelectInvoiceSeries(bool isCorrective)
+        {
+            var dialog = CreateContextEditDialog("Serie de factura", "Selecciona la serie que se usará para la numeración.");
+            dialog.AcceptButton.Content = "Aceptar";
+            var combo = new ComboBox
+            {
+                Height = 36,
+                FontSize = 14,
+                ItemsSource = isCorrective
+                    ? new[] { InvoiceSeries.CorrectiveSimplified, InvoiceSeries.CorrectiveCompany }
+                    : new[] { InvoiceSeries.Customer, InvoiceSeries.Simplified, InvoiceSeries.Company },
+                SelectedIndex = 0,
+                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
+                BorderThickness = new Thickness(1),
+                Background = Brushes.White
+            };
+            AddDialogField(dialog.ContentPanel, "Serie", combo);
+            string? result = null;
+            dialog.AcceptButton.Click += (_, _) =>
+            {
+                result = combo.SelectedItem?.ToString();
+                dialog.Window.DialogResult = true;
+            };
+            return dialog.Window.ShowDialog() == true ? result : null;
+        }
+
+        private void ConvertQuoteToInvoiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentQuote == null)
+            {
+                MessageBox.Show("Selecciona o guarda un presupuesto antes de convertirlo en factura.", "Facturas", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (!TryFlushPendingChangesBeforeWorkflowAction("crear factura"))
+                return;
+
+            CreateInvoiceFromQuote(CurrentQuote.Id);
+        }
+
+        private void ViewQuoteInvoiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentQuote == null)
+                return;
+
+            using var db = new AppDbContext();
+            var invoice = db.Invoices.AsNoTracking().FirstOrDefault(i => i.SourceQuoteId == CurrentQuote.Id);
+            if (invoice == null)
+            {
+                MessageBox.Show("Este presupuesto todavía no tiene factura.", "Facturas", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            OpenInvoice(invoice.Id);
+        }
+
+        private void OpenInvoice(int invoiceId)
+        {
+            NavigateToSection(TabFacturas);
+            LoadInvoices();
+            InvoicesListBox.SelectedItem = Invoices.FirstOrDefault(i => i.InvoiceId == invoiceId);
+            LoadInvoiceDetail(invoiceId);
+        }
+
+        private void InvoiceExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (InvoicesListBox.SelectedItem is InvoiceListItem item && ExportInvoicePdf(item.InvoiceId) != null)
+                MessageBox.Show("PDF de factura generado correctamente.", "Facturas", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void InvoicePrintButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (InvoicesListBox.SelectedItem is not InvoiceListItem item)
+                return;
+
+            var pdfPath = ExportInvoicePdf(item.InvoiceId);
+            if (pdfPath == null)
+                return;
+
+            Process.Start(new ProcessStartInfo { FileName = pdfPath, UseShellExecute = true });
+        }
+
+        private string? ExportInvoicePdf(int invoiceId)
+        {
+            using var db = new AppDbContext();
+            var invoice = db.Invoices.Include(i => i.Client).Include(i => i.Items).AsNoTracking().FirstOrDefault(i => i.Id == invoiceId);
+            if (invoice == null)
+                return null;
+
+            var exportInvoice = new ExportInvoice
+            {
+                InvoiceNumber = invoice.InvoiceNumber,
+                Series = invoice.Series,
+                CreatedAt = invoice.CreatedAt,
+                ClientName = invoice.Client?.Name ?? "",
+                ClientPhone = invoice.Client?.Phone ?? "",
+                ClientDni = invoice.Client?.Dni ?? "",
+                Notes = invoice.Notes,
+                Items = invoice.Items.Select(i => new ExportInvoiceItem
+                {
+                    ProductName = i.ProductName,
+                    Description = i.Description,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    Total = i.Total
+                }).ToList()
+            };
+
+            var fileName = $"{MakeSafeFileName(invoice.InvoiceNumber)}.pdf";
+            if (!TryBuildExportFilePath(CurrentSettings.InvoiceExportFolder, fileName, "facturas", out var pdfPath))
+                return null;
+
+            InvoicePdfService.ExportInvoiceToPdf(exportInvoice, pdfPath);
+            LastGeneratedPdfPath = pdfPath;
+            return pdfPath;
+        }
+
+        private void CreateCorrectiveInvoiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (InvoicesListBox.SelectedItem is not InvoiceListItem item)
+                return;
+
+            using var db = new AppDbContext();
+            var invoice = db.Invoices.AsNoTracking().FirstOrDefault(i => i.Id == item.InvoiceId);
+            if (invoice == null || invoice.SourceQuoteId == null)
+                return;
+
+            var correctiveSeries = invoice.Series == InvoiceSeries.Company
+                ? InvoiceSeries.CorrectiveCompany
+                : InvoiceSeries.CorrectiveSimplified;
+
+            CreateInvoiceFromQuote(invoice.SourceQuoteId.Value, correctiveSeries, invoice.Id);
         }
 
 
@@ -3898,6 +4455,7 @@ namespace SastreriaPresupuestos
             GlobalSearchResultsListBox.ItemsSource = GlobalSearchResults;
             ProductsDataGrid.ItemsSource = Products;
             ClientPredictiveComboBox.ItemsSource = PredictiveClientResults;
+            InvoicesListBox.ItemsSource = Invoices;
         }
 
         private void LoadInitialData()
@@ -3907,6 +4465,7 @@ namespace SastreriaPresupuestos
 
             LoadClients();
             LoadCalendarDeliveries();
+            LoadInvoices();
         }
 
         private void RefreshAvailableProductNames()
@@ -3938,6 +4497,13 @@ namespace SastreriaPresupuestos
             BackupButton.Click += BackupButton_Click;
             ClientSheetFolderButton.Click += ClientSheetFolderButton_Click;
             QuoteFolderButton.Click += QuoteFolderButton_Click;
+            InvoiceFolderButton.Click += InvoiceFolderButton_Click;
+            InvoiceCreateButton.Click += InvoiceCreateButton_Click;
+            InvoiceExportButton.Click += InvoiceExportButton_Click;
+            InvoicePrintButton.Click += InvoicePrintButton_Click;
+            CreateCorrectiveInvoiceButton.Click += CreateCorrectiveInvoiceButton_Click;
+            ConvertQuoteToInvoiceButton.Click += ConvertQuoteToInvoiceButton_Click;
+            ViewQuoteInvoiceButton.Click += ViewQuoteInvoiceButton_Click;
             ExportPdfButton.Click += ExportPdfButton_Click;
             OpenLastPdfButton.Click += OpenLastPdfButton_Click;
             ExportAllQuotesPdfButton.Click += ExportAllQuotesPdfButton_Click;
@@ -3963,6 +4529,8 @@ namespace SastreriaPresupuestos
             ClientsListBox.SelectionChanged += ClientsListBox_SelectionChanged;
             QuotesListBox.SelectionChanged += QuotesListBox_SelectionChanged;
             WorkSearchTextBox.TextChanged += WorkSearchTextBox_TextChanged;
+            InvoiceSearchTextBox.TextChanged += InvoiceSearchTextBox_TextChanged;
+            InvoicesListBox.SelectionChanged += InvoicesListBox_SelectionChanged;
             ClientPredictiveComboBox.SelectionChanged += ClientPredictiveComboBox_SelectionChanged;
             ClientPredictiveComboBox.AddHandler(
                 TextBoxBase.TextChangedEvent,
@@ -4115,7 +4683,8 @@ namespace SastreriaPresupuestos
                 1 => ("Trabajos", "Clientes y trabajos se gestionan desde el workspace contextual", "🏠 > Trabajos"),
                 2 => ("Trabajos", "Resumen del trabajo activo y datos principales", "🏠 > Trabajos"),
                 3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del trabajo activo", "🏠 > Trabajos > Productos"),
-                4 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
+                4 => ("Facturas", "Emisión, búsqueda y archivo de facturas", "🏠 > Facturas"),
+                5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de trabajos, PDFs y entregas", "🏠")
             };
 
@@ -4181,6 +4750,7 @@ namespace SastreriaPresupuestos
             SetSidebarButtonActive(DashboardNavButton, MainTabs.SelectedIndex == TabSemana);
             SetSidebarButtonActive(ClientsNavButton, MainTabs.SelectedIndex == TabClientes);
             SetSidebarButtonActive(QuotesNavButton, MainTabs.SelectedIndex == TabPresupuesto || MainTabs.SelectedIndex == TabProductos);
+            SetSidebarButtonActive(InvoicesNavButton, MainTabs.SelectedIndex == TabFacturas);
             SetSidebarButtonActive(SettingsNavButton, MainTabs.SelectedIndex == TabAjustes);
             UpdateWorkspaceButtonState();
         }
@@ -4286,6 +4856,7 @@ namespace SastreriaPresupuestos
             ClientsNavButton.Content = IsSidebarCollapsed ? "👤" : "👤  Clientes";
             ClientsNavButton.Visibility = Visibility.Collapsed;
             QuotesNavButton.Content = IsSidebarCollapsed ? "📜" : "📜  Trabajos";
+            InvoicesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Facturas";
             SettingsNavButton.Content = "⚙";
         }
 
@@ -5043,6 +5614,8 @@ namespace SastreriaPresupuestos
             SaveProductsButton.IsEnabled = hasSavedClient;
 
             ExportPdfButton.IsEnabled = hasSavedClient && hasProducts;
+            ConvertQuoteToInvoiceButton.IsEnabled = CurrentQuote != null && hasProducts;
+            ViewQuoteInvoiceButton.IsEnabled = CurrentQuote != null;
             OpenLastPdfButton.IsEnabled = !string.IsNullOrWhiteSpace(LastGeneratedPdfPath) && File.Exists(LastGeneratedPdfPath);
             ExportAllQuotesPdfButton.IsEnabled = hasSavedClient;
             BudgetQuickSummaryButton.IsEnabled = hasSavedClient;
