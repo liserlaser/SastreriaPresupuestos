@@ -195,6 +195,9 @@ namespace SastreriaPresupuestos
 
         private string ActiveStatusFilter = "Todos";
 
+        private string? PendingClientAddress = null;
+        private bool PendingClientRequiresCompanyData = false;
+
         private bool IsSidebarCollapsed = false;
         private string ActiveDeliveryFilter = "Todas";
 
@@ -415,6 +418,7 @@ namespace SastreriaPresupuestos
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
             var clientDni = DniTextBox.Text.Trim();
+            var clientAddress = PendingClientAddress?.Trim() ?? "";
             var quoteTitle = QuoteTitleTextBox.Text.Trim();
             var quoteNotes = QuoteNotesTextBox.Text.Trim();
             var clientNotes = ClientNotesTextBox.Text.Trim();
@@ -2410,106 +2414,129 @@ namespace SastreriaPresupuestos
 
         private (int ClientId, bool IsCompany)? SelectClientForInvoiceWizard()
         {
-            using var db = new AppDbContext();
-            var clients = db.Clients.AsNoTracking().OrderBy(c => c.Name).ToList();
-            var dialog = CreateContextEditDialog("Crear factura", "Selecciona un cliente existente o crea uno nuevo.");
-            dialog.AcceptButton.Content = "Continuar";
-            var companyCheckBox = new CheckBox
-            {
-                Content = "Cliente empresa",
-                Margin = new Thickness(0, 0, 0, 8)
-            };
+            var createNewClient = AskCreateNewClient("Crear factura");
+            if (createNewClient == null)
+                return null;
 
-            var combo = new ComboBox
-            {
-                Height = 36,
-                FontSize = 14,
-                ItemsSource = clients,
-                DisplayMemberPath = "Name",
-                SelectedValuePath = "Id",
-                BorderBrush = (Brush)FindResource("BorderSoftBrush"),
-                BorderThickness = new Thickness(1),
-                Background = Brushes.White
-            };
+            var isCompany = AskIsCompanyClient("Crear factura");
+            if (isCompany == null)
+                return null;
+
+            if (createNewClient.Value)
+                return CreateClientForInvoice(isCompany.Value);
+
+            return SelectExistingClientForInvoice(isCompany.Value);
+        }
+
+        private bool? AskCreateNewClient(string title)
+        {
+            var result = MessageBox.Show(
+                "¿Quieres crear un cliente nuevo?\n\n" +
+                "Sí: crear cliente nuevo.\n" +
+                "No: elegir un cliente existente.",
+                title,
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel)
+                return null;
+
+            return result == MessageBoxResult.Yes;
+        }
+
+        private bool? AskIsCompanyClient(string title)
+        {
+            var result = MessageBox.Show(
+                "¿El cliente es una empresa?\n\n" +
+                "Sí: factura de empresa.\n" +
+                "No: factura de tienda / consumidor final.",
+                title,
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel)
+                return null;
+
+            return result == MessageBoxResult.Yes;
+        }
+
+        private (int ClientId, bool IsCompany)? CreateClientForInvoice(bool isCompany)
+        {
+            var dialog = CreateContextEditDialog(
+                "Nuevo cliente",
+                isCompany
+                    ? "Introduce los datos obligatorios de la empresa."
+                    : "Introduce los datos del cliente.");
+            dialog.AcceptButton.Content = "Continuar";
+
             var nameBox = CreateDialogTextBox("");
             var phoneBox = CreateDialogTextBox("");
             var dniBox = CreateDialogTextBox("");
             var addressBox = CreateDialogTextBox("");
 
-            dialog.ContentPanel.Children.Add(companyCheckBox);
-            AddDialogField(dialog.ContentPanel, "Cliente existente", combo);
-            AddDialogField(dialog.ContentPanel, "Nuevo cliente - nombre", nameBox);
-            AddDialogField(dialog.ContentPanel, "Nuevo cliente - teléfono", phoneBox);
-            AddDialogField(dialog.ContentPanel, "Nuevo cliente - DNI/CIF", dniBox);
-            AddDialogField(dialog.ContentPanel, "Dirección", addressBox);
+            AddDialogField(dialog.ContentPanel, isCompany ? "Nombre o razón social" : "Nombre", nameBox);
+            AddDialogField(dialog.ContentPanel, "Teléfono", phoneBox);
+            AddDialogField(dialog.ContentPanel, isCompany ? "NIF/CIF" : "DNI/CIF", dniBox);
 
-            combo.SelectionChanged += (_, _) =>
-            {
-                if (combo.SelectedItem is not Models.Client selected)
-                    return;
+            if (isCompany)
+                AddDialogField(dialog.ContentPanel, "Dirección", addressBox);
 
-                nameBox.Text = selected.Name;
-                dniBox.Text = selected.Dni;
-                addressBox.Text = selected.Address;
-            };
-
-            (int ClientId, bool IsCompany)? selectedClient = null;
+            (int ClientId, bool IsCompany)? createdClient = null;
             dialog.AcceptButton.Click += (_, _) =>
             {
-                var isCompany = companyCheckBox.IsChecked == true;
                 var name = nameBox.Text.Trim();
+                var phone = phoneBox.Text.Trim();
                 var taxId = dniBox.Text.Trim();
                 var address = addressBox.Text.Trim();
 
-                if (isCompany && (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(taxId) || string.IsNullOrWhiteSpace(address)))
-                {
-                    MessageBox.Show("Para facturar a una empresa son obligatorios nombre o razón social, NIF/CIF y dirección.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (combo.SelectedValue is int existingClientId)
-                {
-                    if (isCompany)
-                    {
-                        using var updateDb = new AppDbContext();
-                        var existingClient = updateDb.Clients.FirstOrDefault(c => c.Id == existingClientId);
-                        if (existingClient != null)
-                        {
-                            existingClient.Name = name;
-                            existingClient.Dni = taxId;
-                            existingClient.Address = address;
-                            updateDb.SaveChanges();
-                            LoadClients();
-                        }
-                    }
-
-                    selectedClient = (existingClientId, isCompany);
-                    dialog.Window.DialogResult = true;
-                    return;
-                }
-
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    MessageBox.Show("Selecciona un cliente o indica el nombre del nuevo cliente.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Indica el nombre del cliente.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                using var createDb = new AppDbContext();
+                if (isCompany && (string.IsNullOrWhiteSpace(taxId) || string.IsNullOrWhiteSpace(address)))
+                {
+                    MessageBox.Show("Para facturar a una empresa son obligatorios NIF/CIF y dirección.", "Crear factura", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                using var db = new AppDbContext();
                 var client = new Models.Client
                 {
                     Name = name,
-                    Phone = phoneBox.Text.Trim(),
+                    Phone = phone,
                     Dni = taxId,
                     Address = address
                 };
-                createDb.Clients.Add(client);
-                createDb.SaveChanges();
-                selectedClient = (client.Id, isCompany);
+                db.Clients.Add(client);
+                db.SaveChanges();
+
+                createdClient = (client.Id, isCompany);
                 LoadClients();
                 dialog.Window.DialogResult = true;
             };
 
-            return dialog.Window.ShowDialog() == true ? selectedClient : null;
+            nameBox.Focus();
+
+            return dialog.Window.ShowDialog() == true ? createdClient : null;
+        }
+
+        private (int ClientId, bool IsCompany)? SelectExistingClientForInvoice(bool isCompany)
+        {
+            var selectedClientId = ShowClientSelectionDialog();
+            if (selectedClientId == null)
+                return null;
+
+            if (isCompany)
+            {
+                using var db = new AppDbContext();
+                var client = db.Clients.FirstOrDefault(c => c.Id == selectedClientId.Value);
+                if (!EnsureCompanyClientData(db, client))
+                    return null;
+            }
+
+            return (selectedClientId.Value, isCompany);
         }
 
         private Models.Quote? SelectQuoteForInvoiceWizard(Models.Client client)
@@ -3450,16 +3477,22 @@ namespace SastreriaPresupuestos
 
             if (result == MessageBoxResult.Yes)
             {
+                var isCompany = AskIsCompanyClient("Crear presupuesto");
+                if (isCompany == null)
+                    return false;
+
                 ClearScreenForNewClient();
 
-                if (!ShowClientEditDialog())
+                if (!ShowClientEditDialog(isCompany.Value))
                     return false;
 
                 SaveClientFromContextFields();
                 return CurrentClientId != null;
             }
 
-            var selectedClientId = ShowClientSelectionDialog();
+            var selectedClientId = ShowClientSelectionDialog(
+                "Elegir cliente",
+                "Selecciona el cliente para la factura.");
             if (selectedClientId == null)
                 return false;
 
@@ -3467,7 +3500,9 @@ namespace SastreriaPresupuestos
             return CurrentClientId != null;
         }
 
-        private int? ShowClientSelectionDialog()
+        private int? ShowClientSelectionDialog(
+            string title = "Elegir cliente",
+            string subtitle = "Selecciona el cliente al que quieres asociar el nuevo presupuesto.")
         {
             using var db = new AppDbContext();
 
@@ -3488,9 +3523,7 @@ namespace SastreriaPresupuestos
                 return null;
             }
 
-            var dialog = CreateContextEditDialog(
-                "Elegir cliente",
-                "Selecciona el cliente al que quieres asociar el nuevo presupuesto.");
+            var dialog = CreateContextEditDialog(title, subtitle);
 
             var comboBox = new ComboBox
             {
@@ -3588,25 +3621,44 @@ namespace SastreriaPresupuestos
             UpdateShellNavigationState();
         }
 
-        private bool ShowClientEditDialog()
+        private bool ShowClientEditDialog(bool requireCompanyData = false)
         {
             var dialog = CreateContextEditDialog(
                 "Editar cliente",
-                "Actualiza los datos básicos del cliente sin salir del trabajo actual.");
+                requireCompanyData
+                    ? "Introduce los datos de la empresa para el presupuesto."
+                    : "Actualiza los datos básicos del cliente sin salir del trabajo actual.");
 
             var nameTextBox = CreateDialogTextBox(ClientNameTextBox.Text);
             var phoneTextBox = CreateDialogTextBox(PhoneTextBox.Text);
             var dniTextBox = CreateDialogTextBox(DniTextBox.Text);
+            var addressTextBox = CreateDialogTextBox(PendingClientAddress ?? "");
 
-            AddDialogField(dialog.ContentPanel, "Nombre", nameTextBox);
+            AddDialogField(dialog.ContentPanel, requireCompanyData ? "Nombre o razón social" : "Nombre", nameTextBox);
             AddDialogField(dialog.ContentPanel, "Teléfono", phoneTextBox);
-            AddDialogField(dialog.ContentPanel, "DNI", dniTextBox);
+            AddDialogField(dialog.ContentPanel, requireCompanyData ? "NIF/CIF" : "DNI", dniTextBox);
+
+            if (requireCompanyData)
+                AddDialogField(dialog.ContentPanel, "Dirección", addressTextBox);
 
             dialog.AcceptButton.Click += (_, _) =>
             {
+                if (requireCompanyData &&
+                    (string.IsNullOrWhiteSpace(dniTextBox.Text) || string.IsNullOrWhiteSpace(addressTextBox.Text)))
+                {
+                    MessageBox.Show(
+                        "Para clientes empresa son obligatorios NIF/CIF y dirección.",
+                        "Datos de empresa",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 ClientNameTextBox.Text = nameTextBox.Text.Trim();
                 PhoneTextBox.Text = phoneTextBox.Text.Trim();
                 DniTextBox.Text = dniTextBox.Text.Trim();
+                PendingClientRequiresCompanyData = requireCompanyData;
+                PendingClientAddress = requireCompanyData ? addressTextBox.Text.Trim() : null;
                 dialog.Window.DialogResult = true;
             };
 
@@ -3621,6 +3673,7 @@ namespace SastreriaPresupuestos
             var clientName = ClientNameTextBox.Text.Trim();
             var clientPhone = PhoneTextBox.Text.Trim();
             var clientDni = DniTextBox.Text.Trim();
+            var clientAddress = PendingClientAddress?.Trim() ?? "";
 
             if (string.IsNullOrWhiteSpace(clientName))
             {
@@ -3643,6 +3696,17 @@ namespace SastreriaPresupuestos
                     MessageBoxImage.Warning);
 
                 PhoneTextBox.Focus();
+                return;
+            }
+
+            if (PendingClientRequiresCompanyData &&
+                (string.IsNullOrWhiteSpace(clientDni) || string.IsNullOrWhiteSpace(clientAddress)))
+            {
+                MessageBox.Show(
+                    "Para clientes empresa son obligatorios NIF/CIF y dirección.",
+                    "Guardar cliente",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
                 return;
             }
 
@@ -3691,7 +3755,8 @@ namespace SastreriaPresupuestos
                 {
                     Name = clientName,
                     Phone = clientPhone,
-                    Dni = clientDni
+                    Dni = clientDni,
+                    Address = clientAddress
                 };
 
                 db.Clients.Add(client);
@@ -3701,6 +3766,8 @@ namespace SastreriaPresupuestos
                 client.Name = clientName;
                 client.Phone = clientPhone;
                 client.Dni = clientDni;
+                if (PendingClientRequiresCompanyData || !string.IsNullOrWhiteSpace(clientAddress))
+                    client.Address = clientAddress;
             }
 
             db.SaveChanges();
@@ -3726,6 +3793,8 @@ namespace SastreriaPresupuestos
             SuppressSelectionConfirm = false;
 
             MarkAsSaved();
+            PendingClientAddress = null;
+            PendingClientRequiresCompanyData = false;
 
             MessageBox.Show(
                 "Cliente guardado correctamente.",
