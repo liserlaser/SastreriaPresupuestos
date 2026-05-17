@@ -14,12 +14,26 @@ namespace SastreriaPresupuestos.Export
 
         public string ClientName { get; set; } = "";
 
+        public string ClientTaxId { get; set; } = "";
+
+        public string ClientAddress { get; set; } = "";
+
+        public decimal InvoiceTotal { get; set; }
+
         public List<ExportInvoiceItem> Items { get; set; } = new();
 
-        public decimal Total => Items.Sum(item => item.Total);
+        public bool IsCompanyInvoice =>
+            Series == Models.InvoiceSeries.Company ||
+            Series == Models.InvoiceSeries.CorrectiveCompany;
 
-        public decimal TaxBase => Total / 1.21m;
+        public decimal ItemsTotal => Items.Sum(item => item.Total);
 
-        public decimal VatAmount => Total - TaxBase;
+        public decimal Total => InvoiceTotal != 0
+            ? InvoiceTotal
+            : IsCompanyInvoice ? ItemsTotal * 1.21m : ItemsTotal;
+
+        public decimal TaxBase => IsCompanyInvoice ? ItemsTotal : Total / 1.21m;
+
+        public decimal VatAmount => IsCompanyInvoice ? TaxBase * 0.21m : Total - TaxBase;
     }
 }

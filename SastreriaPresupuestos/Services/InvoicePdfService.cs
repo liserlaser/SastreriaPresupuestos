@@ -51,8 +51,11 @@ namespace SastreriaPresupuestos.Services
                         {
                             column.Spacing(18);
 
-                            column.Item()
-                                .Element(container => ComposeClientBlock(container, invoice));
+                            if (!invoice.IsCompanyInvoice)
+                            {
+                                column.Item()
+                                    .Element(container => ComposeSimplifiedClientBlock(container, invoice));
+                            }
 
                             column.Item()
                                 .Element(container => ComposeItemsTable(container, invoice));
@@ -79,6 +82,17 @@ namespace SastreriaPresupuestos.Services
 
         private static void ComposeHeader(IContainer container, ExportInvoice invoice)
         {
+            if (invoice.IsCompanyInvoice)
+            {
+                ComposeCompanyHeader(container, invoice);
+                return;
+            }
+
+            ComposeSimplifiedHeader(container, invoice);
+        }
+
+        private static void ComposeSimplifiedHeader(IContainer container, ExportInvoice invoice)
+        {
             container.Column(column =>
             {
                 column.Item().Row(row =>
@@ -93,45 +107,11 @@ namespace SastreriaPresupuestos.Services
                         row.ConstantItem(18);
                     }
 
-                    row.RelativeItem().Column(left =>
-                    {
-                        left.Item()
-                            .Text(BusinessName)
-                            .FontSize(22)
-                            .Bold()
-                            .FontColor(PrimaryColor);
-
-                        left.Item().Text(BusinessTaxId).FontSize(9).FontColor(MutedColor);
-                        left.Item().Text(BusinessAddress).FontSize(9).FontColor(MutedColor);
-                        left.Item().Text(BusinessCity).FontSize(9).FontColor(MutedColor);
-                        left.Item().Text(BusinessPhone).FontSize(9).FontColor(MutedColor);
-                        left.Item().Text(BusinessEmail).FontSize(9).FontColor(MutedColor);
-                    });
+                    row.RelativeItem().Element(ComposeBusinessData);
 
                     row.ConstantItem(190)
                         .AlignRight()
-                        .Column(right =>
-                        {
-                            right.Item()
-                                .AlignRight()
-                                .Text(GetDocumentTitle(invoice))
-                                .FontSize(16)
-                                .Bold()
-                                .FontColor(AccentColor);
-
-                            right.Item()
-                                .AlignRight()
-                                .Text(invoice.InvoiceNumber)
-                                .FontSize(13)
-                                .Bold()
-                                .FontColor(PrimaryColor);
-
-                            right.Item()
-                                .AlignRight()
-                                .Text($"Emisión: {invoice.CreatedAt:dd/MM/yyyy HH:mm}")
-                                .FontSize(10)
-                                .FontColor(MutedColor);
-                        });
+                        .Column(right => ComposeDocumentMeta(right, "Factura simplificada", invoice));
                 });
 
                 column.Item()
@@ -141,7 +121,110 @@ namespace SastreriaPresupuestos.Services
             });
         }
 
-        private static void ComposeClientBlock(IContainer container, ExportInvoice invoice)
+        private static void ComposeCompanyHeader(IContainer container, ExportInvoice invoice)
+        {
+            container.Column(column =>
+            {
+                column.Item().Row(row =>
+                {
+                    if (File.Exists(LogoPath))
+                    {
+                        row.ConstantItem(72)
+                            .Height(78)
+                            .Image(LogoPath)
+                            .FitArea();
+
+                        row.ConstantItem(14);
+                    }
+
+                    row.RelativeItem(1.1f).Element(ComposeCompactBusinessData);
+
+                    row.ConstantItem(1)
+                        .Height(82)
+                        .Background(BorderColor);
+
+                    row.RelativeItem(1.2f)
+                        .PaddingLeft(16)
+                        .Column(client =>
+                        {
+                            client.Item().Text("Cliente").FontSize(12).Bold().FontColor(AccentColor);
+                            client.Item().Text(invoice.ClientName).FontSize(11).Bold().FontColor(PrimaryColor);
+                            client.Item().Text(invoice.ClientTaxId).FontSize(9).FontColor(MutedColor);
+                            client.Item().Text(invoice.ClientAddress).FontSize(9).FontColor(MutedColor);
+                        });
+
+                    row.ConstantItem(160)
+                        .AlignRight()
+                        .Column(right => ComposeDocumentMeta(right, "Factura", invoice));
+                });
+
+                column.Item()
+                    .PaddingTop(6)
+                    .LineHorizontal(2)
+                    .LineColor(AccentColor);
+            });
+        }
+
+        private static void ComposeBusinessData(IContainer container)
+        {
+            container.Column(left =>
+            {
+                left.Item()
+                    .Text(BusinessName)
+                    .FontSize(22)
+                    .Bold()
+                    .FontColor(PrimaryColor);
+
+                left.Item().Text(BusinessTaxId).FontSize(9).FontColor(MutedColor);
+                left.Item().Text(BusinessAddress).FontSize(9).FontColor(MutedColor);
+                left.Item().Text(BusinessCity).FontSize(9).FontColor(MutedColor);
+                left.Item().Text(BusinessPhone).FontSize(9).FontColor(MutedColor);
+                left.Item().Text(BusinessEmail).FontSize(9).FontColor(MutedColor);
+            });
+        }
+
+        private static void ComposeCompactBusinessData(IContainer container)
+        {
+            container.Column(left =>
+            {
+                left.Item()
+                    .Text(BusinessName)
+                    .FontSize(13)
+                    .Bold()
+                    .FontColor(PrimaryColor);
+
+                left.Item().Text(BusinessTaxId).FontSize(8.5f).FontColor(MutedColor);
+                left.Item().Text(BusinessAddress).FontSize(8.5f).FontColor(MutedColor);
+                left.Item().Text(BusinessCity).FontSize(8.5f).FontColor(MutedColor);
+                left.Item().Text(BusinessPhone).FontSize(8.5f).FontColor(MutedColor);
+                left.Item().Text(BusinessEmail).FontSize(8.5f).FontColor(MutedColor);
+            });
+        }
+
+        private static void ComposeDocumentMeta(ColumnDescriptor right, string title, ExportInvoice invoice)
+        {
+            right.Item()
+                .AlignRight()
+                .Text(title)
+                .FontSize(16)
+                .Bold()
+                .FontColor(AccentColor);
+
+            right.Item()
+                .AlignRight()
+                .Text(invoice.InvoiceNumber)
+                .FontSize(13)
+                .Bold()
+                .FontColor(PrimaryColor);
+
+            right.Item()
+                .AlignRight()
+                .Text($"Emisión: {invoice.CreatedAt:dd/MM/yyyy HH:mm}")
+                .FontSize(10)
+                .FontColor(MutedColor);
+        }
+
+        private static void ComposeSimplifiedClientBlock(IContainer container, ExportInvoice invoice)
         {
             container
                 .Background(SoftBackground)
@@ -173,9 +256,14 @@ namespace SastreriaPresupuestos.Services
                 table.ColumnsDefinition(columns =>
                 {
                     columns.RelativeColumn(2.1f);
-                    columns.RelativeColumn(3.2f);
-                    columns.ConstantColumn(55);
-                    columns.ConstantColumn(95);
+                    columns.RelativeColumn(3.0f);
+                    columns.ConstantColumn(48);
+                    columns.ConstantColumn(78);
+
+                    if (invoice.IsCompanyInvoice)
+                        columns.ConstantColumn(48);
+
+                    columns.ConstantColumn(86);
                 });
 
                 table.Header(header =>
@@ -184,6 +272,11 @@ namespace SastreriaPresupuestos.Services
                     header.Cell().Element(HeaderCell).Text("Tipo / Detalle");
                     header.Cell().Element(HeaderCell).AlignRight().Text("Cant.");
                     header.Cell().Element(HeaderCell).AlignRight().Text("Precio");
+
+                    if (invoice.IsCompanyInvoice)
+                        header.Cell().Element(HeaderCell).AlignRight().Text("IVA");
+
+                    header.Cell().Element(HeaderCell).AlignRight().Text(invoice.IsCompanyInvoice ? "Total Neto" : "Total");
                 });
 
                 foreach (var item in invoice.Items)
@@ -191,6 +284,11 @@ namespace SastreriaPresupuestos.Services
                     table.Cell().Element(BodyCell).Text(item.ProductName);
                     table.Cell().Element(BodyCell).Text(item.Description);
                     table.Cell().Element(BodyCell).AlignRight().Text(item.Quantity.ToString());
+                    table.Cell().Element(BodyCell).AlignRight().Text($"{item.UnitPrice:N2} €");
+
+                    if (invoice.IsCompanyInvoice)
+                        table.Cell().Element(BodyCell).AlignRight().Text("21%");
+
                     table.Cell().Element(BodyCell).AlignRight().Text($"{item.Total:N2} €");
                 }
             });
@@ -252,23 +350,18 @@ namespace SastreriaPresupuestos.Services
 
                         totalBox.Item().Row(row =>
                         {
-                            row.RelativeItem().Text("TOTAL A PAGAR").Bold();
+                            row.RelativeItem()
+                                .Text(invoice.IsCompanyInvoice ? "TOTAL FACTURA" : "TOTAL A PAGAR")
+                                .Bold();
                             row.ConstantItem(120)
                                 .AlignRight()
                                 .Text($"{invoice.Total:N2} €")
-                                .FontSize(15)
+                                .FontSize(invoice.IsCompanyInvoice ? 17 : 15)
                                 .Bold()
                                 .FontColor(AccentColor);
                         });
                     });
             });
-        }
-
-        private static string GetDocumentTitle(ExportInvoice invoice)
-        {
-            return invoice.Series == InvoiceSeries.Store || invoice.Series == InvoiceSeries.CorrectiveSimplified
-                ? "Factura simplificada"
-                : "Factura";
         }
     }
 }

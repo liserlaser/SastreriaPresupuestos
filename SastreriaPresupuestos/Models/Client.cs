@@ -15,6 +15,8 @@ namespace SastreriaPresupuestos.Models
 
         public string Dni { get; set; } = "";
 
+        public string Address { get; set; } = "";
+
         public List<Quote> Quotes { get; set; } = new();
 
         public DateTime? NextEventDate
