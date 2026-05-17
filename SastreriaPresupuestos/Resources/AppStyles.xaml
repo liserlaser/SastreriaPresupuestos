@@ -137,6 +137,12 @@
         <Setter Property="BorderBrush" Value="#C8D1C2"/>
     </Style>
 
+    <Style TargetType="ComboBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="8,4"/>
+    </Style>
+
 
     <Style x:Key="DangerSmallButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
         <Setter Property="Background" Value="#F3E5E2"/>
