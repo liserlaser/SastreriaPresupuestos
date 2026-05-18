@@ -79,6 +79,7 @@
                                            FontWeight="SemiBold"/>
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding Total, StringFormat={}{0:N2} €}"
+                                           HorizontalAlignment="Right"
                                            FontWeight="Bold"/>
                                 <TextBlock Grid.Row="1"
                                            Text="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy}}"
