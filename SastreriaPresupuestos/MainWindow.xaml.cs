@@ -3142,6 +3142,19 @@ namespace SastreriaPresupuestos
             {
                 Directory.CreateDirectory(folder);
                 filePath = Path.Combine(folder, fileName);
+
+                if (!CanOverwriteFile(filePath))
+                {
+                    MessageBox.Show(
+                        $"El archivo \"{Path.GetFileName(filePath)}\" está abierto.\n\n" +
+                        "Cierra el lector de PDF y vuelve a exportarlo.",
+                        "PDF abierto",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    return false;
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -3152,6 +3165,26 @@ namespace SastreriaPresupuestos
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
 
+                return false;
+            }
+        }
+
+        private static bool CanOverwriteFile(string filePath)
+        {
+            if (!File.Exists(filePath))
+                return true;
+
+            try
+            {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                return true;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
                 return false;
             }
         }

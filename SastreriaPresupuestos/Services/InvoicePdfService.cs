@@ -21,7 +21,7 @@ namespace SastreriaPresupuestos.Services
         private const string BusinessTaxId = "J16389348";
         private const string BusinessAddress = "Maestro Sosa 26";
         private const string BusinessCity = "46007 Valencia";
-        private const string BusinessPhone = "611662710";
+        private const string BusinessPhone = "611 66 27 10";
         private const string BusinessEmail = "sastreriamartinezmor@gmail.com";
 
         private static string LogoPath =>
