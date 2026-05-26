@@ -409,14 +409,20 @@ namespace SastreriaPresupuestos
                 return;
             }
 
-            if (!ValidateBeforeSave())
-                return;
-
             if (PendingInvoiceWorkspaceClientId != null && !string.IsNullOrWhiteSpace(PendingInvoiceWorkspaceSeries))
             {
+                if (!ValidatePendingInvoiceBeforeCreate())
+                    return;
+
+                SetSaveWorkflowState(WorkspaceSaveState.Saving);
+                Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+
                 SavePendingInvoiceFromProductsWorkspace();
                 return;
             }
+
+            if (!ValidateBeforeSave())
+                return;
 
             SetSaveWorkflowState(WorkspaceSaveState.Saving);
             Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
@@ -1488,6 +1494,34 @@ namespace SastreriaPresupuestos
 
             if (Products.Count == 0)
                 return ShowValidationError("Debes añadir al menos un producto al trabajo.", "Trabajo vacío");
+
+            foreach (var product in Products)
+            {
+                if (!ValidateProductLine(product))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidatePendingInvoiceBeforeCreate()
+        {
+            if (PendingInvoiceWorkspaceClientId == null || string.IsNullOrWhiteSpace(PendingInvoiceWorkspaceSeries))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(ClientNameTextBox.Text))
+                return ShowValidationError("Debes indicar el nombre del cliente.", "Faltan datos", ClientNameTextBox);
+
+            if (IsCompanyInvoiceSeries(PendingInvoiceWorkspaceSeries) &&
+                (string.IsNullOrWhiteSpace(DniTextBox.Text) || string.IsNullOrWhiteSpace(PendingClientAddress)))
+            {
+                return ShowValidationError(
+                    "Para crear una factura de empresa son obligatorios NIF/CIF y dirección.",
+                    "Faltan datos");
+            }
+
+            if (Products.Count == 0)
+                return ShowValidationError("Añade al menos un producto a la factura.", "Factura vacía");
 
             foreach (var product in Products)
             {
@@ -2655,7 +2689,7 @@ namespace SastreriaPresupuestos
             OpenProductsInlinePanel();
 
             MessageBox.Show(
-                "Añade los productos en el workspace y pulsa Guardar productos para crear la factura.",
+                "Añade los productos en el workspace y pulsa Crear factura. Se guardarán automáticamente el cliente, los productos y la factura.",
                 "Crear factura",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -2666,15 +2700,33 @@ namespace SastreriaPresupuestos
             if (PendingInvoiceWorkspaceClientId == null || string.IsNullOrWhiteSpace(PendingInvoiceWorkspaceSeries))
                 return;
 
+            var clientId = PendingInvoiceWorkspaceClientId.Value;
+            var series = PendingInvoiceWorkspaceSeries;
+
+            using (var db = new AppDbContext())
+            {
+                var client = db.Clients.FirstOrDefault(c => c.Id == clientId);
+                if (client == null)
+                    return;
+
+                client.Name = ClientNameTextBox.Text.Trim();
+                client.Phone = PhoneTextBox.Text.Trim();
+                client.Dni = DniTextBox.Text.Trim();
+                client.Address = PendingClientAddress?.Trim() ?? "";
+
+                db.SaveChanges();
+            }
+
             var invoiceItems = Products
                 .Select(CreateInvoiceItemFromProductLine)
                 .ToList();
 
-            var clientId = PendingInvoiceWorkspaceClientId.Value;
-            var series = PendingInvoiceWorkspaceSeries;
-
             ClearPendingInvoiceWorkspace();
             CreateStandaloneInvoice(clientId, invoiceItems, series);
+            LoadClients();
+            MarkAsSaved();
+            UpdateSaveButtonText();
+            UpdateWorkflowState();
         }
 
         private void ClearPendingInvoiceWorkspace()
