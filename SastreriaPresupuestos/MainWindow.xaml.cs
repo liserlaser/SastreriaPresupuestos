@@ -4486,6 +4486,8 @@ namespace SastreriaPresupuestos
             }
 
             var deliveries = deliveriesQuery
+                .AsEnumerable()
+                .Where(IsVisibleOnMainDashboard)
                 .OrderBy(q => q.EventDate.HasValue ? 0 : 1)
                 .ThenBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
@@ -4575,8 +4577,9 @@ namespace SastreriaPresupuestos
                 .Include(q => q.Client)
                 .Where(q => q.EventDate.HasValue
                     && q.EventDate.Value.Date >= today
-                    && q.EventDate.Value.Date <= limit
-                    && q.Status != "Entregado")
+                    && q.EventDate.Value.Date <= limit)
+                .AsEnumerable()
+                .Where(IsVisibleOnMainDashboard)
                 .OrderBy(q => q.EventDate ?? DateTime.MaxValue)
                 .ThenBy(q => q.Client != null ? q.Client.Name : "")
                 .Take(8)
@@ -4613,6 +4616,8 @@ namespace SastreriaPresupuestos
 
             var quotes = db.Quotes
                 .AsNoTracking()
+                .AsEnumerable()
+                .Where(IsVisibleOnMainDashboard)
                 .ToList();
 
             var todayCount = quotes.Count(q => q.EventDate.HasValue && q.EventDate.Value.Date == today);
@@ -4620,8 +4625,7 @@ namespace SastreriaPresupuestos
                 q.EventDate.HasValue &&
                 q.EventDate.Value.Date >= today &&
                 q.EventDate.Value.Date <= next7Limit);
-            var pendingCount = quotes.Count(q =>
-                !string.Equals(q.Status, "Entregado", StringComparison.OrdinalIgnoreCase));
+            var pendingCount = quotes.Count;
             var monthCount = quotes.Count(q =>
                 q.EventDate.HasValue &&
                 q.EventDate.Value.Date >= monthStart &&
@@ -4631,6 +4635,14 @@ namespace SastreriaPresupuestos
             DashboardNext7CountTextBlock.Text = next7Count.ToString("N0");
             DashboardPendingCountTextBlock.Text = pendingCount.ToString("N0");
             DashboardMonthCountTextBlock.Text = monthCount.ToString("N0");
+        }
+
+        private static bool IsVisibleOnMainDashboard(Models.Quote quote)
+        {
+            var status = GetQuoteStatusOrDefault(quote);
+
+            return string.Equals(status, "Pendiente", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(status, "Aceptado", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsWeekend(DateTime date)
