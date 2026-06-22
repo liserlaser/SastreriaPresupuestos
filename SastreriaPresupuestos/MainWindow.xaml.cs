@@ -5000,7 +5000,7 @@ namespace SastreriaPresupuestos
 
             DeliveryDatePicker.SelectedDateChanged += AnyEditableField_Changed;
             EventDatePicker.SelectedDateChanged += (_, __) => MarkAsChanged();
-            QuoteStatusComboBox.SelectionChanged += AnyEditableField_Changed;
+            QuoteStatusComboBox.SelectionChanged += QuoteStatusComboBox_SelectionChanged;
         }
 
         private void InitializeUiState()
@@ -5060,6 +5060,59 @@ namespace SastreriaPresupuestos
             MarkAsChanged();
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
+        }
+
+        private void QuoteStatusComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoadingData || CurrentQuote == null)
+                return;
+
+            MarkAsChanged();
+            UpdateActiveContext();
+            UpdateSecondaryPlaceholders();
+
+            var status = GetSelectedQuoteStatus();
+
+            try
+            {
+                using var db = new AppDbContext();
+                var quote = db.Quotes.FirstOrDefault(q => q.Id == CurrentQuote.Id);
+                if (quote == null)
+                    return;
+
+                quote.Status = status;
+                db.SaveChanges();
+
+                SynchronizeQuoteStatus(CurrentQuote.Id, status);
+                LoadCalendarDeliveries();
+                LoadUpcomingDeliveries();
+            }
+            catch
+            {
+                SetSaveWorkflowState(WorkspaceSaveState.SaveFailed);
+            }
+        }
+
+        private void SynchronizeQuoteStatus(int quoteId, string status)
+        {
+            CurrentQuote!.Status = status;
+
+            if (QuotesListBox.ItemsSource is IEnumerable<Models.Quote> workspaceQuotes)
+            {
+                foreach (var quote in workspaceQuotes.Where(q => q.Id == quoteId))
+                    quote.Status = status;
+            }
+
+            foreach (var quote in AllClients
+                .SelectMany(client => client.Quotes ?? new List<Models.Quote>())
+                .Where(q => q.Id == quoteId))
+            {
+                quote.Status = status;
+            }
+
+            QuotesListBox.Items.Refresh();
+            ApplyBudgetQuoteFilter();
+            UpdateActiveContext();
         }
 
         private void NavigateToSection(int sectionIndex)
