@@ -115,8 +115,14 @@ namespace SastreriaPresupuestos
         private Border QuoteStatusBadgeBorder => PresupuestoView.QuoteStatusBadgeBorder;
         private TextBlock QuoteStatusBadgeTextBlock => PresupuestoView.QuoteStatusBadgeTextBlock;
         private TextBlock EventDateDisplayTextBlock => PresupuestoView.EventDateDisplayTextBlock;
+        private TextBox NewDepositTextBox => PresupuestoView.NewDepositTextBox;
+        private Button RegisterDepositButton => PresupuestoView.RegisterDepositButton;
         private TextBox DepositTextBox => PresupuestoView.DepositTextBox;
         private TextBlock PendingAmountTextBlock => PresupuestoView.PendingAmountTextBlock;
+        private TextBlock HistoryCreatedAtTextBlock => PresupuestoView.HistoryCreatedAtTextBlock;
+        private TextBlock HistoryUpdatedAtTextBlock => PresupuestoView.HistoryUpdatedAtTextBlock;
+        private TextBlock DepositHistoryEmptyTextBlock => PresupuestoView.DepositHistoryEmptyTextBlock;
+        private ItemsControl DepositHistoryItemsControl => PresupuestoView.DepositHistoryItemsControl;
         private TextBox QuoteNotesTextBox => PresupuestoView.QuoteNotesTextBox;
         private TextBlock QuoteNotesPlaceholderTextBlock => PresupuestoView.QuoteNotesPlaceholderTextBlock;
         private TextBox ClientNotesTextBox => PresupuestoView.ClientNotesTextBox;
@@ -526,6 +532,7 @@ namespace SastreriaPresupuestos
                 quote.ClientNotes = clientNotes;
                 quote.Status = selectedStatus;
                 quote.Deposit = GetDepositValue();
+                quote.UpdatedAt = DateTime.Now;
 
 
                 db.QuoteItems.RemoveRange(quote.Items);
@@ -692,6 +699,7 @@ namespace SastreriaPresupuestos
             UpdateGrandTotal();
 
             CurrentQuote = null;
+            LoadQuoteDepositHistory();
 
             DeliveryDatePicker.SelectedDate = null;
             EventDatePicker.SelectedDate = null;
@@ -896,6 +904,7 @@ namespace SastreriaPresupuestos
             UpdateSaveButtonText();
             UpdateActiveContext();
             UpdateSecondaryPlaceholders();
+            LoadQuoteDepositHistory();
 
             var targetTab = PendingNavigationTargetTab ?? TabPresupuesto;
             PendingNavigationTargetTab = null;
@@ -1250,6 +1259,147 @@ namespace SastreriaPresupuestos
             var pending = Math.Max(0, total - deposit);
 
             PendingAmountTextBlock.Text = $"{pending:N2} €";
+        }
+
+        private void RegisterDepositButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentQuote == null)
+            {
+                MessageBox.Show(
+                    "Guarda primero el trabajo antes de registrar una entrega a cuenta.",
+                    "Entrega a cuenta",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            if (!TryFlushPendingChangesBeforeWorkflowAction("registrar la entrega a cuenta"))
+                return;
+
+            var text = NewDepositTextBox.Text.Trim();
+            if ((!TryParseNonNegativeDecimal(text, CultureInfo.CurrentCulture, out var amount) &&
+                 !TryParseNonNegativeDecimal(text, CultureInfo.InvariantCulture, out amount)) ||
+                amount <= 0)
+            {
+                MessageBox.Show(
+                    "Introduce una cantidad mayor que cero.",
+                    "Entrega a cuenta",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                NewDepositTextBox.Focus();
+                return;
+            }
+
+            var pendingAmount = Math.Max(0, Products.Sum(product => product.Total) - GetDepositValue());
+            if (amount > pendingAmount)
+            {
+                MessageBox.Show(
+                    $"La entrega no puede superar el importe pendiente de {pendingAmount:N2} €.",
+                    "Entrega a cuenta",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                NewDepositTextBox.Focus();
+                return;
+            }
+
+            var recordedAt = DateTime.Now;
+
+            using (var db = new AppDbContext())
+            {
+                var quote = db.Quotes.FirstOrDefault(q => q.Id == CurrentQuote.Id);
+                if (quote == null)
+                    return;
+
+                db.QuoteDeposits.Add(new QuoteDeposit
+                {
+                    QuoteId = quote.Id,
+                    Amount = amount,
+                    CreatedAt = recordedAt
+                });
+
+                quote.Deposit += amount;
+                quote.UpdatedAt = recordedAt;
+                db.SaveChanges();
+
+                CurrentQuote.Deposit = quote.Deposit;
+                CurrentQuote.UpdatedAt = quote.UpdatedAt;
+            }
+
+            IsLoadingData = true;
+            DepositTextBox.Text = $"{CurrentQuote.Deposit:N2}";
+            NewDepositTextBox.Clear();
+            IsLoadingData = false;
+
+            SynchronizeQuoteDeposit(CurrentQuote.Id, CurrentQuote.Deposit, CurrentQuote.UpdatedAt);
+            UpdatePendingAmount();
+            UpdateActiveContext();
+            LoadQuoteDepositHistory();
+            LoadCalendarDeliveries();
+            LoadUpcomingDeliveries();
+            MarkAsSaved();
+
+            NewDepositTextBox.Focus();
+        }
+
+        private void SynchronizeQuoteDeposit(int quoteId, decimal deposit, DateTime updatedAt)
+        {
+            if (QuotesListBox.ItemsSource is IEnumerable<Models.Quote> workspaceQuotes)
+            {
+                foreach (var quote in workspaceQuotes.Where(q => q.Id == quoteId))
+                {
+                    quote.Deposit = deposit;
+                    quote.UpdatedAt = updatedAt;
+                }
+            }
+
+            foreach (var quote in AllClients
+                .SelectMany(client => client.Quotes ?? new List<Models.Quote>())
+                .Where(q => q.Id == quoteId))
+            {
+                quote.Deposit = deposit;
+                quote.UpdatedAt = updatedAt;
+            }
+
+            QuotesListBox.Items.Refresh();
+            ApplyBudgetQuoteFilter();
+        }
+
+        private void LoadQuoteDepositHistory()
+        {
+            if (CurrentQuote == null)
+            {
+                HistoryCreatedAtTextBlock.Text = "—";
+                HistoryUpdatedAtTextBlock.Text = "—";
+                DepositHistoryItemsControl.ItemsSource = null;
+                DepositHistoryEmptyTextBlock.Visibility = Visibility.Visible;
+                return;
+            }
+
+            using var db = new AppDbContext();
+            var deposits = db.QuoteDeposits
+                .AsNoTracking()
+                .Where(deposit => deposit.QuoteId == CurrentQuote.Id)
+                .OrderByDescending(deposit => deposit.CreatedAt)
+                .ThenByDescending(deposit => deposit.Id)
+                .ToList();
+
+            HistoryCreatedAtTextBlock.Text = CurrentQuote.CreatedAt.ToString("dd/MM/yyyy HH:mm");
+            HistoryUpdatedAtTextBlock.Text =
+                (CurrentQuote.UpdatedAt == default ? CurrentQuote.CreatedAt : CurrentQuote.UpdatedAt)
+                .ToString("dd/MM/yyyy HH:mm");
+            DepositHistoryItemsControl.ItemsSource = deposits;
+            DepositHistoryEmptyTextBlock.Visibility = deposits.Count == 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void NewDepositTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter || !RegisterDepositButton.IsEnabled)
+                return;
+
+            e.Handled = true;
+            RegisterDepositButton_Click(RegisterDepositButton, new RoutedEventArgs());
         }
 
         private DateTime GetEffectiveDeliveryDate()
@@ -1818,6 +1968,7 @@ namespace SastreriaPresupuestos
                 quote.DeliveryDate = GetEffectiveDeliveryDate();
                 quote.EventDate = EventDatePicker.SelectedDate;
                 quote.Total = Products.Sum(p => p.Total);
+                quote.UpdatedAt = DateTime.Now;
 
                 db.QuoteItems.RemoveRange(quote.Items);
                 AddQuoteItems(db, quote.Id);
@@ -1832,8 +1983,10 @@ namespace SastreriaPresupuestos
                 currentQuote.DeliveryDate = quote.DeliveryDate;
                 currentQuote.EventDate = quote.EventDate;
                 currentQuote.Total = quote.Total;
+                currentQuote.UpdatedAt = quote.UpdatedAt;
 
                 LoadCalendarDeliveries();
+                LoadQuoteDepositHistory();
                 UpdateActiveContext();
                 UpdateWorkflowState();
                 MarkAsSaved();
@@ -4990,13 +5143,10 @@ namespace SastreriaPresupuestos
             DniTextBox.TextChanged += (_, __) => MarkAsChanged();
             QuoteNotesTextBox.TextChanged += AnyEditableField_Changed;
             ClientNotesTextBox.TextChanged += AnyEditableField_Changed;
-            DepositTextBox.TextChanged += DepositTextBox_TextChanged;
-            DepositTextBox.PreviewTextInput += DepositTextBox_PreviewTextInput;
-            DepositTextBox.PreviewMouseLeftButtonDown += DepositTextBox_PreviewMouseLeftButtonDown;
-            DepositTextBox.GotKeyboardFocus += DepositTextBox_GotKeyboardFocus;
-            DepositTextBox.LostKeyboardFocus += DepositTextBox_LostKeyboardFocus;
-
-            DataObject.AddPastingHandler(DepositTextBox, DepositTextBox_Pasting);
+            RegisterDepositButton.Click += RegisterDepositButton_Click;
+            NewDepositTextBox.PreviewTextInput += DepositTextBox_PreviewTextInput;
+            NewDepositTextBox.KeyDown += NewDepositTextBox_KeyDown;
+            DataObject.AddPastingHandler(NewDepositTextBox, DepositTextBox_Pasting);
 
             DeliveryDatePicker.SelectedDateChanged += AnyEditableField_Changed;
             EventDatePicker.SelectedDateChanged += (_, __) => MarkAsChanged();
@@ -5081,11 +5231,14 @@ namespace SastreriaPresupuestos
                     return;
 
                 quote.Status = status;
+                quote.UpdatedAt = DateTime.Now;
                 db.SaveChanges();
 
+                CurrentQuote.UpdatedAt = quote.UpdatedAt;
                 SynchronizeQuoteStatus(CurrentQuote.Id, status);
                 LoadCalendarDeliveries();
                 LoadUpcomingDeliveries();
+                LoadQuoteDepositHistory();
             }
             catch
             {
@@ -5701,6 +5854,7 @@ namespace SastreriaPresupuestos
             UpdateWorkflowState();
             UpdateSecondaryPlaceholders();
             UpdateWorkspaceButtonState();
+            LoadQuoteDepositHistory();
 
             return true;
         }
@@ -5796,6 +5950,9 @@ namespace SastreriaPresupuestos
             if (sender != PresupuestoWorkspaceTabs)
                 return;
 
+            if (PresupuestoWorkspaceTabs.SelectedIndex == InnerTabHistorial)
+                LoadQuoteDepositHistory();
+
             UpdateWorkspaceButtonState();
         }
 
@@ -5857,6 +6014,7 @@ namespace SastreriaPresupuestos
 
         private void BudgetQuickHistoryButton_Click(object sender, RoutedEventArgs e)
         {
+            LoadQuoteDepositHistory();
             UpdateContextBreadcrumb("Trabajos", TabPresupuesto);
             NavigateToSection(TabPresupuesto);
             PresupuestoWorkspaceTabs.SelectedIndex = InnerTabHistorial;
@@ -6099,6 +6257,8 @@ namespace SastreriaPresupuestos
             QuoteStatusComboBox.IsEnabled = hasSavedClient;
             DeliveryDatePicker.IsEnabled = hasSavedClient;
             DepositTextBox.IsEnabled = hasSavedClient;
+            NewDepositTextBox.IsEnabled = CurrentQuote != null;
+            RegisterDepositButton.IsEnabled = CurrentQuote != null;
             QuoteNotesTextBox.IsEnabled = hasSavedClient;
             ClientNotesTextBox.IsEnabled = hasSavedClient;
 

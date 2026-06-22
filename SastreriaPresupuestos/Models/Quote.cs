@@ -13,6 +13,8 @@ namespace SastreriaPresupuestos.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
         public DateTime DeliveryDate { get; set; }
 
         public DateTime? EventDate { get; set; }
@@ -32,6 +34,8 @@ namespace SastreriaPresupuestos.Models
         public Client? Client { get; set; }
 
         public List<QuoteItem> Items { get; set; } = new();
+
+        public List<QuoteDeposit> Deposits { get; set; } = new();
 
         public decimal Deposit { get; set; }
 

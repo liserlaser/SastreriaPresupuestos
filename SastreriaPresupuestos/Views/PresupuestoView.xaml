@@ -560,13 +560,43 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <StackPanel Grid.Row="4">
-                                        <TextBlock Text="A cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
-                                        <TextBox x:Name="DepositTextBox"
-                                                 Style="{StaticResource ContextTextBoxStyle}"
-                                                 Text="0"
-                                                 HorizontalContentAlignment="Right"/>
-                                    </StackPanel>
+                                    <Grid Grid.Row="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Nueva entrega a cuenta" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox x:Name="NewDepositTextBox"
+                                                         Grid.Column="0"
+                                                         Style="{StaticResource ContextTextBoxStyle}"/>
+                                                <Button x:Name="RegisterDepositButton"
+                                                        Grid.Column="1"
+                                                        Content="Registrar"
+                                                        Height="38"
+                                                        MinWidth="94"
+                                                        Margin="8,0,0,0"
+                                                        Style="{StaticResource SecondaryButtonStyle}"/>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="A cuenta (total)" Style="{StaticResource ContextLabelTextStyle}"/>
+                                            <TextBox x:Name="DepositTextBox"
+                                                     Style="{StaticResource ContextTextBoxStyle}"
+                                                     Text="0"
+                                                     IsReadOnly="True"
+                                                     IsTabStop="False"
+                                                     Background="#FBFCFA"
+                                                     HorizontalContentAlignment="Right"/>
+                                        </StackPanel>
+                                    </Grid>
 
                                     <Grid Grid.Row="6">
                                         <Grid.ColumnDefinitions>
@@ -828,45 +858,84 @@
                             </TabItem>
 
                             <TabItem Header="Historial">
-                                <Border x:Name="ActivityTimelineBorder"
-                                        Margin="18"
-                                        Background="#FAF8F5"
-                                        CornerRadius="18"
-                                        Padding="18"
-                                        BorderBrush="{StaticResource BorderSoftBrush}"
-                                        BorderThickness="1">
-                                    <StackPanel>
-                                        <TextBlock Text="HISTORIAL"
-                                                   FontSize="12"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource AccentBrush}"
-                                                   Margin="0,0,0,12"/>
-                                        <Border Background="#F8F3EF" CornerRadius="12" Padding="11" Margin="0,0,0,8">
-                                            <StackPanel>
-                                                <TextBlock Text="Implementación futura" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                                <TextBlock Text="Aquí se mostrará la actividad real del trabajo: creación, cambios, documentos y facturación." FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Background="#F8F3EF" CornerRadius="12" Padding="11" Margin="0,0,0,8">
-                                            <StackPanel>
-                                                <TextBlock Text="Trabajo creado" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                                <TextBlock Text="Datos base del cliente y del trabajo disponibles" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Background="#FAF8F5" CornerRadius="12" Padding="11" Margin="0,0,0,8">
-                                            <StackPanel>
-                                                <TextBlock Text="Productos preparados" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                                <TextBlock Text="Accede a Productos para completar el presupuesto" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Background="#F8F3EF" CornerRadius="12" Padding="11">
-                                            <StackPanel>
-                                                <TextBlock Text="PDF pendiente" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
-                                                <TextBlock Text="Genera el documento cuando productos y notas estén completos" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <Border x:Name="ActivityTimelineBorder"
+                                            Margin="18"
+                                            Background="#FAF8F5"
+                                            CornerRadius="18"
+                                            Padding="18"
+                                            BorderBrush="{StaticResource BorderSoftBrush}"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="HISTORIAL DEL TRABAJO"
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       Margin="0,0,0,12"/>
+
+                                            <Grid Margin="0,0,0,18">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                    <TextBlock Text="Trabajo creado" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                    <TextBlock x:Name="HistoryCreatedAtTextBlock" Text="—" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="Última actualización" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}"/>
+                                                    <TextBlock x:Name="HistoryUpdatedAtTextBlock" Text="—" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <TextBlock Text="ENTREGAS A CUENTA"
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"
+                                                       Margin="0,0,0,10"/>
+
+                                            <TextBlock x:Name="DepositHistoryEmptyTextBlock"
+                                                       Text="Todavía no hay entregas a cuenta registradas."
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource MutedTextBrush}"
+                                                       Margin="0,2,0,0"/>
+
+                                            <ItemsControl x:Name="DepositHistoryItemsControl">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="#F8F3EF"
+                                                                CornerRadius="12"
+                                                                Padding="11"
+                                                                Margin="0,0,0,8">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Column="0">
+                                                                    <TextBlock Text="Entrega a cuenta"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{StaticResource PrimaryBrush}"/>
+                                                                    <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}"
+                                                                               FontSize="12"
+                                                                               Foreground="{StaticResource MutedTextBrush}"
+                                                                               Margin="0,3,0,0"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding Amount, StringFormat={}{0:N2} €}"
+                                                                           FontSize="17"
+                                                                           FontWeight="Bold"
+                                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="18,0,0,0"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </ScrollViewer>
                             </TabItem>
                         </TabControl>
                     </Border>
