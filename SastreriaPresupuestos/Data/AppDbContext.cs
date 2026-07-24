@@ -28,6 +28,15 @@ namespace SastreriaPresupuestos.Data
             optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Invoice>()
+                .HasOne(invoice => invoice.Client)
+                .WithMany()
+                .HasForeignKey(invoice => invoice.ClientId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
         public static string GetDatabasePath()
         {
             var folder = Path.Combine(

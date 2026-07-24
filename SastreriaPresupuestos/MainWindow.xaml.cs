@@ -648,6 +648,7 @@ namespace SastreriaPresupuestos
             using var db = new AppDbContext();
 
             AllClients = db.Clients
+                .Where(c => !c.IsArchived)
                 .Include(c => c.Quotes)
                 .ToList()
                 .OrderBy(c => c.NextEventDate ?? DateTime.MaxValue)
@@ -1076,6 +1077,17 @@ namespace SastreriaPresupuestos
 
             if (quote == null)
                 return;
+
+            var hasInvoices = db.Invoices.Any(invoice => invoice.SourceQuoteId == quote.Id);
+            if (hasInvoices)
+            {
+                MessageBox.Show(
+                    "Este trabajo tiene facturas emitidas y no se puede eliminar para conservar su trazabilidad. Puedes cambiar su estado a Rechazado o Entregado si ya no está activo.",
+                    "Trabajo facturado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
 
             db.QuoteItems.RemoveRange(quote.Items);
             db.Quotes.Remove(quote);
@@ -3794,6 +3806,34 @@ namespace SastreriaPresupuestos
             if (client == null)
                 return;
 
+            var hasInvoices = db.Invoices.Any(invoice => invoice.ClientId == client.Id);
+            if (hasInvoices)
+            {
+                var archiveResult = MessageBox.Show(
+                    $"El cliente \"{client.Name}\" tiene facturas emitidas y no puede eliminarse.\n\n¿Quieres archivarlo? Dejará de aparecer en las listas habituales, pero sus facturas se conservarán.",
+                    "Archivar cliente",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (archiveResult != MessageBoxResult.Yes)
+                    return;
+
+                client.IsArchived = true;
+                client.ArchivedAt = DateTime.Now;
+                db.SaveChanges();
+
+                LoadClients();
+                LoadCalendarDeliveries();
+                ClearScreenForNewClient();
+
+                MessageBox.Show(
+                    "Cliente archivado. Sus facturas y datos históricos se han conservado.",
+                    "Cliente archivado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             foreach (var quote in client.Quotes)
             {
                 db.QuoteItems.RemoveRange(quote.Items);
@@ -3871,6 +3911,7 @@ namespace SastreriaPresupuestos
 
             var clientsQuery = db.Clients
                 .AsNoTracking()
+                .Where(client => !client.IsArchived)
                 .AsQueryable();
 
             if (companyOnly)
@@ -5548,6 +5589,7 @@ namespace SastreriaPresupuestos
             var clients = db.Clients
                 .Include(c => c.Quotes)
                 .AsNoTracking()
+                .Where(c => !c.IsArchived)
                 .ToList()
                 .Where(c =>
                     ContainsSearch(c.Name, term) ||

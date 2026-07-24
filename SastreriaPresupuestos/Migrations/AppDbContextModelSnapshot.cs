@@ -27,6 +27,9 @@ namespace SastreriaPresupuestos.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Dni")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -38,6 +41,9 @@ namespace SastreriaPresupuestos.Migrations
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -273,7 +279,7 @@ namespace SastreriaPresupuestos.Migrations
                     b.HasOne("SastreriaPresupuestos.Models.Client", "Client")
                         .WithMany()
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SastreriaPresupuestos.Models.Invoice", "CorrectsInvoice")

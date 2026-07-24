@@ -17,6 +17,10 @@ namespace SastreriaPresupuestos.Models
 
         public string Address { get; set; } = "";
 
+        public bool IsArchived { get; set; }
+
+        public DateTime? ArchivedAt { get; set; }
+
         public List<Quote> Quotes { get; set; } = new();
 
         public DateTime? NextEventDate
