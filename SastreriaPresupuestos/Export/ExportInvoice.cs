@@ -20,6 +20,15 @@ namespace SastreriaPresupuestos.Export
 
         public decimal InvoiceTotal { get; set; }
 
+        public string BankAccountHolder { get; set; } = "";
+        public string BankIban { get; set; } = "";
+        public string BankName { get; set; } = "";
+        public string BankBic { get; set; } = "";
+
+        public bool HasBankDetails => !string.IsNullOrWhiteSpace(BankAccountHolder) ||
+            !string.IsNullOrWhiteSpace(BankIban) || !string.IsNullOrWhiteSpace(BankName) ||
+            !string.IsNullOrWhiteSpace(BankBic);
+
         public List<ExportInvoiceItem> Items { get; set; } = new();
 
         public bool IsCompanyInvoice =>

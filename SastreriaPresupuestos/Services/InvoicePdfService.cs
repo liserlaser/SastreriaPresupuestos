@@ -63,6 +63,9 @@ namespace SastreriaPresupuestos.Services
 
                             column.Item()
                                 .Element(container => ComposeTotals(container, invoice));
+
+                            if (invoice.IsCompanyInvoice && invoice.HasBankDetails)
+                                column.Item().Element(container => ComposeBankDetails(container, invoice));
                         });
 
                     page.Footer()
@@ -396,6 +399,23 @@ namespace SastreriaPresupuestos.Services
                                 .FontColor(AccentColor);
                         });
                     });
+            });
+        }
+
+        private static void ComposeBankDetails(IContainer container, ExportInvoice invoice)
+        {
+            container.Background(SoftBackground).Border(1).BorderColor(BorderColor).Padding(12).Column(column =>
+            {
+                column.Spacing(4);
+                column.Item().Text("PAGO POR TRANSFERENCIA").FontSize(10).Bold().FontColor(AccentColor);
+                if (!string.IsNullOrWhiteSpace(invoice.BankAccountHolder))
+                    column.Item().Text($"Titular: {invoice.BankAccountHolder}");
+                if (!string.IsNullOrWhiteSpace(invoice.BankIban))
+                    column.Item().Text($"IBAN: {invoice.BankIban}").Bold();
+                if (!string.IsNullOrWhiteSpace(invoice.BankName))
+                    column.Item().Text($"Banco: {invoice.BankName}");
+                if (!string.IsNullOrWhiteSpace(invoice.BankBic))
+                    column.Item().Text($"BIC / SWIFT: {invoice.BankBic}");
             });
         }
     }

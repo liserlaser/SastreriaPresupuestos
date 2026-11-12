@@ -9,6 +9,10 @@ namespace SastreriaPresupuestos.Services
         public string? ClientSheetExportFolder { get; set; }
         public string? QuoteExportFolder { get; set; }
         public string? InvoiceExportFolder { get; set; }
+        public string? BankAccountHolder { get; set; }
+        public string? BankIban { get; set; }
+        public string? BankName { get; set; }
+        public string? BankBic { get; set; }
     }
 
     public static class AppSettingsService

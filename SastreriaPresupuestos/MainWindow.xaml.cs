@@ -172,6 +172,10 @@ namespace SastreriaPresupuestos
         private Button QuoteFolderButton => AjustesView.QuoteFolderButton;
         private TextBlock InvoiceFolderTextBlock => AjustesView.InvoiceFolderTextBlock;
         private Button InvoiceFolderButton => AjustesView.InvoiceFolderButton;
+        private TextBox BankAccountHolderTextBox => AjustesView.BankAccountHolderTextBox;
+        private TextBox BankIbanTextBox => AjustesView.BankIbanTextBox;
+        private TextBox BankNameTextBox => AjustesView.BankNameTextBox;
+        private TextBox BankBicTextBox => AjustesView.BankBicTextBox;
 
 
         private ObservableCollection<ProductLine> Products =
@@ -303,6 +307,7 @@ namespace SastreriaPresupuestos
             InitializeComponent();
 
             MountWorkspaceViews();
+            AjustesView.SetBankDetails(CurrentSettings.BankAccountHolder, CurrentSettings.BankIban, CurrentSettings.BankName, CurrentSettings.BankBic);
             RegisterMessengerHandlers();
 
             QuestPDF.Settings.License = LicenseType.Community;
@@ -2414,6 +2419,15 @@ namespace SastreriaPresupuestos
             InvoiceFolderTextBlock.Text = FormatExportFolder(CurrentSettings.InvoiceExportFolder);
         }
 
+        private void BankDetailsTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CurrentSettings.BankAccountHolder = BankAccountHolderTextBox.Text.Trim();
+            CurrentSettings.BankIban = BankIbanTextBox.Text.Trim();
+            CurrentSettings.BankName = BankNameTextBox.Text.Trim();
+            CurrentSettings.BankBic = BankBicTextBox.Text.Trim();
+            AppSettingsService.Save(CurrentSettings);
+        }
+
         private string FormatExportFolder(string? folder)
         {
             return string.IsNullOrWhiteSpace(folder)
@@ -3250,6 +3264,10 @@ namespace SastreriaPresupuestos
                 ClientTaxId = invoice.Client?.Dni ?? "",
                 ClientAddress = invoice.Client?.Address ?? "",
                 InvoiceTotal = invoice.Total,
+                BankAccountHolder = CurrentSettings.BankAccountHolder ?? "",
+                BankIban = CurrentSettings.BankIban ?? "",
+                BankName = CurrentSettings.BankName ?? "",
+                BankBic = CurrentSettings.BankBic ?? "",
                 Items = invoice.Items.Select(i => new ExportInvoiceItem
                 {
                     ProductName = i.ProductName,
@@ -5135,6 +5153,10 @@ namespace SastreriaPresupuestos
             ClientSheetFolderButton.Click += ClientSheetFolderButton_Click;
             QuoteFolderButton.Click += QuoteFolderButton_Click;
             InvoiceFolderButton.Click += InvoiceFolderButton_Click;
+            BankAccountHolderTextBox.TextChanged += BankDetailsTextBox_TextChanged;
+            BankIbanTextBox.TextChanged += BankDetailsTextBox_TextChanged;
+            BankNameTextBox.TextChanged += BankDetailsTextBox_TextChanged;
+            BankBicTextBox.TextChanged += BankDetailsTextBox_TextChanged;
             InvoiceCreateButton.Click += InvoiceCreateButton_Click;
             InvoiceExportButton.Click += InvoiceExportButton_Click;
             InvoicePrintButton.Click += InvoicePrintButton_Click;
