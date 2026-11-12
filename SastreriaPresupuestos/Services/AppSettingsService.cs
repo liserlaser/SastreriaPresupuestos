@@ -13,6 +13,10 @@ namespace SastreriaPresupuestos.Services
         public string? BankIban { get; set; }
         public string? BankName { get; set; }
         public string? BankBic { get; set; }
+        public bool ShowRejectedOnDashboard { get; set; }
+        public bool ShowPendingOnDashboard { get; set; } = true;
+        public bool ShowDeliveredOnDashboard { get; set; }
+        public bool ShowOlderJobsOnDashboard { get; set; }
     }
 
     public static class AppSettingsService

@@ -60,6 +60,10 @@ namespace SastreriaPresupuestos
         private TextBlock DashboardNext7CountTextBlock => DashboardView.DashboardNext7CountTextBlock;
         private TextBlock DashboardPendingCountTextBlock => DashboardView.DashboardPendingCountTextBlock;
         private TextBlock DashboardMonthCountTextBlock => DashboardView.DashboardMonthCountTextBlock;
+        private CheckBox ShowPendingDashboardCheckBox => DashboardView.ShowPendingDashboardCheckBox;
+        private CheckBox ShowRejectedDashboardCheckBox => DashboardView.ShowRejectedDashboardCheckBox;
+        private CheckBox ShowDeliveredDashboardCheckBox => DashboardView.ShowDeliveredDashboardCheckBox;
+        private CheckBox ShowOlderJobsDashboardCheckBox => DashboardView.ShowOlderJobsDashboardCheckBox;
         private ListBox DeliveriesListBox => DashboardView.DeliveriesListBox;
         private TextBlock EmptyWeekTextBlock => DashboardView.EmptyWeekTextBlock;
         private ItemsControl WeeklyColumnsItemsControl => DashboardView.WeeklyColumnsItemsControl;
@@ -308,6 +312,10 @@ namespace SastreriaPresupuestos
 
             MountWorkspaceViews();
             AjustesView.SetBankDetails(CurrentSettings.BankAccountHolder, CurrentSettings.BankIban, CurrentSettings.BankName, CurrentSettings.BankBic);
+            ShowPendingDashboardCheckBox.IsChecked = CurrentSettings.ShowPendingOnDashboard;
+            ShowRejectedDashboardCheckBox.IsChecked = CurrentSettings.ShowRejectedOnDashboard;
+            ShowDeliveredDashboardCheckBox.IsChecked = CurrentSettings.ShowDeliveredOnDashboard;
+            ShowOlderJobsDashboardCheckBox.IsChecked = CurrentSettings.ShowOlderJobsOnDashboard;
             RegisterMessengerHandlers();
 
             QuestPDF.Settings.License = LicenseType.Community;
@@ -4684,12 +4692,7 @@ namespace SastreriaPresupuestos
                 .Include(q => q.Client)
                 .AsQueryable();
 
-            if (CalendarViewMode == "Lista")
-            {
-                deliveriesQuery = deliveriesQuery
-                    .Where(q => q.Status != "Entregado");
-            }
-            else
+            if (CalendarViewMode != "Lista")
             {
                 deliveriesQuery = deliveriesQuery
                     .Where(q => q.EventDate.HasValue &&
@@ -4849,12 +4852,36 @@ namespace SastreriaPresupuestos
             DashboardMonthCountTextBlock.Text = monthCount.ToString("N0");
         }
 
-        private static bool IsVisibleOnMainDashboard(Models.Quote quote)
+        private bool IsVisibleOnMainDashboard(Models.Quote quote)
         {
             var status = GetQuoteStatusOrDefault(quote);
+            var statusVisible = string.Equals(status, "Pendiente", StringComparison.OrdinalIgnoreCase)
+                ? CurrentSettings.ShowPendingOnDashboard
+                : string.Equals(status, "Rechazado", StringComparison.OrdinalIgnoreCase)
+                    ? CurrentSettings.ShowRejectedOnDashboard
+                    : string.Equals(status, "Entregado", StringComparison.OrdinalIgnoreCase)
+                        ? CurrentSettings.ShowDeliveredOnDashboard
+                        : string.Equals(status, "Aceptado", StringComparison.OrdinalIgnoreCase);
 
-            return string.Equals(status, "Pendiente", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(status, "Aceptado", StringComparison.OrdinalIgnoreCase);
+            if (!statusVisible)
+                return false;
+
+            if (!CurrentSettings.ShowOlderJobsOnDashboard && quote.EventDate.HasValue &&
+                quote.EventDate.Value.Date < DateTime.Today.AddMonths(-1))
+                return false;
+
+            return true;
+        }
+
+        private void DashboardFilter_Changed(object sender, RoutedEventArgs e)
+        {
+            CurrentSettings.ShowPendingOnDashboard = ShowPendingDashboardCheckBox.IsChecked == true;
+            CurrentSettings.ShowRejectedOnDashboard = ShowRejectedDashboardCheckBox.IsChecked == true;
+            CurrentSettings.ShowDeliveredOnDashboard = ShowDeliveredDashboardCheckBox.IsChecked == true;
+            CurrentSettings.ShowOlderJobsOnDashboard = ShowOlderJobsDashboardCheckBox.IsChecked == true;
+            AppSettingsService.Save(CurrentSettings);
+            LoadCalendarDeliveries();
+            LoadUpcomingDeliveries();
         }
 
         private bool IsWeekend(DateTime date)
@@ -5174,6 +5201,14 @@ namespace SastreriaPresupuestos
             ListViewButton.Click += ListViewButton_Click;
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
+            ShowPendingDashboardCheckBox.Checked += DashboardFilter_Changed;
+            ShowPendingDashboardCheckBox.Unchecked += DashboardFilter_Changed;
+            ShowRejectedDashboardCheckBox.Checked += DashboardFilter_Changed;
+            ShowRejectedDashboardCheckBox.Unchecked += DashboardFilter_Changed;
+            ShowDeliveredDashboardCheckBox.Checked += DashboardFilter_Changed;
+            ShowDeliveredDashboardCheckBox.Unchecked += DashboardFilter_Changed;
+            ShowOlderJobsDashboardCheckBox.Checked += DashboardFilter_Changed;
+            ShowOlderJobsDashboardCheckBox.Unchecked += DashboardFilter_Changed;
             DeliveriesListBox.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
             WeeklyColumnsItemsControl.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
             CalendarGroupsListBox.PreviewMouseLeftButtonUp += CalendarDelivery_MouseLeftButtonUp;
