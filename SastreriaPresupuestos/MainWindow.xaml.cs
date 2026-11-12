@@ -1082,6 +1082,11 @@ namespace SastreriaPresupuestos
             if (result != MessageBoxResult.Yes)
                 return;
 
+            var clientIdToReload = CurrentClientId ?? (ClientsListBox.SelectedItem as Models.Client)?.Id;
+            var quoteIdToKeepSelected = CurrentQuote != null && CurrentQuote.Id != quoteToDelete.Id
+                ? CurrentQuote.Id
+                : (int?)null;
+
             using var db = new AppDbContext();
 
             var quote = db.Quotes
@@ -1131,20 +1136,12 @@ namespace SastreriaPresupuestos
                 UpdateSaveButtonText();
             }
 
-            var selectedClient = ClientsListBox.SelectedItem as Models.Client;
-
             LoadClients();
             LoadCalendarDeliveries();
 
-            if (selectedClient != null)
+            if (clientIdToReload.HasValue)
             {
-                var reloadedClient = ((IEnumerable<Models.Client>)ClientsListBox.ItemsSource)
-                    .FirstOrDefault(c => c.Id == selectedClient.Id);
-
-                if (reloadedClient != null)
-                {
-                    ClientsListBox.SelectedItem = reloadedClient;
-                }
+                LoadClientWorkspaceById(clientIdToReload.Value, quoteIdToKeepSelected);
             }
 
             UpdateSaveButtonText();
