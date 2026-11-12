@@ -144,14 +144,20 @@
                             <Grid>
                                 <TextBox x:Name="PhoneTextBox"
                                          Visibility="Collapsed"/>
-                                <TextBlock x:Name="PhoneDisplayTextBlock"
-                                           Text="—"
-                                           Height="34"
-                                           VerticalAlignment="Center"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Foreground="#2B2520"
-                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBox x:Name="PhoneDisplayTextBlock"
+                                         Text="—"
+                                         Height="34"
+                                         IsReadOnly="True"
+                                         IsReadOnlyCaretVisible="True"
+                                         BorderThickness="0"
+                                         Background="Transparent"
+                                         Padding="0"
+                                         VerticalContentAlignment="Center"
+                                         FontSize="14"
+                                         FontWeight="SemiBold"
+                                         Foreground="#2B2520"
+                                         Cursor="IBeam"
+                                         ToolTip="Selecciona el teléfono para copiarlo"/>
                             </Grid>
                         </StackPanel>
 
@@ -257,7 +263,9 @@
                                         Padding="10,5"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
-                                        Background="#EEF2EA">
+                                        Background="#EEF2EA"
+                                        Cursor="Hand"
+                                        ToolTip="Pulsa para cambiar el estado">
                                     <TextBlock x:Name="QuoteStatusBadgeTextBlock"
                                                Text="PENDIENTE"
                                                FontSize="11"
@@ -358,6 +366,7 @@
 
                                             <!-- 3. Estado -->
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
                                         <!-- Fecha evento + título -->
@@ -427,6 +436,17 @@
                     TextAlignment="Center"
                     VerticalAlignment="Center"/>
                                         </Border>
+
+                                        <Button Grid.Column="3"
+                                                Content="🗑"
+                                                Width="26"
+                                                Height="26"
+                                                Margin="8,0,0,0"
+                                                Padding="0"
+                                                VerticalAlignment="Center"
+                                                ToolTip="Eliminar trabajo"
+                                                Style="{StaticResource SmallLightButtonStyle}"
+                                                Click="DeleteQuoteButton_Click"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

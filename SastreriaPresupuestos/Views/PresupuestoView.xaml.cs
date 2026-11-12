@@ -37,5 +37,11 @@ namespace SastreriaPresupuestos.Views
                 mainWindow.ExportClientSheetButton_Click(sender, e);
             }
         }
+
+        private void DeleteQuoteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Window.GetWindow(this) is MainWindow mainWindow)
+                mainWindow.DeleteQuote_Click(sender, e);
+        }
     }
 }

@@ -106,7 +106,7 @@ namespace SastreriaPresupuestos
         private TextBox ClientNameTextBox => PresupuestoView.ClientNameTextBox;
         private ComboBox ClientPredictiveComboBox => PresupuestoView.ClientPredictiveComboBox;
         private TextBox PhoneTextBox => PresupuestoView.PhoneTextBox;
-        private TextBlock PhoneDisplayTextBlock => PresupuestoView.PhoneDisplayTextBlock;
+        private TextBox PhoneDisplayTextBlock => PresupuestoView.PhoneDisplayTextBlock;
         private TextBox DniTextBox => PresupuestoView.DniTextBox;
         private Button SaveClientButton => PresupuestoView.SaveClientButton;
         private Button ClientSheetButton => PresupuestoView.ClientSheetButton;
@@ -1249,11 +1249,7 @@ namespace SastreriaPresupuestos
             MarkAsChanged();
             UpdateSaveButtonText();
 
-            MessageBox.Show(
-                "Trabajo duplicado. Revisa los datos y pulsa Guardar para crear la nueva versión.",
-                "Duplicar trabajo",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            OpenProductsInlinePanel();
         }
 
         private decimal GetDepositValue()
@@ -5201,6 +5197,7 @@ namespace SastreriaPresupuestos
             ListViewButton.Click += ListViewButton_Click;
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
+            QuoteStatusBadgeBorder.MouseLeftButtonDown += QuoteStatusBadgeBorder_MouseLeftButtonDown;
             ShowPendingDashboardCheckBox.Checked += DashboardFilter_Changed;
             ShowPendingDashboardCheckBox.Unchecked += DashboardFilter_Changed;
             ShowRejectedDashboardCheckBox.Checked += DashboardFilter_Changed;
@@ -5312,6 +5309,9 @@ namespace SastreriaPresupuestos
 
         private void QuoteStatusComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
+            QuoteStatusComboBox.IsDropDownOpen = false;
+            QuoteStatusComboBox.Visibility = Visibility.Collapsed;
+
             if (IsLoadingData || CurrentQuote == null)
                 return;
 
@@ -5364,6 +5364,17 @@ namespace SastreriaPresupuestos
             QuotesListBox.Items.Refresh();
             ApplyBudgetQuoteFilter();
             UpdateActiveContext();
+        }
+
+        private void QuoteStatusBadgeBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (CurrentQuote == null)
+                return;
+
+            QuoteStatusComboBox.Visibility = Visibility.Visible;
+            QuoteStatusComboBox.IsDropDownOpen = true;
+            QuoteStatusComboBox.Focus();
+            e.Handled = true;
         }
 
         private void NavigateToSection(int sectionIndex)
