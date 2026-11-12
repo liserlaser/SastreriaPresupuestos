@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid Margin="0,0,0,0">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 
         <Border
             Background="{StaticResource CardBackgroundBrush}"
@@ -40,17 +40,30 @@
                     <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,16,16">
                         <StackPanel>
                             <TextBlock Text="Datos para transferencia" FontSize="18" FontWeight="Bold"/>
-                            <TextBlock Text="Se incluirán en las facturas de empresa cuando estén configurados." FontSize="13" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,12"/>
-                            <TextBlock Text="Titular" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
-                            <TextBox x:Name="BankAccountHolderTextBox" Margin="0,3,0,8" Padding="8,5"/>
-                            <TextBlock Text="IBAN" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
-                            <TextBox x:Name="BankIbanTextBox" Margin="0,3,0,8" Padding="8,5"/>
-                            <TextBlock Text="Banco (opcional)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
-                            <TextBox x:Name="BankNameTextBox" Margin="0,3,0,8" Padding="8,5"/>
-                            <TextBlock Text="BIC / SWIFT (opcional)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
-                            <TextBox x:Name="BankBicTextBox" Margin="0,3,0,0" Padding="8,5"/>
+                            <TextBlock Text="Se incluirán en las facturas de empresa." FontSize="13" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,14"/>
+                            <Button x:Name="BankDetailsPopupButton" Content="Configurar datos bancarios" Height="38" FontSize="14" Style="{StaticResource SecondaryButtonStyle}" Click="OpenBankDetailsPopup_Click"/>
                         </StackPanel>
                     </Border>
+
+                    <Popup x:Name="BankDetailsPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=BankDetailsPopupButton}" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Fade">
+                        <Border Width="420" MaxHeight="480" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="14" Padding="18">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <TextBlock Text="Datos para transferencia" FontSize="19" FontWeight="Bold"/>
+                                    <TextBlock Text="Se añadirán a las facturas de empresa." FontSize="13" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,14"/>
+                                    <TextBlock Text="Titular" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBox x:Name="BankAccountHolderTextBox" Margin="0,3,0,8" Padding="8,5"/>
+                                    <TextBlock Text="IBAN" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBox x:Name="BankIbanTextBox" Margin="0,3,0,8" Padding="8,5"/>
+                                    <TextBlock Text="Banco (opcional)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBox x:Name="BankNameTextBox" Margin="0,3,0,8" Padding="8,5"/>
+                                    <TextBlock Text="BIC / SWIFT (opcional)" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBox x:Name="BankBicTextBox" Margin="0,3,0,12" Padding="8,5"/>
+                                    <Button Content="Cerrar" Height="36" HorizontalAlignment="Right" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" Click="CloseBankDetailsPopup_Click"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Popup>
 
                     <Border
                         Background="#F8FAF6"
@@ -134,76 +147,37 @@
                                 FontWeight="Bold"/>
 
                             <TextBlock
-                                Text="Elige dónde se guardan automáticamente la ficha del cliente y los presupuestos."
+                                Text="Configura dónde se guardan fichas, presupuestos y facturas."
                                 FontSize="13"
                                 Foreground="{StaticResource MutedTextBrush}"
                                 TextWrapping="Wrap"
                                 Margin="0,6,0,14"/>
 
-                            <TextBlock
-                                Text="Ficha cliente"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource MutedTextBrush}"/>
-
-                            <TextBlock
-                                x:Name="ClientSheetFolderTextBlock"
-                                Text="Sin carpeta seleccionada"
-                                FontSize="12"
-                                TextTrimming="CharacterEllipsis"
-                                Margin="0,2,0,8"/>
-
-                            <Button
-                                x:Name="ClientSheetFolderButton"
-                                Content="Seleccionar carpeta"
-                                Height="34"
-                                FontSize="13"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,0,12"/>
-
-                            <TextBlock
-                                Text="Presupuestos"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource MutedTextBrush}"/>
-
-                            <TextBlock
-                                x:Name="QuoteFolderTextBlock"
-                                Text="Sin carpeta seleccionada"
-                                FontSize="12"
-                                TextTrimming="CharacterEllipsis"
-                                Margin="0,2,0,8"/>
-
-                            <Button
-                                x:Name="QuoteFolderButton"
-                                Content="Seleccionar carpeta"
-                                Height="34"
-                                FontSize="13"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,0,12"/>
-
-                            <TextBlock
-                                Text="Facturas"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource MutedTextBrush}"/>
-
-                            <TextBlock
-                                x:Name="InvoiceFolderTextBlock"
-                                Text="Sin carpeta seleccionada"
-                                FontSize="12"
-                                TextTrimming="CharacterEllipsis"
-                                Margin="0,2,0,8"/>
-
-                            <Button
-                                x:Name="InvoiceFolderButton"
-                                Content="Seleccionar carpeta"
-                                Height="34"
-                                FontSize="13"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                            <Button x:Name="ExportFoldersPopupButton" Content="Configurar carpetas" Height="38" FontSize="14" Style="{StaticResource SecondaryButtonStyle}" Click="OpenExportFoldersPopup_Click"/>
                         </StackPanel>
 
                     </Border>
+
+                    <Popup x:Name="ExportFoldersPopup" Placement="Bottom" PlacementTarget="{Binding ElementName=ExportFoldersPopupButton}" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Fade">
+                        <Border Width="460" MaxHeight="540" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="14" Padding="18">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <TextBlock Text="Carpetas de exportación" FontSize="19" FontWeight="Bold"/>
+                                    <TextBlock Text="Elige dónde guardar automáticamente cada tipo de documento." FontSize="13" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,14"/>
+                                    <TextBlock Text="Ficha cliente" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="ClientSheetFolderTextBlock" Text="Sin carpeta seleccionada" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
+                                    <Button x:Name="ClientSheetFolderButton" Content="Seleccionar carpeta" Height="34" FontSize="13" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Presupuestos" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="QuoteFolderTextBlock" Text="Sin carpeta seleccionada" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
+                                    <Button x:Name="QuoteFolderButton" Content="Seleccionar carpeta" Height="34" FontSize="13" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Facturas" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MutedTextBrush}"/>
+                                    <TextBlock x:Name="InvoiceFolderTextBlock" Text="Sin carpeta seleccionada" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,2,0,8"/>
+                                    <Button x:Name="InvoiceFolderButton" Content="Seleccionar carpeta" Height="34" FontSize="13" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,14"/>
+                                    <Button Content="Cerrar" Height="36" HorizontalAlignment="Right" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" Click="CloseExportFoldersPopup_Click"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Popup>
 
                 </WrapPanel>
 
@@ -211,5 +185,5 @@
 
         </Border>
 
-    </Grid>
+    </ScrollViewer>
 </UserControl>

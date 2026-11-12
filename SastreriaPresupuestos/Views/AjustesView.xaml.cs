@@ -17,5 +17,10 @@ namespace SastreriaPresupuestos.Views
             BankNameTextBox.Text = bank ?? "";
             BankBicTextBox.Text = bic ?? "";
         }
+
+        private void OpenBankDetailsPopup_Click(object sender, RoutedEventArgs e) => BankDetailsPopup.IsOpen = true;
+        private void CloseBankDetailsPopup_Click(object sender, RoutedEventArgs e) => BankDetailsPopup.IsOpen = false;
+        private void OpenExportFoldersPopup_Click(object sender, RoutedEventArgs e) => ExportFoldersPopup.IsOpen = true;
+        private void CloseExportFoldersPopup_Click(object sender, RoutedEventArgs e) => ExportFoldersPopup.IsOpen = false;
     }
 }
