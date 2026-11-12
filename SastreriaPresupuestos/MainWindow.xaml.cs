@@ -4822,19 +4822,21 @@ namespace SastreriaPresupuestos
             var monthStart = new DateTime(today.Year, today.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-            var quotes = db.Quotes
+            var acceptedQuotes = db.Quotes
                 .AsNoTracking()
                 .AsEnumerable()
-                .Where(IsVisibleOnMainDashboard)
+                .Where(q => string.Equals(GetQuoteStatusOrDefault(q), "Aceptado", StringComparison.OrdinalIgnoreCase))
+                .Where(q => CurrentSettings.ShowOlderJobsOnDashboard ||
+                    !q.EventDate.HasValue || q.EventDate.Value.Date >= today.AddMonths(-1))
                 .ToList();
 
-            var todayCount = quotes.Count(q => q.EventDate.HasValue && q.EventDate.Value.Date == today);
-            var next7Count = quotes.Count(q =>
+            var todayCount = acceptedQuotes.Count(q => q.EventDate.HasValue && q.EventDate.Value.Date == today);
+            var next7Count = acceptedQuotes.Count(q =>
                 q.EventDate.HasValue &&
                 q.EventDate.Value.Date >= today &&
                 q.EventDate.Value.Date <= next7Limit);
-            var pendingCount = quotes.Count;
-            var monthCount = quotes.Count(q =>
+            var pendingCount = acceptedQuotes.Count;
+            var monthCount = acceptedQuotes.Count(q =>
                 q.EventDate.HasValue &&
                 q.EventDate.Value.Date >= monthStart &&
                 q.EventDate.Value.Date <= monthEnd);
