@@ -17,6 +17,11 @@
 
     <Window.Resources>
 
+        <Geometry x:Key="NavHomeGeometry">M3,10 L12,3 L21,10 M5,9 L5,20 L19,20 L19,9 M9,20 L9,14 L15,14 L15,20</Geometry>
+        <Geometry x:Key="NavJobsGeometry">M8,3 L10,2 L14,2 L16,3 L21,6 L22,11 L18,12 L17,21 L7,21 L6,12 L2,11 L3,6 Z M10,2 L12,7 L14,2 M12,7 L12,21 M12,10 L9,8 M12,10 L15,8</Geometry>
+        <Geometry x:Key="NavInvoiceGeometry">M6,2 L14,2 L19,7 L19,22 L16,20 L13,22 L10,20 L7,22 L4,20 L4,4 A2,2 0 0 1 6,2 Z M14,2 L14,7 L19,7 M8,11 L15,11 M8,15 L15,15 M8,18 L12,18</Geometry>
+        <Geometry x:Key="NavSettingsGeometry">M12,3 L14,3 L14.7,5.2 L16.8,6.1 L18.9,5.1 L20.3,6.5 L19.3,8.6 L20.2,10.7 L22,11.4 L22,13.4 L20.2,14.1 L19.3,16.2 L20.3,18.3 L18.9,19.7 L16.8,18.7 L14.7,19.6 L14,22 L12,22 L11.3,19.6 L9.2,18.7 L7.1,19.7 L5.7,18.3 L6.7,16.2 L5.8,14.1 L4,13.4 L4,11.4 L5.8,10.7 L6.7,8.6 L5.7,6.5 L7.1,5.1 L9.2,6.1 L11.3,5.2 Z</Geometry>
+
         <x:Array Type="{x:Type sys:String}" x:Key="ProductList">
             <sys:String>Traje</sys:String>
             <sys:String>Chaqué</sys:String>
@@ -752,10 +757,25 @@
                         </StackPanel>
                     </Border>
 
-                    <Button x:Name="DashboardNavButton" Content="⌂  Inicio" Tag="0" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="ClientsNavButton" Content="👤  Clientes" Tag="1" Visibility="Collapsed" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="QuotesNavButton" Content="📜  Trabajos" Tag="2" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
-                    <Button x:Name="InvoicesNavButton" Content="🧾  Facturas" Tag="4" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="DashboardNavButton" Tag="0" ToolTip="Inicio" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path Width="20" Height="20" Data="{StaticResource NavHomeGeometry}" Stretch="Uniform" Fill="Transparent" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                            <TextBlock x:Name="DashboardNavLabel" Text="Inicio" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ClientsNavButton" Tag="1" Visibility="Collapsed" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click"/>
+                    <Button x:Name="QuotesNavButton" Tag="2" ToolTip="Trabajos" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path Width="20" Height="20" Data="{StaticResource NavJobsGeometry}" Stretch="Uniform" Fill="Transparent" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                            <TextBlock x:Name="QuotesNavLabel" Text="Trabajos" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="InvoicesNavButton" Tag="4" ToolTip="Facturas" Style="{StaticResource SidebarNavButtonStyle}" Click="SidebarNavButton_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path Width="20" Height="20" Data="{StaticResource NavInvoiceGeometry}" Stretch="Uniform" Fill="Transparent" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                            <TextBlock x:Name="InvoicesNavLabel" Text="Facturas" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <StackPanel
@@ -925,12 +945,13 @@
 
                     <Button
                         x:Name="SettingsNavButton"
-                        Content="⚙"
                         Tag="5"
                         Style="{StaticResource ShellIconButtonStyle}"
                         Margin="0,8,8,0"
                         ToolTip="Ajustes"
-                        Click="SidebarNavButton_Click"/>
+                        Click="SidebarNavButton_Click">
+                        <Path Width="19" Height="19" Data="{StaticResource NavSettingsGeometry}" Stretch="Uniform" Fill="Transparent" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                    </Button>
 
                     <Button
                         x:Name="BackNavigationButton"

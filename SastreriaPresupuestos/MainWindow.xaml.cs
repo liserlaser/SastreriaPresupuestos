@@ -5604,17 +5604,21 @@ namespace SastreriaPresupuestos
             ActiveWorkspaceBorder.Visibility = Visibility.Collapsed;
             ShellFooterTextBlock.Visibility = compactVisibility;
 
+            DashboardNavLabel.Visibility = compactVisibility;
+            QuotesNavLabel.Visibility = compactVisibility;
+            InvoicesNavLabel.Visibility = compactVisibility;
+            DashboardNavButton.HorizontalContentAlignment = IsSidebarCollapsed ? System.Windows.HorizontalAlignment.Center : System.Windows.HorizontalAlignment.Left;
+            QuotesNavButton.HorizontalContentAlignment = IsSidebarCollapsed ? System.Windows.HorizontalAlignment.Center : System.Windows.HorizontalAlignment.Left;
+            InvoicesNavButton.HorizontalContentAlignment = IsSidebarCollapsed ? System.Windows.HorizontalAlignment.Center : System.Windows.HorizontalAlignment.Left;
+            var navPadding = IsSidebarCollapsed ? new Thickness(0, 9, 0, 9) : new Thickness(12, 9, 12, 9);
+            DashboardNavButton.Padding = navPadding;
+            QuotesNavButton.Padding = navPadding;
+            InvoicesNavButton.Padding = navPadding;
+
             ShellLogoImage.Width = IsSidebarCollapsed ? 40 : 60;
             ShellLogoImage.Height = IsSidebarCollapsed ? 40 : 60;
 
-            // Use the same broadly supported glyphs in collapsed and expanded states.
-            // Previous MDL2-only glyphs rendered as square boxes on some machines when the sidebar collapsed.
-            DashboardNavButton.Content = IsSidebarCollapsed ? "⌂" : "⌂  Inicio";
-            ClientsNavButton.Content = IsSidebarCollapsed ? "👤" : "👤  Clientes";
             ClientsNavButton.Visibility = Visibility.Collapsed;
-            QuotesNavButton.Content = IsSidebarCollapsed ? "📜" : "📜  Trabajos";
-            InvoicesNavButton.Content = IsSidebarCollapsed ? "🧾" : "🧾  Facturas";
-            SettingsNavButton.Content = "⚙";
         }
 
 
