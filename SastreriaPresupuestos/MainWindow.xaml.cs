@@ -46,6 +46,7 @@ namespace SastreriaPresupuestos
         private readonly ProductosView ProductosView = new();
         private readonly FacturasView FacturasView = new();
         private readonly AjustesView AjustesView = new();
+        private readonly ReportsView ReportsView = new();
 
         public ObservableCollection<string> AvailableProductNames { get; } = new();
 
@@ -61,6 +62,24 @@ namespace SastreriaPresupuestos
         private TextBlock DashboardPendingCountTextBlock => DashboardView.DashboardPendingCountTextBlock;
         private TextBlock DashboardMonthCountTextBlock => DashboardView.DashboardMonthCountTextBlock;
         private TextBlock DashboardOverdueWarningTextBlock => DashboardView.DashboardOverdueWarningTextBlock;
+        private ComboBox ReportPeriodComboBox => ReportsView.ReportPeriodComboBox;
+        private DatePicker ReportReferenceDatePicker => ReportsView.ReportReferenceDatePicker;
+        private Button PreviousReportPeriodButton => ReportsView.PreviousReportPeriodButton;
+        private Button NextReportPeriodButton => ReportsView.NextReportPeriodButton;
+        private Button ExportReportPdfButton => ReportsView.ExportReportPdfButton;
+        private TextBlock ReportPeriodLabelTextBlock => ReportsView.ReportPeriodLabelTextBlock;
+        private TextBlock CreatedQuotesValueTextBlock => ReportsView.CreatedQuotesValueTextBlock;
+        private TextBlock ConfirmedDeliveriesValueTextBlock => ReportsView.ConfirmedDeliveriesValueTextBlock;
+        private TextBlock PendingQuotesValueTextBlock => ReportsView.PendingQuotesValueTextBlock;
+        private TextBlock PendingDeliveriesValueTextBlock => ReportsView.PendingDeliveriesValueTextBlock;
+        private TextBlock AcceptedQuotesValueTextBlock => ReportsView.AcceptedQuotesValueTextBlock;
+        private TextBlock PendingStatusValueTextBlock => ReportsView.PendingStatusValueTextBlock;
+        private TextBlock RejectedQuotesValueTextBlock => ReportsView.RejectedQuotesValueTextBlock;
+        private DataGrid ReportDeliveriesDataGrid => ReportsView.ReportDeliveriesDataGrid;
+        private TextBlock ContractedTotalTextBlock => ReportsView.ContractedTotalTextBlock;
+        private TextBlock DepositsReceivedTextBlock => ReportsView.DepositsReceivedTextBlock;
+        private TextBlock OutstandingTotalTextBlock => ReportsView.OutstandingTotalTextBlock;
+        private TextBlock LegacyDepositsNoteTextBlock => ReportsView.LegacyDepositsNoteTextBlock;
         private CheckBox ShowPendingDashboardCheckBox => DashboardView.ShowPendingDashboardCheckBox;
         private CheckBox ShowRejectedDashboardCheckBox => DashboardView.ShowRejectedDashboardCheckBox;
         private CheckBox ShowDeliveredDashboardCheckBox => DashboardView.ShowDeliveredDashboardCheckBox;
@@ -229,6 +248,7 @@ namespace SastreriaPresupuestos
             ProductsInlineHost.Content = ProductosView;
             FacturasHost.Content = FacturasView;
             AjustesHost.Content = AjustesView;
+            ReportsHost.Content = ReportsView;
         }
 
         private string SanitizeFileName(string name)
@@ -284,6 +304,7 @@ namespace SastreriaPresupuestos
         private const int TabProductos = 3;
         private const int TabFacturas = 4;
         private const int TabAjustes = 5;
+        private const int TabInformes = 6;
         private const int InnerTabResumen = 0;
         private const int InnerTabProductos = 1;
         private const int InnerTabDocumentos = 2;
@@ -5163,6 +5184,7 @@ namespace SastreriaPresupuestos
             LoadClients();
             LoadCalendarDeliveries();
             LoadInvoices();
+            ReportReferenceDatePicker.SelectedDate = DateTime.Today;
         }
 
         private void RefreshAvailableProductNames()
@@ -5216,6 +5238,11 @@ namespace SastreriaPresupuestos
             ListViewButton.Click += ListViewButton_Click;
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
+            ReportPeriodComboBox.SelectionChanged += ReportPeriod_Changed;
+            ReportReferenceDatePicker.SelectedDateChanged += ReportPeriod_Changed;
+            PreviousReportPeriodButton.Click += PreviousReportPeriodButton_Click;
+            NextReportPeriodButton.Click += NextReportPeriodButton_Click;
+            ExportReportPdfButton.Click += ExportReportPdfButton_Click;
             QuoteStatusBadgeBorder.MouseLeftButtonDown += QuoteStatusBadgeBorder_MouseLeftButtonDown;
             ShowPendingDashboardCheckBox.Checked += DashboardFilter_Changed;
             ShowPendingDashboardCheckBox.Unchecked += DashboardFilter_Changed;
@@ -5450,6 +5477,114 @@ namespace SastreriaPresupuestos
                 return;
 
             UpdateShellNavigationState();
+            if (MainTabs.SelectedIndex == TabInformes)
+                RefreshReport();
+        }
+
+        private (DateTime StartDate, DateTime EndDate, string PeriodName) GetReportPeriod()
+        {
+            var referenceDate = (ReportReferenceDatePicker.SelectedDate ?? DateTime.Today).Date;
+            var periodName = (ReportPeriodComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Semana";
+
+            if (periodName == "Mes")
+            {
+                var start = new DateTime(referenceDate.Year, referenceDate.Month, 1);
+                return (start, start.AddMonths(1).AddDays(-1), periodName);
+            }
+
+            if (periodName == "Año")
+            {
+                var start = new DateTime(referenceDate.Year, 1, 1);
+                return (start, new DateTime(referenceDate.Year, 12, 31), periodName);
+            }
+
+            var monday = referenceDate.AddDays(-((7 + (int)referenceDate.DayOfWeek - (int)DayOfWeek.Monday) % 7));
+            return (monday, monday.AddDays(6), "Semana");
+        }
+
+        private ReportSummary BuildCurrentReport()
+        {
+            var period = GetReportPeriod();
+            return ReportsService.Build(period.StartDate, period.EndDate);
+        }
+
+        private void RefreshReport()
+        {
+            if (ReportDeliveriesDataGrid == null || ReportReferenceDatePicker.SelectedDate == null)
+                return;
+
+            var period = GetReportPeriod();
+            var report = ReportsService.Build(period.StartDate, period.EndDate);
+            var es = CultureInfo.GetCultureInfo("es-ES");
+
+            ReportPeriodLabelTextBlock.Text = $"Informe {period.PeriodName.ToLowerInvariant()} · {period.StartDate:dd/MM/yyyy} – {period.EndDate:dd/MM/yyyy}";
+            CreatedQuotesValueTextBlock.Text = report.QuotesCreated.ToString("N0", es);
+            ConfirmedDeliveriesValueTextBlock.Text = report.ConfirmedDeliveries.ToString("N0", es);
+            PendingQuotesValueTextBlock.Text = report.PendingQuotes.ToString("N0", es);
+            PendingDeliveriesValueTextBlock.Text = report.PendingDeliveries.ToString("N0", es);
+            AcceptedQuotesValueTextBlock.Text = $"{report.AcceptedQuotes:N0} · {report.AcceptedPercentage}";
+            PendingStatusValueTextBlock.Text = $"{report.PendingQuotes:N0} · {report.PendingPercentage}";
+            RejectedQuotesValueTextBlock.Text = $"{report.RejectedQuotes:N0} · {report.RejectedPercentage}";
+            ContractedTotalTextBlock.Text = report.ContractedTotal.ToString("N2", es) + " €";
+            DepositsReceivedTextBlock.Text = report.DepositsReceived.ToString("N2", es) + " €";
+            OutstandingTotalTextBlock.Text = report.OutstandingTotal.ToString("N2", es) + " €";
+            LegacyDepositsNoteTextBlock.Visibility = report.HasUnattributedLegacyDeposits
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            ReportDeliveriesDataGrid.ItemsSource = report.Deliveries;
+        }
+
+        private void ReportPeriod_Changed(object? sender, SelectionChangedEventArgs e) => RefreshReport();
+
+        private void PreviousReportPeriodButton_Click(object sender, RoutedEventArgs e)
+        {
+            var date = (ReportReferenceDatePicker.SelectedDate ?? DateTime.Today).Date;
+            ReportReferenceDatePicker.SelectedDate = (ReportPeriodComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
+            {
+                "Mes" => date.AddMonths(-1),
+                "Año" => date.AddYears(-1),
+                _ => date.AddDays(-7)
+            };
+        }
+
+        private void NextReportPeriodButton_Click(object sender, RoutedEventArgs e)
+        {
+            var date = (ReportReferenceDatePicker.SelectedDate ?? DateTime.Today).Date;
+            ReportReferenceDatePicker.SelectedDate = (ReportPeriodComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
+            {
+                "Mes" => date.AddMonths(1),
+                "Año" => date.AddYears(1),
+                _ => date.AddDays(7)
+            };
+        }
+
+        private void ExportReportPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            var report = BuildCurrentReport();
+            var period = GetReportPeriod();
+            var dialog = new SaveFileDialog
+            {
+                Title = "Exportar informe a PDF",
+                Filter = "Documento PDF (*.pdf)|*.pdf",
+                DefaultExt = ".pdf",
+                AddExtension = true,
+                FileName = $"Informe_{period.PeriodName}_{period.StartDate:yyyyMMdd}_{period.EndDate:yyyyMMdd}.pdf"
+            };
+
+            if (dialog.ShowDialog(this) != true)
+                return;
+
+            try
+            {
+                ReportPdfService.Export(report, dialog.FileName);
+                LastGeneratedPdfPath = dialog.FileName;
+                OpenLastPdfButton.IsEnabled = true;
+                MessageBox.Show("El informe PDF se ha generado correctamente.", "Informes", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"No se ha podido generar el informe PDF.\n\n{ex.Message}", "Informes", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private (string Title, string Subtitle, string Breadcrumb) GetSectionInfo(int sectionIndex)
@@ -5462,6 +5597,7 @@ namespace SastreriaPresupuestos
                 3 => ("Trabajos · Productos", "Líneas, prendas y conceptos del trabajo activo", "🏠 > Trabajos > Productos"),
                 4 => ("Facturas", "Emisión, búsqueda y archivo de facturas", "🏠 > Facturas"),
                 5 => ("Ajustes", "Tarifas, datos de empresa y configuración", "🏠 > Ajustes"),
+                6 => ("Informes", "Estadísticas semanales, mensuales y anuales", "🏠 > Informes"),
                 _ => ("Sastrería Martínez Mor", "Gestión de trabajos, PDFs y entregas", "🏠")
             };
 
@@ -5528,6 +5664,7 @@ namespace SastreriaPresupuestos
             SetSidebarButtonActive(ClientsNavButton, MainTabs.SelectedIndex == TabClientes);
             SetSidebarButtonActive(QuotesNavButton, MainTabs.SelectedIndex == TabPresupuesto || MainTabs.SelectedIndex == TabProductos);
             SetSidebarButtonActive(InvoicesNavButton, MainTabs.SelectedIndex == TabFacturas);
+            SetSidebarButtonActive(ReportsNavButton, MainTabs.SelectedIndex == TabInformes);
             SetSidebarButtonActive(SettingsNavButton, MainTabs.SelectedIndex == TabAjustes);
             UpdateWorkspaceButtonState();
         }

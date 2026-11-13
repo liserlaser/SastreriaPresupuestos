@@ -1,0 +1,114 @@
+<UserControl x:Class="SastreriaPresupuestos.Views.ReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Border Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource BorderSoftBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="INFORMES" FontSize="22" FontWeight="Bold"/>
+                        <TextBlock x:Name="ReportPeriodLabelTextBlock" x:FieldModifier="public"
+                                   Text="Informe semanal" FontSize="13"
+                                   Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0"/>
+                    </StackPanel>
+                    <Button x:Name="ExportReportPdfButton" x:FieldModifier="public"
+                            Grid.Column="1" Content="Exportar a PDF" Padding="16,8"
+                            VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}"/>
+                </Grid>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+                    <ComboBox x:Name="ReportPeriodComboBox" x:FieldModifier="public"
+                              Width="120" Height="34" SelectedIndex="0" Margin="0,0,8,0">
+                        <ComboBoxItem Content="Semana"/>
+                        <ComboBoxItem Content="Mes"/>
+                        <ComboBoxItem Content="Año"/>
+                    </ComboBox>
+                    <Button x:Name="PreviousReportPeriodButton" x:FieldModifier="public"
+                            Content="‹" Width="38" Height="34" FontSize="18"
+                            Margin="0,0,6,0" ToolTip="Periodo anterior"
+                            Style="{StaticResource SmallLightButtonStyle}"/>
+                    <DatePicker x:Name="ReportReferenceDatePicker" x:FieldModifier="public"
+                                Width="150" Height="34" SelectedDateFormat="Short"/>
+                    <Button x:Name="NextReportPeriodButton" x:FieldModifier="public"
+                            Content="›" Width="38" Height="34" FontSize="18"
+                            Margin="6,0,0,0" ToolTip="Periodo siguiente"
+                            Style="{StaticResource SmallLightButtonStyle}"/>
+                </StackPanel>
+
+                <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,12">
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
+                        <StackPanel><TextBlock Text="Presupuestos creados" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="CreatedQuotesValueTextBlock" x:FieldModifier="public" Text="0" FontSize="23" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                    </Border>
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
+                        <StackPanel><TextBlock Text="Entregas confirmadas" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="ConfirmedDeliveriesValueTextBlock" x:FieldModifier="public" Text="0" FontSize="23" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                    </Border>
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
+                        <StackPanel><TextBlock Text="Presupuestos pendientes" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="PendingQuotesValueTextBlock" x:FieldModifier="public" Text="0" FontSize="23" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                    </Border>
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12">
+                        <StackPanel><TextBlock Text="Pendientes de respuesta en el periodo" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="PendingDeliveriesValueTextBlock" x:FieldModifier="public" Text="0" FontSize="23" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,14">
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
+                        <StackPanel><TextBlock Text="Aceptados" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="AcceptedQuotesValueTextBlock" x:FieldModifier="public" Text="0 · 0 %" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                    </Border>
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
+                        <StackPanel><TextBlock Text="Pendientes" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="PendingStatusValueTextBlock" x:FieldModifier="public" Text="0 · 0 %" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0" ToolTip="Los presupuestos pendientes cuyo evento ya ha pasado se computan como rechazados."/></StackPanel>
+                    </Border>
+                    <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12">
+                        <StackPanel><TextBlock Text="Rechazados" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="RejectedQuotesValueTextBlock" x:FieldModifier="public" Text="0 · 0 %" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Grid Grid.Row="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Trabajos previstos en el periodo" FontSize="15" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <DataGrid x:Name="ReportDeliveriesDataGrid" x:FieldModifier="public" Grid.Row="1"
+                              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                              Background="Transparent" BorderThickness="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Fecha" Binding="{Binding EventDate, StringFormat={}{0:dd/MM/yyyy}}" Width="105"/>
+                            <DataGridTextColumn Header="Cliente" Binding="{Binding ClientName}" Width="*"/>
+                            <DataGridTextColumn Header="Trabajo" Binding="{Binding Title}" Width="*"/>
+                            <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="115"/>
+                            <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat={}{0:N2} €}" Width="110"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <WrapPanel Grid.Row="5" Margin="0,10,0,0">
+                    <TextBlock Text="Valor contratado: " FontSize="12" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="ContractedTotalTextBlock" x:FieldModifier="public" Text="0,00 €" FontSize="12" Margin="0,0,14,0"/>
+                    <TextBlock Text="Anticipos recibidos: " FontSize="12" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="DepositsReceivedTextBlock" x:FieldModifier="public" Text="0,00 €" FontSize="12" Margin="0,0,14,0"/>
+                    <TextBlock Text="Pendiente de cobro: " FontSize="12" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="OutstandingTotalTextBlock" x:FieldModifier="public" Text="0,00 €" FontSize="12"/>
+                    <TextBlock x:Name="LegacyDepositsNoteTextBlock" x:FieldModifier="public" Text="Los anticipos antiguos sin historial no se pueden atribuir a un periodo." FontSize="11" Foreground="{StaticResource MutedTextBrush}" Margin="0,6,0,0" Visibility="Collapsed"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
