@@ -60,6 +60,7 @@ namespace SastreriaPresupuestos
         private TextBlock DashboardNext7CountTextBlock => DashboardView.DashboardNext7CountTextBlock;
         private TextBlock DashboardPendingCountTextBlock => DashboardView.DashboardPendingCountTextBlock;
         private TextBlock DashboardMonthCountTextBlock => DashboardView.DashboardMonthCountTextBlock;
+        private TextBlock DashboardOverdueWarningTextBlock => DashboardView.DashboardOverdueWarningTextBlock;
         private CheckBox ShowPendingDashboardCheckBox => DashboardView.ShowPendingDashboardCheckBox;
         private CheckBox ShowRejectedDashboardCheckBox => DashboardView.ShowRejectedDashboardCheckBox;
         private CheckBox ShowDeliveredDashboardCheckBox => DashboardView.ShowDeliveredDashboardCheckBox;
@@ -4822,13 +4823,32 @@ namespace SastreriaPresupuestos
             var monthStart = new DateTime(today.Year, today.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-            var acceptedQuotes = db.Quotes
+            var quotes = db.Quotes
                 .AsNoTracking()
                 .AsEnumerable()
+                .ToList();
+
+            var acceptedQuotes = quotes
                 .Where(q => string.Equals(GetQuoteStatusOrDefault(q), "Aceptado", StringComparison.OrdinalIgnoreCase))
                 .Where(q => CurrentSettings.ShowOlderJobsOnDashboard ||
                     !q.EventDate.HasValue || q.EventDate.Value.Date >= today)
                 .ToList();
+
+            var overdueCount = quotes.Count(q =>
+                q.EventDate.HasValue &&
+                q.EventDate.Value.Date < today &&
+                (string.Equals(GetQuoteStatusOrDefault(q), "Aceptado", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(GetQuoteStatusOrDefault(q), "Pendiente", StringComparison.OrdinalIgnoreCase)));
+
+            var overdueWorkLabel = overdueCount == 1
+                ? "trabajo aceptado o pendiente"
+                : "trabajos aceptados o pendientes";
+            DashboardOverdueWarningTextBlock.Text = overdueCount > 0
+                ? $"⚠ Hay {overdueCount} {overdueWorkLabel} con fecha anterior a hoy. Revisa si deben marcarse como entregados o actualizarse."
+                : string.Empty;
+            DashboardOverdueWarningTextBlock.Visibility = overdueCount > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             var todayCount = acceptedQuotes.Count(q => q.EventDate.HasValue && q.EventDate.Value.Date == today);
             var next7Count = acceptedQuotes.Count(q =>
