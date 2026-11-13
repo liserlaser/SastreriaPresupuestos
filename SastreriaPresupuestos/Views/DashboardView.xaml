@@ -144,7 +144,7 @@
                     <CheckBox x:Name="ShowPendingDashboardCheckBox" x:FieldModifier="public" Content="Pendientes" IsChecked="True" VerticalAlignment="Center" Margin="0,0,14,0"/>
                     <CheckBox x:Name="ShowRejectedDashboardCheckBox" x:FieldModifier="public" Content="Rechazados" VerticalAlignment="Center" Margin="0,0,14,0"/>
                     <CheckBox x:Name="ShowDeliveredDashboardCheckBox" x:FieldModifier="public" Content="Entregados" VerticalAlignment="Center" Margin="0,0,14,0"/>
-                    <CheckBox x:Name="ShowOlderJobsDashboardCheckBox" x:FieldModifier="public" Content="Anteriores a un mes" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="ShowOlderJobsDashboardCheckBox" x:FieldModifier="public" Content="Trabajos anteriores" VerticalAlignment="Center"/>
                 </WrapPanel>
 
                 <Grid Grid.Row="3">

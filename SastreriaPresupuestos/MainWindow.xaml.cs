@@ -4827,7 +4827,7 @@ namespace SastreriaPresupuestos
                 .AsEnumerable()
                 .Where(q => string.Equals(GetQuoteStatusOrDefault(q), "Aceptado", StringComparison.OrdinalIgnoreCase))
                 .Where(q => CurrentSettings.ShowOlderJobsOnDashboard ||
-                    !q.EventDate.HasValue || q.EventDate.Value.Date >= today.AddMonths(-1))
+                    !q.EventDate.HasValue || q.EventDate.Value.Date >= today)
                 .ToList();
 
             var todayCount = acceptedQuotes.Count(q => q.EventDate.HasValue && q.EventDate.Value.Date == today);
@@ -4862,7 +4862,7 @@ namespace SastreriaPresupuestos
                 return false;
 
             if (!CurrentSettings.ShowOlderJobsOnDashboard && quote.EventDate.HasValue &&
-                quote.EventDate.Value.Date < DateTime.Today.AddMonths(-1))
+                quote.EventDate.Value.Date < DateTime.Today)
                 return false;
 
             return true;
