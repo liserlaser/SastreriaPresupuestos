@@ -108,9 +108,10 @@ namespace SastreriaPresupuestos.Services
                                     columns.RelativeColumn(1.4f);
                                     columns.ConstantColumn(70);
                                     columns.ConstantColumn(72);
+                                    columns.ConstantColumn(78);
                                 });
 
-                                Cell("Fecha", true); Cell("Cliente", true); Cell("Trabajo", true); Cell("Estado", true); Cell("Total", true);
+                                Cell("Fecha", true); Cell("Cliente", true); Cell("Trabajo", true); Cell("Estado", true); Cell("Total", true); Cell("Pendiente", true);
                                 foreach (var item in report.Deliveries)
                                 {
                                     Cell(item.EventDate.ToString("dd/MM/yy", es));
@@ -118,6 +119,7 @@ namespace SastreriaPresupuestos.Services
                                     Cell(item.Title);
                                     Cell(item.Status);
                                     Cell(item.Total.ToString("N2", es) + " €");
+                                    Cell(item.Balance.ToString("N2", es) + " €");
                                 }
 
                                 void Cell(string text, bool header = false)
