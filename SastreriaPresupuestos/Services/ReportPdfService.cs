@@ -29,7 +29,7 @@ namespace SastreriaPresupuestos.Services
                     page.Header().Column(column =>
                     {
                         column.Item().Text("MARTÍNEZ MOR SASTRERÍA").FontSize(10).SemiBold().FontColor(Muted);
-                        column.Item().PaddingTop(5).Text("Informe de actividad").FontSize(22).Bold();
+                        column.Item().PaddingTop(5).Text(report.ReportType == "Taller" ? "Informe de trabajo" : "Informe de actividad").FontSize(22).Bold();
                         column.Item().PaddingTop(3).Text(report.PeriodLabel).FontSize(11).FontColor(Muted);
                         column.Item().PaddingTop(5).LineHorizontal(1).LineColor(Border);
                     });
@@ -38,6 +38,8 @@ namespace SastreriaPresupuestos.Services
                     {
                         column.Spacing(14);
 
+                        if (report.ReportType != "Taller")
+                        {
                         column.Item().Text("Presupuestos creados en el periodo").FontSize(13).Bold();
                         column.Item().Table(table =>
                         {
@@ -64,6 +66,7 @@ namespace SastreriaPresupuestos.Services
                         });
                         column.Item().Text("Los presupuestos pendientes cuya fecha de evento ya ha pasado se consideran rechazados.")
                             .FontSize(8).FontColor(Muted);
+                        }
 
                         column.Item().Text("Actividad económica y entregas").FontSize(13).Bold();
                         column.Item().Table(table =>
@@ -103,20 +106,30 @@ namespace SastreriaPresupuestos.Services
                             {
                                 table.ColumnsDefinition(columns =>
                                 {
-                                    columns.ConstantColumn(62);
-                                    columns.RelativeColumn(1.1f);
-                                    columns.RelativeColumn(1.4f);
+                                    columns.ConstantColumn(54);
+                                    columns.RelativeColumn(1.0f);
+                                    columns.RelativeColumn(report.ReportType == "Taller" ? 1.0f : 1.3f);
+                                    if (report.ReportType == "Taller") columns.RelativeColumn(1.1f);
+                                    columns.ConstantColumn(60);
+                                    columns.ConstantColumn(64);
                                     columns.ConstantColumn(70);
-                                    columns.ConstantColumn(72);
-                                    columns.ConstantColumn(78);
                                 });
 
-                                Cell("Fecha", true); Cell("Cliente", true); Cell("Trabajo", true); Cell("Estado", true); Cell("Total", true); Cell("Pendiente", true);
+                                Cell("Fecha", true); Cell("Cliente", true); Cell("Trabajo", true);
+                                if (report.ReportType == "Taller") Cell("Primer producto", true);
+                                Cell("Estado", true); Cell("Total", true); Cell("Pendiente", true);
+                                string? previousGroup = null;
                                 foreach (var item in report.Deliveries)
                                 {
+                                    if (!string.IsNullOrEmpty(item.GroupLabel) && item.GroupLabel != previousGroup)
+                                    {
+                                        table.Cell().ColumnSpan((uint)(report.ReportType == "Taller" ? 7 : 6)).Background(Soft).Padding(6).Text(item.GroupLabel).SemiBold();
+                                        previousGroup = item.GroupLabel;
+                                    }
                                     Cell(item.EventDate.ToString("dd/MM/yy", es));
                                     Cell(item.ClientName);
                                     Cell(item.Title);
+                                    if (report.ReportType == "Taller") Cell(item.FirstProduct);
                                     Cell(item.Status);
                                     Cell(item.Total.ToString("N2", es) + " €");
                                     Cell(item.Balance.ToString("N2", es) + " €");

@@ -9,7 +9,7 @@ namespace SastreriaPresupuestos.Services
 {
     public static class ReportsService
     {
-        public static ReportSummary Build(DateTime startDate, DateTime endDate)
+        public static ReportSummary Build(DateTime startDate, DateTime endDate, string reportType = "General", bool acceptedOnly = false, string periodType = "Semana")
         {
             var start = startDate.Date;
             var end = endDate.Date;
@@ -19,6 +19,7 @@ namespace SastreriaPresupuestos.Services
                 .AsNoTracking()
                 .Include(q => q.Client)
                 .Include(q => q.Deposits)
+                .Include(q => q.Items)
                 .ToList();
 
             var createdQuotes = quotes
@@ -54,10 +55,16 @@ namespace SastreriaPresupuestos.Services
                             string.Equals(EffectiveStatus(q), "Entregado", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
+            var displayedDeliveries = acceptedOnly || string.Equals(reportType, "Taller", StringComparison.OrdinalIgnoreCase)
+                ? periodDeliveries.Where(q => string.Equals(EffectiveStatus(q), "Aceptado", StringComparison.OrdinalIgnoreCase)).ToList()
+                : periodDeliveries;
+
             return new ReportSummary
             {
                 StartDate = start,
                 EndDate = end,
+                ReportType = reportType,
+                PeriodType = periodType,
                 GeneratedAt = DateTime.Now,
                 QuotesCreated = createdQuotes.Count,
                 AcceptedQuotes = createdStatuses.Count(s => string.Equals(s, "Aceptado", StringComparison.OrdinalIgnoreCase)),
@@ -72,17 +79,33 @@ namespace SastreriaPresupuestos.Services
                 OutstandingTotal = eventPeriodClosedQuotes.Sum(q => q.PendingAmount),
                 HasUnattributedLegacyDeposits = quotes.Any(q =>
                     q.Deposit > (q.Deposits?.Sum(d => d.Amount) ?? 0m)),
-                Deliveries = periodDeliveries.Select(q => new ReportDeliveryItem
+                Deliveries = displayedDeliveries.Select(q => new ReportDeliveryItem
                 {
                     EventDate = q.EventDate!.Value.Date,
                     ClientName = q.Client?.Name ?? "Cliente",
                     Title = q.DisplayTitle,
+                    FirstProduct = q.Items.OrderBy(item => item.Id).Select(item => string.IsNullOrWhiteSpace(item.TailoringType) ? item.ProductName : $"{item.ProductName} {item.TailoringType}").FirstOrDefault() ?? "Sin productos",
+                    GroupLabel = GetGroupLabel(q.EventDate!.Value.Date, periodType),
                     Status = EffectiveStatus(q),
                     Total = q.Total,
                     Deposit = q.Deposit,
                     Balance = q.PendingAmount
                 }).ToList()
             };
+        }
+
+        private static string GetGroupLabel(DateTime eventDate, string periodType)
+        {
+            var es = System.Globalization.CultureInfo.GetCultureInfo("es-ES");
+            if (periodType == "Año")
+                return eventDate.ToString("MMMM yyyy", es);
+            if (periodType == "Mes")
+            {
+                var monday = eventDate.AddDays(-((7 + (int)eventDate.DayOfWeek - (int)DayOfWeek.Monday) % 7));
+                var sunday = monday.AddDays(6);
+                return $"Semana del {monday:dd/MM} al {sunday:dd/MM}";
+            }
+            return "";
         }
     }
 }

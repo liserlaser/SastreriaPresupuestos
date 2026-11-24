@@ -22,6 +22,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -5239,6 +5240,9 @@ namespace SastreriaPresupuestos
             WeekViewButton.Click += WeekViewButton_Click;
             MonthViewButton.Click += MonthViewButton_Click;
             ReportPeriodComboBox.SelectionChanged += ReportPeriod_Changed;
+            ReportsView.ReportTypeComboBox.SelectionChanged += ReportPeriod_Changed;
+            ReportsView.AcceptedOnlyCheckBox.Checked += ReportAcceptedOnly_Changed;
+            ReportsView.AcceptedOnlyCheckBox.Unchecked += ReportAcceptedOnly_Changed;
             ReportReferenceDatePicker.SelectedDateChanged += ReportPeriod_Changed;
             PreviousReportPeriodButton.Click += PreviousReportPeriodButton_Click;
             NextReportPeriodButton.Click += NextReportPeriodButton_Click;
@@ -5505,7 +5509,8 @@ namespace SastreriaPresupuestos
         private ReportSummary BuildCurrentReport()
         {
             var period = GetReportPeriod();
-            return ReportsService.Build(period.StartDate, period.EndDate);
+            var type = (ReportsView.ReportTypeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "General";
+            return ReportsService.Build(period.StartDate, period.EndDate, type, ReportsView.AcceptedOnlyCheckBox.IsChecked == true, period.PeriodName);
         }
 
         private void RefreshReport()
@@ -5514,10 +5519,16 @@ namespace SastreriaPresupuestos
                 return;
 
             var period = GetReportPeriod();
-            var report = ReportsService.Build(period.StartDate, period.EndDate);
+            var type = (ReportsView.ReportTypeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "General";
+            var workshop = type == "Taller";
+            var report = ReportsService.Build(period.StartDate, period.EndDate, type, ReportsView.AcceptedOnlyCheckBox.IsChecked == true, period.PeriodName);
             var es = CultureInfo.GetCultureInfo("es-ES");
 
             ReportPeriodLabelTextBlock.Text = $"Informe {period.PeriodName.ToLowerInvariant()} · {period.StartDate:dd/MM/yyyy} – {period.EndDate:dd/MM/yyyy}";
+            ReportsView.ReportActivityStatsPanel.Visibility = workshop ? Visibility.Collapsed : Visibility.Visible;
+            ReportsView.ReportQuoteStatsPanel.Visibility = workshop ? Visibility.Collapsed : Visibility.Visible;
+            ReportsView.AcceptedOnlyCheckBox.Visibility = workshop ? Visibility.Collapsed : Visibility.Visible;
+            ReportsView.FirstProductColumn.Visibility = workshop ? Visibility.Visible : Visibility.Collapsed;
             CreatedQuotesValueTextBlock.Text = report.QuotesCreated.ToString("N0", es);
             ConfirmedDeliveriesValueTextBlock.Text = report.ConfirmedDeliveries.ToString("N0", es);
             PendingQuotesValueTextBlock.Text = report.PendingQuotes.ToString("N0", es);
@@ -5532,7 +5543,13 @@ namespace SastreriaPresupuestos
                 ? Visibility.Visible
                 : Visibility.Collapsed;
             ReportDeliveriesDataGrid.ItemsSource = report.Deliveries;
+            var view = CollectionViewSource.GetDefaultView(ReportDeliveriesDataGrid.ItemsSource);
+            view.GroupDescriptions.Clear();
+            if (period.PeriodName != "Semana")
+                view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ReportDeliveryItem.GroupLabel)));
         }
+
+        private void ReportAcceptedOnly_Changed(object sender, RoutedEventArgs e) => RefreshReport();
 
         private void ReportPeriod_Changed(object? sender, SelectionChangedEventArgs e) => RefreshReport();
 

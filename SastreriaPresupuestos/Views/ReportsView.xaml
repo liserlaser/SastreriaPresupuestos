@@ -33,9 +33,12 @@
                             VerticalAlignment="Center" Style="{StaticResource SecondaryButtonStyle}"/>
                 </Grid>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+                <WrapPanel Grid.Row="1" Margin="0,0,0,16">
+                    <ComboBox x:Name="ReportTypeComboBox" x:FieldModifier="public" Width="130" Height="34" SelectedIndex="0" Margin="0,0,8,6">
+                        <ComboBoxItem Content="General"/><ComboBoxItem Content="Taller"/>
+                    </ComboBox>
                     <ComboBox x:Name="ReportPeriodComboBox" x:FieldModifier="public"
-                              Width="120" Height="34" SelectedIndex="0" Margin="0,0,8,0">
+                              Width="120" Height="34" SelectedIndex="0" Margin="0,0,8,6">
                         <ComboBoxItem Content="Semana"/>
                         <ComboBoxItem Content="Mes"/>
                         <ComboBoxItem Content="Año"/>
@@ -45,14 +48,15 @@
                             Margin="0,0,6,0" ToolTip="Periodo anterior"
                             Style="{StaticResource SmallLightButtonStyle}"/>
                     <DatePicker x:Name="ReportReferenceDatePicker" x:FieldModifier="public"
-                                Width="150" Height="34" SelectedDateFormat="Short"/>
+                            Width="150" Height="34" SelectedDateFormat="Short" Margin="0,0,0,6"/>
                     <Button x:Name="NextReportPeriodButton" x:FieldModifier="public"
                             Content="›" Width="38" Height="34" FontSize="18"
-                            Margin="6,0,0,0" ToolTip="Periodo siguiente"
+                            Margin="6,0,12,6" ToolTip="Periodo siguiente"
                             Style="{StaticResource SmallLightButtonStyle}"/>
-                </StackPanel>
+                    <CheckBox x:Name="AcceptedOnlyCheckBox" x:FieldModifier="public" Content="Sólo trabajos aceptados" VerticalAlignment="Center" Margin="0,0,0,6"/>
+                </WrapPanel>
 
-                <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,12">
+                <UniformGrid x:Name="ReportActivityStatsPanel" Grid.Row="2" Columns="4" Margin="0,0,0,12">
                     <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
                         <StackPanel><TextBlock Text="Presupuestos creados" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="CreatedQuotesValueTextBlock" x:FieldModifier="public" Text="0" FontSize="23" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
                     </Border>
@@ -67,7 +71,7 @@
                     </Border>
                 </UniformGrid>
 
-                <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,14">
+                <UniformGrid x:Name="ReportQuoteStatsPanel" Grid.Row="3" Columns="3" Margin="0,0,0,14">
                     <Border Background="#F8FAF6" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
                         <StackPanel><TextBlock Text="Aceptados" FontSize="11" Foreground="{StaticResource MutedTextBrush}"/><TextBlock x:Name="AcceptedQuotesValueTextBlock" x:FieldModifier="public" Text="0 · 0 %" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,4,0,0"/></StackPanel>
                     </Border>
@@ -93,9 +97,21 @@
                             <DataGridTextColumn Header="Fecha" Binding="{Binding EventDate, StringFormat={}{0:dd/MM/yyyy}}" Width="105"/>
                             <DataGridTextColumn Header="Cliente" Binding="{Binding ClientName}" Width="*"/>
                             <DataGridTextColumn Header="Trabajo" Binding="{Binding Title}" Width="*"/>
+                            <DataGridTextColumn x:Name="FirstProductColumn" Header="Primer producto" Binding="{Binding FirstProduct}" Width="*" Visibility="Collapsed"/>
                             <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="115"/>
                             <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat={}{0:N2} €}" Width="110"/>
                         </DataGrid.Columns>
+                        <DataGrid.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#EEF1EA" Padding="8,5" Margin="0,5,0,2">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </DataGrid.GroupStyle>
                     </DataGrid>
                 </Grid>
 

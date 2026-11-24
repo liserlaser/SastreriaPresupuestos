@@ -19,6 +19,8 @@ namespace SastreriaPresupuestos.ViewModels
         public decimal DepositsReceived { get; init; }
         public decimal OutstandingTotal { get; init; }
         public bool HasUnattributedLegacyDeposits { get; init; }
+        public string ReportType { get; init; } = "General";
+        public string PeriodType { get; init; } = "Semana";
         public List<ReportDeliveryItem> Deliveries { get; init; } = new();
 
         public string PeriodLabel => StartDate.Date == EndDate.Date
@@ -43,5 +45,7 @@ namespace SastreriaPresupuestos.ViewModels
         public decimal Total { get; init; }
         public decimal Deposit { get; init; }
         public decimal Balance { get; init; }
+        public string FirstProduct { get; init; } = "";
+        public string GroupLabel { get; init; } = "";
     }
 }
