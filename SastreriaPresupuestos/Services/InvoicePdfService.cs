@@ -309,12 +309,12 @@ namespace SastreriaPresupuestos.Services
                     header.Cell().Element(HeaderCell).Text("Producto");
                     header.Cell().Element(HeaderCell).Text("Tipo / Detalle");
                     header.Cell().Element(HeaderCell).AlignRight().Text("Cant.");
-                    header.Cell().Element(HeaderCell).AlignRight().Text("Precio");
+                    header.Cell().Element(HeaderCell).AlignRight().Text(invoice.IsCompanyInvoice ? "Importe ud." : "Precio");
 
                     if (invoice.IsCompanyInvoice)
                         header.Cell().Element(HeaderCell).AlignRight().Text("IVA");
 
-                    header.Cell().Element(HeaderCell).AlignRight().Text(invoice.IsCompanyInvoice ? "Total Neto" : "Total");
+                    header.Cell().Element(HeaderCell).AlignRight().Text("Total");
                 });
 
                 foreach (var item in invoice.Items)
@@ -327,7 +327,8 @@ namespace SastreriaPresupuestos.Services
                     if (invoice.IsCompanyInvoice)
                         table.Cell().Element(BodyCell).AlignRight().Text("21%");
 
-                    table.Cell().Element(BodyCell).AlignRight().Text($"{item.Total:N2} €");
+                    var lineTotal = invoice.IsCompanyInvoice ? item.Total * 1.21m : item.Total;
+                    table.Cell().Element(BodyCell).AlignRight().Text($"{lineTotal:N2} €");
                 }
             });
         }
